@@ -1,11 +1,8 @@
 export default {
   plugins: [],
     theme: {
+    extend: {
       colors: {
-        white: '#FFFFFF',
-        black: '#000000',
-        transparent: 'transparent',
-        current: 'currentColor',
         nord0: '#2E3440',
         nord1: '#3B4252',
         nord2: '#434C5E',
@@ -23,9 +20,9 @@ export default {
         nord14: '#A3BE8C',
         nord15: '#B48EAD',
       },
-    extend: {},
+    },
   },
-  purge: ["./index.html",'./src/**/*.{svelte,js,ts}'], // for unused CSS
+  content: ["./index.html",'./src/**/*.{svelte,js,ts}'], // for unused CSS
   variants: {
     extend: {},
   },
