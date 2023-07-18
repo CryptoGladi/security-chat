@@ -8,6 +8,12 @@ dependencies:
   '@tauri-apps/api':
     specifier: ^1.4.0
     version: 1.4.0
+  bootstrap-icons:
+    specifier: ^1.10.5
+    version: 1.10.5
+  svelte-tauri-filedrop:
+    specifier: ^1.0.0
+    version: 1.0.0
 
 devDependencies:
   '@sveltejs/vite-plugin-svelte':
@@ -513,6 +519,10 @@ packages:
     resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
     engines: {node: '>=8'}
     dev: true
+
+  /bootstrap-icons@1.10.5:
+    resolution: {integrity: sha512-oSX26F37V7QV7NCE53PPEL45d7EGXmBgHG3pDpZvcRaKVzWMqIRL9wcqJUyEha1esFtM3NJzvmxFXDxjJYD0jQ==}
+    dev: false
 
   /brace-expansion@1.1.11:
     resolution: {integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==}
@@ -1106,6 +1116,12 @@ packages:
     dependencies:
       svelte: 4.0.5
     dev: true
+
+  /svelte-tauri-filedrop@1.0.0:
+    resolution: {integrity: sha512-UYfsQvBc+KHpFdefqwLPc+i1iPWutH6Do1NcSkbarWHJT5U8WvMhJhbm6tIVuTf39DtryJbUomb+hwyJHJbevw==}
+    dependencies:
+      '@tauri-apps/api': 1.4.0
+    dev: false
 
   /svelte@4.0.5:
     resolution: {integrity: sha512-PHKPWP1wiWHBtsE57nCb8xiWB3Ht7/3Kvi3jac0XIxUM2rep8alO7YoAtgWeGD7++tFy46krilOrPW0mG3Dx+A==}

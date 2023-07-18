@@ -22,7 +22,7 @@ export default {
       },
     },
   },
-  content: ["./index.html",'./src/**/*.{svelte,js,ts}'], // for unused CSS
+  content: ["./index.html",'./src/**/*.{svelte,js,ts}', 'node_modules/daisyui/**/*.{js,jsx,ts,tsx}'], // for unused CSS
   variants: {
     extend: {},
   },

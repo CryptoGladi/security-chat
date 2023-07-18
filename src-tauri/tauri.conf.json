@@ -38,8 +38,8 @@
         "fullscreen": false,
         "resizable": true,
         "title": "security-chat",
-        "width": 800,
-        "height": 600
+        "width": 456,
+        "height": 598
       }
     ]
   }
