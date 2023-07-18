@@ -8,7 +8,7 @@
   }
 
   function open(paths) {
-    // ...
+    console.log(paths);
   }
 </script>
 
