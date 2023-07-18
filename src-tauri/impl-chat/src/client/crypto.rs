@@ -1,59 +1,70 @@
-use ring::aead::{CHACHA20_POLY1305, OpeningKey, SealingKey, BoundKey};
-use ring::pbkdf2::{derive, PBKDF2_HMAC_SHA256};
-use ring::rand::{SystemRandom, SecureRandom};
-use std::num::NonZeroU32;
+use aes_gcm::{
+    aead::{Aead, AeadCore, KeyInit, Nonce, OsRng},
+    Aes256Gcm,
+    Key,
+};
+use log::info;
 use crate::client::error::Error;
 
 #[derive(Debug, Default)]
 pub struct Crypto {
-    key: [u8; 32],
-    
+    pub key: [u8; 32],
+}
+
+pub struct EncryptedMessage {
+    data: Vec<u8>,
+    nonce: Nonce<Aes256Gcm>,
 }
 
 impl Crypto {
-    fn generate_key(salt: &[u8]) -> Result<[u8; 32], Error> {
-        let mut key = [0; 32];
-        let secret = {
-            let rand = SystemRandom::new();
-            let mut vec = vec![0; 2048];
-            rand.fill(&mut vec).map_err(|x| Error::GenerateClient(x))?;
-    
-            vec
-        };
-    
-        derive(PBKDF2_HMAC_SHA256, NonZeroU32::new(100).unwrap(), salt, &secret[..], &mut key);
-    
-        Ok(key)
+    pub fn generate() -> Self {
+        info!("generating key...");
+        let key_array = Aes256Gcm::generate_key(OsRng);
+        let key: [u8; 32] = key_array.try_into().unwrap();
+
+        Self { key }
     }
 
-    pub fn generate(salt: &[u8]) -> Result<Self, Error> {
-        let key = Crypto::generate_key(salt)?;
-        let opening_key = OpeningKey::new(CHACHA20_POLY1305, &key).unwrap();
-        let sealing_key = SealingKey::new(CHACHA20_POLY1305, &key).unwrap();
+    pub fn encrypt(&self, message: &[u8]) -> Result<EncryptedMessage, Error> {
+        info!("encypting message...");
+        let key = Key::<Aes256Gcm>::from_slice(&self.key);
+        let cipher = Aes256Gcm::new(key);
+        let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
 
-        Ok(Self {
-            key
-        })
+        let data = cipher
+            .encrypt(&nonce, message)
+            .map_err(Error::Crypto)?;
+
+        Ok(EncryptedMessage { data, nonce })
     }
 
-    pub fn encrypt(&self, data: &Vec<u8>) {
-        let additional_data: [u8; 0] = [];
-        let mut in_out = data.clone();
+    pub fn decrypt(&self, message: &EncryptedMessage) -> Result<Vec<u8>, Error> {
+        info!("decrypting message...");
+        let key = Key::<Aes256Gcm>::from_slice(&self.key);
+        let cipher = Aes256Gcm::new(key);
 
-        for _ in 0..CHACHA20_POLY1305.tag_len() {
-            in_out.push(0);
-        }
-
-
+        let data = cipher
+            .decrypt(&message.nonce, message.data.as_ref())
+            .map_err(Error::Crypto)?;
+        
+        Ok(data)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    
     #[test]
-    fn generate_aes() {
-        let key = super::Crypto::generate_key(b"test_salt").unwrap();
+    fn crypto() {
+        const MESSAGE_FOR_CRYPTO: &[u8] = b"test message";
 
-        println!("key:")
+        let crypto = Crypto::generate();
+        let encrypted_message = crypto.encrypt(MESSAGE_FOR_CRYPTO).unwrap();
+        let decrypted_message = crypto.decrypt(&encrypted_message).unwrap();
+
+        println!("MESSAGE_FOR_CRYPTO: {}", String::from_utf8(MESSAGE_FOR_CRYPTO.to_vec()).unwrap());
+        println!("decrypted_message: {}", String::from_utf8(decrypted_message.clone()).unwrap());
+        assert_eq!(MESSAGE_FOR_CRYPTO, decrypted_message);
     }
 }

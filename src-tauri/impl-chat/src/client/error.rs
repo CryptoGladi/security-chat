@@ -2,6 +2,6 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("generate key for client")]
-    GenerateClient(ring::error::Unspecified)
+    #[error("cryptography problem: `{0}`")]
+    Crypto(aes_gcm::Error),
 }
