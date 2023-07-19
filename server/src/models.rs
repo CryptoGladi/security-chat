@@ -5,11 +5,11 @@ use diesel::prelude::*;
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
     pub id: i32,
-    pub username: String,
+    pub nickname: String,
 }
 
 #[derive(Insertable)]
 #[diesel(table_name = crate::schema::users)]
 pub struct NewUser<'a> {
-    pub username: &'a str,
+    pub nickname: &'a str,
 }

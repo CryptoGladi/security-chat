@@ -1,5 +1,3 @@
-use std::sync::Mutex;
-
 use crate::service::{
     security_chat::security_chat_server::SecurityChatServer, SecurityChatService,
 };
@@ -22,10 +20,8 @@ async fn main() -> color_eyre::eyre::Result<()> {
     warn!("running server...");
 
     let addr = "[::1]:2052".parse()?;
-    let service = SecurityChatService {
-        db: Mutex::new(database::establish_connection()),
-    };
-
+    let service = SecurityChatService::default();
+    
     Server::builder()
         .add_service(SecurityChatServer::new(service))
         .serve(addr)

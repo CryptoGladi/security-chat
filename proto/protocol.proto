@@ -21,9 +21,19 @@ message Status {
   }
 
 message RegistrationRequest {
-    string username = 1;
+    string nickname = 1;
+}
+
+message NicknameIsTakenRequest {
+    string nickname = 1;
+}
+
+message NicknameIsTakenReply {
+    bool is_taken = 1;
 }
 
 service SecurityChat {
     rpc Registration(RegistrationRequest) returns (Status);
+    
+    rpc NicknameIsTaken(NicknameIsTakenRequest) returns (NicknameIsTakenReply);
 }
