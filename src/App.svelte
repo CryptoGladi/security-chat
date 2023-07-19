@@ -12,9 +12,21 @@
   }
 </script>
 
+<style>
+  .unselectable {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;           /* Non-prefixed version, currently
+                                  not supported by any browser */
+  }
+</style>
+
 <!--DROP ZONE FILE-->
 <FileDrop extensions={['txt']} handleFiles={open} let:files>
-<div class:bg-nord10={files.length > 0}>
+<div class:bg-nord10={files.length > 0} class="unselectable">
 
 <div class="text-white flex flex-col">
 <h1 class="text-5xl text-center">
@@ -28,12 +40,12 @@
   <h2>Вы можете перенести файл в окно программы для авторизации</h2>
 </div>
 
-<button class:bg-nord10={files.length > 0} class="my-9 bg-nord2 hover:bg-nord10 self-center text-whit font-bold h-10 w-[15rem] rounded-full shadow-lg" on:click={createNewAccount}>Создать новый аккаунт</button>
+<button class="my-9 hover:bg-nord10 self-center text-whit font-bold h-10 w-[15rem] rounded-full shadow-lg bg-nord2" on:click={createNewAccount}>Создать новый аккаунт</button>
 
 <div class="flex flex-row-reverse mx-2 content-end">
   <i class="bi bi-github text-white text-3xl"></i>
 </div>
-
 </div>
+
 </div>
 </FileDrop>

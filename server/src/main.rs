@@ -1,19 +1,30 @@
+use std::sync::Mutex;
+
+use crate::service::{
+    security_chat::security_chat_server::SecurityChatServer, SecurityChatService,
+};
+use dotenv::dotenv;
 use log::warn;
 use tonic::transport::Server;
-use crate::service::{SecurityChatService, security_chat::security_chat_server::SecurityChatServer};
 
+pub mod database;
 pub mod logger;
+pub mod models;
+pub mod schema;
 pub mod service;
 
 #[tokio::main]
 async fn main() -> color_eyre::eyre::Result<()> {
     color_eyre::install()?;
+    dotenv().ok();
     logger::init_logger().unwrap();
 
-    warn!("done run server");
-    
+    warn!("running server...");
+
     let addr = "[::1]:2052".parse()?;
-    let service = SecurityChatService::default();
+    let service = SecurityChatService {
+        db: Mutex::new(database::establish_connection()),
+    };
 
     Server::builder()
         .add_service(SecurityChatServer::new(service))
