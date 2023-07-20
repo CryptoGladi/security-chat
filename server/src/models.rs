@@ -6,10 +6,12 @@ use diesel::prelude::*;
 pub struct User {
     pub id: i32,
     pub nickname: String,
+    pub authkey: String,
 }
 
 #[derive(Insertable)]
 #[diesel(table_name = crate::schema::users)]
 pub struct NewUser<'a> {
     pub nickname: &'a str,
+    pub authkey: &'a str,
 }

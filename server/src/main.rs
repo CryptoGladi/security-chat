@@ -21,7 +21,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
 
     let addr = "[::1]:2052".parse()?;
     let service = SecurityChatService::default();
-    
+
     Server::builder()
         .add_service(SecurityChatServer::new(service))
         .serve(addr)

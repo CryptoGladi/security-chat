@@ -24,6 +24,11 @@ message RegistrationRequest {
     string nickname = 1;
 }
 
+message RegistrationReply {
+    string authkey = 1;
+    Status status = 2;
+}
+
 message NicknameIsTakenRequest {
     string nickname = 1;
 }
@@ -33,7 +38,7 @@ message NicknameIsTakenReply {
 }
 
 service SecurityChat {
-    rpc Registration(RegistrationRequest) returns (Status);
+    rpc Registration(RegistrationRequest) returns (RegistrationReply);
     
     rpc NicknameIsTaken(NicknameIsTakenRequest) returns (NicknameIsTakenReply);
 }

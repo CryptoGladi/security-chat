@@ -14,6 +14,7 @@ pub mod security_chat {
     tonic::include_proto!("security_chat");
 }
 
+#[derive(Debug)]
 pub struct Client {
     pub cryptos_strorage: HashMap<String, Crypto>,
     pub nickname: String,
@@ -34,11 +35,11 @@ impl Client {
 
         let status = api.registration(request).await?;
 
-        if status.get_ref().code == 0 {
+        if !status.get_ref().authkey.is_empty() {
             Ok(Self {
                 cryptos_strorage: HashMap::default(),
                 nickname,
-                auth_key: "sasa".to_string(), // TODO
+                auth_key: status.get_ref().authkey.clone(), // TODO
                 api,
             })
         } else {
@@ -62,9 +63,10 @@ mod tests {
 
     #[tokio::test]
     async fn registration() {
-        let _client = Client::registration("test_nickname".to_string())
+        let client = Client::registration("test_nickname".to_string())
             .await
             .unwrap();
+        println!("client info: {:?}", client);
     }
 
     #[tokio::test]
