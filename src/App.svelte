@@ -1,9 +1,12 @@
 <script>
   import "./TailwindCSS.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
+  import { open_that, nickname_is_taken } from "./Api.js";
   import FileDrop from "svelte-tauri-filedrop";
 
   let showModal = false;
+  let nicknameIsTaken = false;
+  let nicknameValue = "";
 
   function toggleModal() {
     showModal = !showModal;
@@ -14,8 +17,18 @@
     toggleModal();
   }
 
-  function open(paths) {
+  function open_auth_file(paths) {
     console.log(paths);
+  }
+
+  function open_repo() {
+    open_that("https://github.com/CryptoGladi/security-chat");
+  }
+
+  function checkNickname() {
+    nickname_is_taken(nicknameValue);
+    nicknameIsTaken = true;
+    // TODO
   }
 </script>
 
@@ -33,36 +46,41 @@
           class="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t"
         >
           <h3 class="text-3xl font-semibold text-white">Меню регистрации</h3>
-          <button
-            class="p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
-            on:click={toggleModal}
-          >
-            <span
-              class="bg-transparent text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none"
-            >
-              ×
-            </span>
-          </button>
         </div>
         <!--body-->
         <div class="relative p-6 flex-auto">
-          <label for="helper-text" class="block mb-2 font-s text-lb font-medium text-white">Ваш ник</label>
-<input id="helper-text" aria-describedby="helper-text-explanation" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="CryptoGladi">
+          <label
+            for="nickname-text"
+            class="block mb-2 font-s text-lb font-medium text-white"
+            >Ваш ник</label
+          >
+          <input
+            id="nickname-text"
+            aria-describedby="nickname-text-explanation"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="CryptoGladi"
+            bind:value={nicknameValue}
+            on:input={checkNickname}
+          />
+
+          {#if !nicknameIsTaken && nicknameValue !== ""}
+            <p class="mt-2 text-sm text-green-600 dark:text-green-500"><strong>Ваш ник уникальный</strong></p>
+          {:else if nicknameIsTaken && nicknameValue !== ""}
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500"><strong>Ваш ник уже занятый</strong></p>
+          {/if}
         </div>
         <!--footer-->
         <div
           class="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b"
         >
           <button
-            class="text-red-500 bg-nord3 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-            type="button"
+            class="text-white bg-nord3 hover:bg-red-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
             on:click={toggleModal}
           >
             Закрыть
           </button>
           <button
-            class="bg-nord3 text-white active:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-            type="button"
+            class="text-white bg-nord3 hover:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
             on:click={toggleModal}
           >
             Создать
@@ -71,11 +89,10 @@
       </div>
     </div>
   </div>
-  <div class="opacity-25 fixed inset-0 z-40 bg-black"></div>
 {/if}
 
 <!--DROP ZONE FILE-->
-<FileDrop extensions={["txt"]} handleFiles={open} let:files>
+<FileDrop extensions={["txt"]} handleFiles={open_auth_file} let:files>
   <div class:bg-nord10={files.length > 0} class="unselectable">
     <div class="text-white flex flex-col">
       <h1 class="text-5xl text-center">
@@ -99,7 +116,12 @@
       >
 
       <div class="flex flex-row-reverse mx-2 content-end">
-        <i class="bi bi-github text-white text-3xl"></i>
+        <img
+          class="fill-white w-9 h-9"
+          src="github.svg"
+          alt="Github репозиторий"
+          on:click={open_repo}
+        />
       </div>
     </div>
   </div>

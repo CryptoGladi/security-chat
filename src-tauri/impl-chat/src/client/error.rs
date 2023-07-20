@@ -12,5 +12,5 @@ pub enum Error {
     NicknameIsTaken,
 
     #[error("api problem: `{0}`")]
-    Api(#[from] tonic::Status)
+    Api(#[from] tonic::Status),
 }

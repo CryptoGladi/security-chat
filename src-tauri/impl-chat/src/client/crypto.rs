@@ -1,10 +1,9 @@
+use crate::client::error::Error;
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, Nonce, OsRng},
-    Aes256Gcm,
-    Key,
+    Aes256Gcm, Key,
 };
 use log::info;
-use crate::client::error::Error;
 
 #[derive(Debug, Default)]
 pub struct Crypto {
@@ -31,9 +30,7 @@ impl Crypto {
         let cipher = Aes256Gcm::new(key);
         let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
 
-        let data = cipher
-            .encrypt(&nonce, message)
-            .map_err(Error::Crypto)?;
+        let data = cipher.encrypt(&nonce, message).map_err(Error::Crypto)?;
 
         Ok(EncryptedMessage { data, nonce })
     }
@@ -46,7 +43,7 @@ impl Crypto {
         let data = cipher
             .decrypt(&message.nonce, message.data.as_ref())
             .map_err(Error::Crypto)?;
-        
+
         Ok(data)
     }
 }
@@ -54,7 +51,7 @@ impl Crypto {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn crypto() {
         const MESSAGE_FOR_CRYPTO: &[u8] = b"test message";
@@ -63,8 +60,14 @@ mod tests {
         let encrypted_message = crypto.encrypt(MESSAGE_FOR_CRYPTO).unwrap();
         let decrypted_message = crypto.decrypt(&encrypted_message).unwrap();
 
-        println!("MESSAGE_FOR_CRYPTO: {}", String::from_utf8(MESSAGE_FOR_CRYPTO.to_vec()).unwrap());
-        println!("decrypted_message: {}", String::from_utf8(decrypted_message.clone()).unwrap());
+        println!(
+            "MESSAGE_FOR_CRYPTO: {}",
+            String::from_utf8(MESSAGE_FOR_CRYPTO.to_vec()).unwrap()
+        );
+        println!(
+            "decrypted_message: {}",
+            String::from_utf8(decrypted_message.clone()).unwrap()
+        );
         assert_eq!(MESSAGE_FOR_CRYPTO, decrypted_message);
     }
 }
