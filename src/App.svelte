@@ -5,12 +5,12 @@
   import { invoke } from "@tauri-apps/api/tauri";
   import FileDrop from "svelte-tauri-filedrop";
 
-  let showModal = false;
+  let showRegistrationMenu = false;
   let nicknameIsTaken = false;
   let nicknameValue = "";
 
   function toggleModal() {
-    showModal = !showModal;
+    showRegistrationMenu = !showRegistrationMenu;
   }
 
   function createNewAccount() {
@@ -18,11 +18,11 @@
     toggleModal();
   }
 
-  function open_auth_file(paths) {
+  function openAuthFile(paths) {
     console.log(paths);
   }
 
-  function open_repo() {
+  function openRepo() {
     open_that("https://github.com/CryptoGladi/security-chat");
   }
 
@@ -33,7 +33,7 @@
   }
 </script>
 
-{#if showModal}
+{#if showRegistrationMenu}
   <div
     class="overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none justify-center items-center flex"
   >
@@ -65,11 +65,17 @@
           />
 
           {#if !nicknameIsTaken && nicknameValue !== ""}
-            <p class="mt-2 text-sm text-green-600 dark:text-green-500"><strong>Ваш ник уникальный</strong></p>
+            <p class="mt-2 text-sm text-green-600 dark:text-green-500">
+              <strong>Ваш ник уникальный</strong>
+            </p>
           {:else if nicknameIsTaken && nicknameValue !== ""}
-            <p class="mt-2 text-sm text-red-600 dark:text-red-500"><strong>Ваш ник уже занятый</strong></p>
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">
+              <strong>Ваш ник уже занятый</strong>
+            </p>
           {:else}
-            <p class="mt-2 text-sm text-white"><strong>Ваш ник должен быть уникальным</strong></p>
+            <p class="mt-2 text-sm text-white">
+              <strong>Ваш ник должен быть уникальным</strong>
+            </p>
           {/if}
         </div>
         <!--footer-->
@@ -95,7 +101,7 @@
 {/if}
 
 <!--DROP ZONE FILE-->
-<FileDrop extensions={["txt"]} handleFiles={open_auth_file} let:files>
+<FileDrop extensions={["txt"]} handleFiles={openAuthFile} let:files>
   <div class:bg-nord10={files.length > 0} class="unselectable">
     <div class="text-white flex flex-col">
       <h1 class="text-5xl text-center">
@@ -119,11 +125,13 @@
       >
 
       <div class="flex flex-row-reverse mx-2 content-end">
+        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <img
           class="fill-white w-9 h-9"
           src="github.svg"
           alt="Github репозиторий"
-          on:click={open_repo}
+          on:click={openRepo}
         />
       </div>
     </div>

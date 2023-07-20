@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "format": "prettier --write  --plugin prettier-plugin-svelte ."
+    "format": "prettier --write  --plugin prettier-plugin-svelte .",
+    "lint": "eslint src/**/*.{js,svelte}"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.4.0",
@@ -19,6 +20,12 @@
     "@sveltejs/vite-plugin-svelte": "^2.4.2",
     "@tauri-apps/cli": "^1.4.0",
     "autoprefixer": "^10.4.14",
+    "eslint": "^8.0.1",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-svelte": "^2.32.3",
     "postcss": "^8.4.26",
     "prettier": "3.0.0",
     "prettier-plugin-svelte": "^3.0.0",
