@@ -1,7 +1,8 @@
 <script>
   import "./TailwindCSS.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
-  import { open_that, nickname_is_taken } from "./Api.js";
+  import { open_that } from "./Api.js";
+  import { invoke } from "@tauri-apps/api/tauri";
   import FileDrop from "svelte-tauri-filedrop";
 
   let showModal = false;
@@ -26,9 +27,9 @@
   }
 
   function checkNickname() {
-    nickname_is_taken(nicknameValue);
-    nicknameIsTaken = true;
-    // TODO
+    invoke("nickname_is_taken", { nickname: nicknameValue }).then((n) => {
+      nicknameIsTaken = n;
+    });
   }
 </script>
 
@@ -67,6 +68,8 @@
             <p class="mt-2 text-sm text-green-600 dark:text-green-500"><strong>Ваш ник уникальный</strong></p>
           {:else if nicknameIsTaken && nicknameValue !== ""}
             <p class="mt-2 text-sm text-red-600 dark:text-red-500"><strong>Ваш ник уже занятый</strong></p>
+          {:else}
+            <p class="mt-2 text-sm text-white"><strong>Ваш ник должен быть уникальным</strong></p>
           {/if}
         </div>
         <!--footer-->

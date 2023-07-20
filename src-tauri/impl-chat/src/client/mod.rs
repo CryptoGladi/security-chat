@@ -69,8 +69,9 @@ mod tests {
 
     #[tokio::test]
     async fn nickname_is_taken() {
-        super::nickname_is_taken("nickname dont taken".to_string())
+        let result = super::nickname_is_taken("nickname_dont_taken".to_string())
             .await
             .unwrap();
+        assert_eq!(result, false);
     }
 }

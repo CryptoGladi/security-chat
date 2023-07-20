@@ -1,4 +1,4 @@
-use log::info;
+use log::{info, debug};
 
 #[tauri::command]
 pub async fn open(path: String) {
@@ -7,7 +7,11 @@ pub async fn open(path: String) {
 }
 
 #[tauri::command]
-pub async fn nickname_is_taken(nickname: String) {
+pub async fn nickname_is_taken(nickname: String) -> bool {
+    let nickname = nickname.trim();
     info!("run `nickname_is_taken` command with nickname: {}", nickname);
-    impl_chat::client::nickname_is_taken(nickname).await.unwrap();
+    let nickname_is_taken = impl_chat::client::nickname_is_taken(nickname.to_string()).await.unwrap();
+    debug!("nickname_is_taken: {}", nickname_is_taken);
+
+    nickname_is_taken
 }

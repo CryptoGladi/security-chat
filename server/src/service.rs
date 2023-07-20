@@ -50,7 +50,7 @@ impl SecurityChat for SecurityChatService {
         info!("Got a request for nickname_is_taken: {:?}", request);
         let mut db = database::establish_connection();
 
-        return match users.filter(nickname.eq("")).limit(1).select(User::as_select()).load(&mut db) {
+        return match users.filter(nickname.eq(request.get_ref().nickname.clone())).limit(1).select(User::as_select()).load(&mut db) {
             Ok(e) => Ok(Response::new(NicknameIsTakenReply {
                 is_taken: e.len() >= 1
             })),
