@@ -20,7 +20,10 @@ async fn main() -> color_eyre::eyre::Result<()> {
     warn!("running server...");
 
     let addr = "[::1]:2052".parse()?;
-    let service = SecurityChatService::default();
+    let db_pool = database::establish_pooled_connection();
+    let service = SecurityChatService {
+        db_pool
+    };
 
     Server::builder()
         .add_service(SecurityChatServer::new(service))

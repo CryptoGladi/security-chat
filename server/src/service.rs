@@ -1,7 +1,7 @@
 use self::security_chat::NicknameIsTakenReply;
 use self::security_chat::NicknameIsTakenRequest;
 use self::security_chat::RegistrationReply;
-use crate::database;
+use crate::database::DbPool;
 use crate::models::*;
 use crate::schema::users::dsl::*;
 use diesel::prelude::*;
@@ -18,8 +18,9 @@ pub mod security_chat {
     tonic::include_proto!("security_chat");
 }
 
-#[derive(Default)]
-pub struct SecurityChatService;
+pub struct SecurityChatService {
+    pub db_pool: DbPool
+}
 
 #[tonic::async_trait]
 impl SecurityChat for SecurityChatService {
@@ -28,7 +29,7 @@ impl SecurityChat for SecurityChatService {
         request: Request<RegistrationRequest>,
     ) -> Result<Response<RegistrationReply>, Status> {
         info!("Got a request for registration: {:?}", request);
-        let mut db = database::establish_connection();
+        let mut db = self.db_pool.get().unwrap();
 
         let uuid_authkey = uuid::Uuid::new_v4().to_string();
         let new_user = NewUser {
@@ -53,7 +54,7 @@ impl SecurityChat for SecurityChatService {
         request: Request<NicknameIsTakenRequest>,
     ) -> Result<Response<NicknameIsTakenReply>, Status> {
         info!("Got a request for nickname_is_taken: {:?}", request);
-        let mut db = database::establish_connection();
+        let mut db = self.db_pool.get().unwrap();
 
         return match users
             .filter(nickname.eq(request.get_ref().nickname.clone()))

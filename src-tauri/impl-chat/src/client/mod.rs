@@ -53,7 +53,6 @@ pub async fn nickname_is_taken(nickname: String) -> Result<bool, Error> {
     let request = tonic::Request::new(NicknameIsTakenRequest { nickname });
 
     let response = api.nickname_is_taken(request).await?;
-    println!("{:?}", response.get_ref().is_taken);
     Ok(response.get_ref().is_taken)
 }
 

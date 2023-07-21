@@ -63,6 +63,7 @@
             bind:value={nicknameValue}
             on:input={checkNickname}
             on:keypress={e => { if (e.charCode == 32) e.preventDefault(); }}
+            maxlength=20
           />
 
           {#if !nicknameIsTaken && nicknameValue !== ""}
