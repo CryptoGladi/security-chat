@@ -1,3 +1,4 @@
+pub mod config;
 pub(crate) mod crypto;
 pub mod error;
 
@@ -5,6 +6,7 @@ use self::error::Error;
 use crate::client::security_chat::{NicknameIsTakenRequest, RegistrationRequest};
 use crypto::Crypto;
 use security_chat::security_chat_client::SecurityChatClient;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tonic::transport::Channel;
 
@@ -14,11 +16,16 @@ pub mod security_chat {
     tonic::include_proto!("security_chat");
 }
 
-#[derive(Debug)]
-pub struct Client {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ClientData {
     pub cryptos_strorage: HashMap<String, Crypto>,
     pub nickname: String,
     pub auth_key: String,
+}
+
+#[derive(Debug)]
+pub struct Client {
+    pub data: ClientData,
     pub api: SecurityChatClient<Channel>,
 }
 
@@ -35,16 +42,23 @@ impl Client {
 
         let status = api.registration(request).await?;
 
+        // TODO
         if !status.get_ref().authkey.is_empty() {
             Ok(Self {
-                cryptos_strorage: HashMap::default(),
-                nickname,
-                auth_key: status.get_ref().authkey.clone(), // TODO
+                data: ClientData {
+                    cryptos_strorage: HashMap::default(),
+                    nickname,
+                    auth_key: status.get_ref().authkey.clone(),
+                },
                 api,
             })
         } else {
             Err(Error::NicknameIsTaken)
         }
+    }
+
+    pub async fn login(nickname: String, authkey: String) -> Result<Self, Error> {
+        todo!()
     }
 }
 

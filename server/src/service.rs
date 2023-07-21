@@ -1,3 +1,5 @@
+use self::security_chat::LoginReply;
+use self::security_chat::LoginRequest;
 use self::security_chat::NicknameIsTakenReply;
 use self::security_chat::NicknameIsTakenRequest;
 use self::security_chat::RegistrationReply;
@@ -24,11 +26,31 @@ pub struct SecurityChatService {
 
 #[tonic::async_trait]
 impl SecurityChat for SecurityChatService {
+    async fn login(
+        &self,
+        request: Request<LoginRequest>
+    ) -> Result<Response<LoginReply>, Status> {
+        info!("Got a request for `login`: {:?}", request);
+        let mut db = self.db_pool.get().unwrap();
+
+        let user = users
+            .filter(nickname.eq(request.get_ref().nickname.clone()))
+            .select(User::as_select())
+            .load(&mut db)
+            .unwrap();
+        
+        if user[0].authkey == request.get_ref().authkey {
+
+        }
+
+        todo!()
+    }
+
     async fn registration(
         &self,
         request: Request<RegistrationRequest>,
     ) -> Result<Response<RegistrationReply>, Status> {
-        info!("Got a request for registration: {:?}", request);
+        info!("Got a request for `registration`: {:?}", request);
         let mut db = self.db_pool.get().unwrap();
 
         let uuid_authkey = uuid::Uuid::new_v4().to_string();
@@ -53,7 +75,7 @@ impl SecurityChat for SecurityChatService {
         &self,
         request: Request<NicknameIsTakenRequest>,
     ) -> Result<Response<NicknameIsTakenReply>, Status> {
-        info!("Got a request for nickname_is_taken: {:?}", request);
+        info!("Got a request for `nickname_is_taken`: {:?}", request);
         let mut db = self.db_pool.get().unwrap();
 
         return match users

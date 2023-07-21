@@ -37,8 +37,19 @@ message NicknameIsTakenReply {
     bool is_taken = 1;
 }
 
+message LoginRequest {
+    string nickname = 1;
+    string authkey = 2;
+}
+
+message LoginReply {
+    bool is_successful = 1;
+}
+
 service SecurityChat {
     rpc Registration(RegistrationRequest) returns (RegistrationReply);
+
+    rpc Login(LoginRequest) returns (LoginReply);
     
     rpc NicknameIsTaken(NicknameIsTakenRequest) returns (NicknameIsTakenReply);
 }

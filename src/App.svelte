@@ -1,7 +1,7 @@
 <script>
   import "./TailwindCSS.css";
   import "bootstrap-icons/font/bootstrap-icons.css";
-  import { open_that } from "./Api.js";
+  import { open_that, registration } from "./Api.js";
   import { invoke } from "@tauri-apps/api/tauri";
   import FileDrop from "svelte-tauri-filedrop";
 
@@ -29,6 +29,12 @@
   function checkNickname() {
     invoke("nickname_is_taken", { nickname: nicknameValue }).then((n) => {
       nicknameIsTaken = n;
+    });
+  }
+
+  function registrationNewAccount() {
+    invoke("nickname_is_taken", { nickname: nicknameValue }).then((n) => {
+      if (!n) invoke("registration", { nickname: nicknameValue });
     });
   }
 </script>
@@ -62,8 +68,10 @@
             placeholder="CryptoGladi"
             bind:value={nicknameValue}
             on:input={checkNickname}
-            on:keypress={e => { if (e.charCode == 32) e.preventDefault(); }}
-            maxlength=20
+            on:keypress={(e) => {
+              if (e.charCode == 32) e.preventDefault();
+            }}
+            maxlength="20"
           />
 
           {#if !nicknameIsTaken && nicknameValue !== ""}
@@ -92,7 +100,7 @@
           </button>
           <button
             class="text-white bg-nord3 hover:bg-emerald-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-            on:click={toggleModal}
+            on:click={registrationNewAccount}
           >
             Создать
           </button>

@@ -4,8 +4,9 @@ use aes_gcm::{
     Aes256Gcm, Key,
 };
 use log::info;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Crypto {
     pub key: [u8; 32],
 }
