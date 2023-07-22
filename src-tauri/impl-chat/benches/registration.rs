@@ -12,7 +12,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                     .map(char::from)
                     .collect();
 
-                let _client = impl_chat::client::Client::registration(rand_string)
+                let _client = impl_chat::client::Client::registration(&rand_string)
                     .await
                     .unwrap();
             });

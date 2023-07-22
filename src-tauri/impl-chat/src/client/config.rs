@@ -1,4 +1,4 @@
-use super::{error, ClientData};
+use super::ClientData;
 use std::{
     fs::OpenOptions,
     io::{BufReader, Write},
@@ -39,5 +39,5 @@ pub fn load(path: impl AsRef<Path>) -> Result<ClientData, Error> {
         .map_err(Error::IO)?;
 
     let reader = BufReader::new(file);
-    Ok(serde_json::from_reader(reader).map_err(Error::Serde)?)
+    serde_json::from_reader(reader).map_err(Error::Serde)
 }

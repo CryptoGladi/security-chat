@@ -3,7 +3,11 @@ use crate::service::{
 };
 use dotenv::dotenv;
 use log::warn;
+use mimalloc::MiMalloc;
 use tonic::transport::Server;
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 pub mod database;
 pub mod logger;
@@ -21,9 +25,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
 
     let addr = "[::1]:2052".parse()?;
     let db_pool = database::establish_pooled_connection();
-    let service = SecurityChatService {
-        db_pool
-    };
+    let service = SecurityChatService { db_pool };
 
     Server::builder()
         .add_service(SecurityChatServer::new(service))

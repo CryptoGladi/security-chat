@@ -3,7 +3,8 @@ pub(crate) mod crypto;
 pub mod error;
 
 use self::error::Error;
-use crate::client::security_chat::{NicknameIsTakenRequest, RegistrationRequest};
+use crate::client::security_chat::{NicknameIsTakenRequest, RegistrationRequest, LoginRequest};
+use aes_gcm::aead::consts::False;
 use crypto::Crypto;
 use security_chat::security_chat_client::SecurityChatClient;
 use serde::{Deserialize, Serialize};
@@ -30,14 +31,14 @@ pub struct Client {
 }
 
 impl Client {
-    pub async fn registration(nickname: String) -> Result<Self, Error> {
-        if nickname_is_taken(nickname.clone()).await? {
+    pub async fn registration(nickname: &str) -> Result<Self, Error> {
+        if nickname_is_taken(nickname).await? {
             return Err(Error::NicknameIsTaken);
         }
 
         let mut api = SecurityChatClient::connect(ADDRESS_SERVER).await?;
         let request = tonic::Request::new(RegistrationRequest {
-            nickname: nickname.clone(),
+            nickname: nickname.to_string(),
         });
 
         let status = api.registration(request).await?;
@@ -47,7 +48,7 @@ impl Client {
             Ok(Self {
                 data: ClientData {
                     cryptos_strorage: HashMap::default(),
-                    nickname,
+                    nickname: nickname.to_string(),
                     auth_key: status.get_ref().authkey.clone(),
                 },
                 api,
@@ -57,14 +58,21 @@ impl Client {
         }
     }
 
-    pub async fn login(nickname: String, authkey: String) -> Result<Self, Error> {
-        todo!()
+    pub async fn login(nickname: &str, authkey: &str) -> Result<bool, Error> {
+        let mut api = SecurityChatClient::connect(ADDRESS_SERVER).await?;
+        let request = tonic::Request::new(LoginRequest {
+            nickname: nickname.to_string(), authkey: authkey.to_string()
+        });
+
+        let status = api.login(request).await?;
+
+        Ok(status.get_ref().is_successful)
     }
 }
 
-pub async fn nickname_is_taken(nickname: String) -> Result<bool, Error> {
+pub async fn nickname_is_taken(nickname: &str) -> Result<bool, Error> {
     let mut api = SecurityChatClient::connect(ADDRESS_SERVER).await?;
-    let request = tonic::Request::new(NicknameIsTakenRequest { nickname });
+    let request = tonic::Request::new(NicknameIsTakenRequest { nickname: nickname.to_string() });
 
     let response = api.nickname_is_taken(request).await?;
     Ok(response.get_ref().is_taken)
@@ -76,17 +84,32 @@ mod tests {
 
     #[tokio::test]
     async fn registration() {
-        let client = Client::registration("test_nickname".to_string())
+        let client = Client::registration("test_nickname")
             .await
             .unwrap();
         println!("client info: {:?}", client);
+
+        assert_eq!(client.data.auth_key.is_empty(), false);
     }
 
     #[tokio::test]
     async fn nickname_is_taken() {
-        let result = super::nickname_is_taken("nickname_dont_taken".to_string())
+        let result = super::nickname_is_taken("nickname_dont_taken")
             .await
             .unwrap();
         assert_eq!(result, false);
+    }
+
+    #[tokio::test]
+    async fn login() {
+        let client = Client::registration("nickname_for_login").await.unwrap();
+        let nickname = client.data.nickname.clone();
+        let auth_key = client.data.auth_key.clone();
+        assert_eq!(auth_key.is_empty(), false);
+
+        drop(client);
+
+        let is_successful = Client::login(&nickname, &auth_key).await.unwrap();
+        assert_eq!(is_successful, true);
     }
 }
