@@ -4,6 +4,7 @@ use crate::service::{
 use dotenv::dotenv;
 use log::warn;
 use mimalloc::MiMalloc;
+use tonic::codec::CompressionEncoding;
 use tonic::transport::Server;
 
 #[global_allocator]
@@ -28,7 +29,11 @@ async fn main() -> color_eyre::eyre::Result<()> {
     let service = SecurityChatService { db_pool };
 
     Server::builder()
-        .add_service(SecurityChatServer::new(service))
+        .add_service(
+            SecurityChatServer::new(service)
+                .send_compressed(CompressionEncoding::Gzip)
+                .accept_compressed(CompressionEncoding::Gzip),
+        )
         .serve(addr)
         .await?;
 

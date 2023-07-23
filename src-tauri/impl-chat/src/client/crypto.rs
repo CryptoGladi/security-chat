@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Crypto {
-    pub key: [u8; 32],
+    pub key: [u8; 32], // TODO CHANGE SIZE KEY
 }
 
 pub struct EncryptedMessage {

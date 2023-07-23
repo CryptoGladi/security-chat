@@ -17,6 +17,21 @@ fn criterion_benchmark(c: &mut Criterion) {
                     .unwrap();
             });
     });
+
+    c.bench_function("login", |b| {
+        b.to_async(Builder::new_multi_thread().enable_all().build().unwrap())
+            .iter(|| async {
+                let test_nickname = "test_nickname";
+                let authkey = "d515004d-c283-4b38-abe7-3e7403addc93";
+
+                assert_eq!(
+                    impl_chat::client::Client::login(test_nickname, authkey)
+                        .await
+                        .unwrap(),
+                    true
+                );
+            });
+    });
 }
 
 criterion_group!(benches, criterion_benchmark);

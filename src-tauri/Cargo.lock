@@ -3780,6 +3780,7 @@ dependencies = [
  "axum",
  "base64 0.21.2",
  "bytes",
+ "flate2",
  "futures-core",
  "futures-util",
  "h2",
