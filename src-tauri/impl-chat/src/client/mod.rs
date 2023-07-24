@@ -3,11 +3,12 @@ pub(crate) mod crypto;
 pub mod error;
 
 use self::error::Error;
-use crate::client::security_chat::{LoginRequest, NicknameIsTakenRequest, RegistrationRequest};
+use crate::client::security_chat::{CheckValidRequest, NicknameIsTakenRequest, RegistrationRequest};
 use crypto::Crypto;
 use security_chat::security_chat_client::SecurityChatClient;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::path::Path;
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
 
@@ -67,14 +68,14 @@ impl Client {
         }
     }
 
-    pub async fn login(nickname: &str, authkey: &str) -> Result<bool, Error> {
+    pub async fn check_valid(nickname: &str, authkey: &str) -> Result<bool, Error> {
         let mut api = Client::api_connect().await?;
-        let request = tonic::Request::new(LoginRequest {
+        let request = tonic::Request::new(CheckValidRequest {
             nickname: nickname.to_string(),
             authkey: authkey.to_string(),
         });
 
-        let status = api.login(request).await?;
+        let status = api.check_valid(request).await?;
 
         Ok(status.get_ref().is_successful)
     }
@@ -119,7 +120,7 @@ mod tests {
 
         drop(client);
 
-        let is_successful = Client::login(&nickname, &auth_key).await.unwrap();
+        let is_successful = Client::check_valid(&nickname, &auth_key).await.unwrap();
         assert_eq!(is_successful, true);
     }
 }

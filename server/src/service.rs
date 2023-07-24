@@ -1,5 +1,5 @@
 use self::security_chat::{
-    LoginReply, LoginRequest, NicknameIsTakenReply, NicknameIsTakenRequest, RegistrationReply,
+    CheckValidReply, CheckValidRequest, NicknameIsTakenReply, NicknameIsTakenRequest, RegistrationReply,
 };
 use crate::database::DbPool;
 use crate::models::*;
@@ -20,8 +20,8 @@ pub struct SecurityChatService {
 
 #[tonic::async_trait]
 impl SecurityChat for SecurityChatService {
-    async fn login(&self, request: Request<LoginRequest>) -> Result<Response<LoginReply>, Status> {
-        info!("Got a request for `login`: {:?}", request);
+    async fn check_valid(&self, request: Request<CheckValidRequest>) -> Result<Response<CheckValidReply>, Status> {
+        info!("Got a request for `check_valid`: {:?}", request);
         let mut db = self.db_pool.get().unwrap();
 
         let Ok(user) = users
@@ -29,12 +29,12 @@ impl SecurityChat for SecurityChatService {
             .select(User::as_select())
             .load(&mut db)
             else {
-                return Ok(Response::new(LoginReply {
+                return Ok(Response::new(CheckValidReply {
                     is_successful: false
                 }));
         };
 
-        Ok(Response::new(LoginReply {
+        Ok(Response::new(CheckValidReply {
             is_successful: user[0].authkey == request.get_ref().authkey,
         }))
     }
