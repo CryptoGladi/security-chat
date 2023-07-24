@@ -25,7 +25,7 @@ async fn main() -> color_eyre::eyre::Result<()> {
     warn!("running server...");
 
     let addr = "[::1]:2052".parse()?;
-    let db_pool = database::establish_pooled_connection();
+    let db_pool = database::establish_pooled_connection().await;
     let service = SecurityChatService { db_pool };
 
     Server::builder()

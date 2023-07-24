@@ -8,7 +8,6 @@ use crypto::Crypto;
 use security_chat::security_chat_client::SecurityChatClient;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::path::Path;
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
 

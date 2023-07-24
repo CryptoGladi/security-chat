@@ -1,15 +1,18 @@
 use self::security_chat::{
-    CheckValidReply, CheckValidRequest, NicknameIsTakenReply, NicknameIsTakenRequest, RegistrationReply,
+    CheckValidReply, CheckValidRequest, NicknameIsTakenReply, NicknameIsTakenRequest,
+    RegistrationReply,
 };
 use crate::database::DbPool;
 use crate::models::*;
 use crate::schema::users::dsl::*;
 use diesel::prelude::*;
+use diesel_async::RunQueryDsl;
 use log::{error, info};
 use security_chat::security_chat_server::SecurityChat;
 use security_chat::{RegistrationRequest, Status as ProtocolStatus};
 use tonic::{Request, Response, Status};
 
+#[allow(non_snake_case)]
 pub mod security_chat {
     tonic::include_proto!("security_chat");
 }
@@ -20,14 +23,17 @@ pub struct SecurityChatService {
 
 #[tonic::async_trait]
 impl SecurityChat for SecurityChatService {
-    async fn check_valid(&self, request: Request<CheckValidRequest>) -> Result<Response<CheckValidReply>, Status> {
+    async fn check_valid(
+        &self,
+        request: Request<CheckValidRequest>,
+    ) -> Result<Response<CheckValidReply>, Status> {
         info!("Got a request for `check_valid`: {:?}", request);
-        let mut db = self.db_pool.get().unwrap();
+        let mut db = self.db_pool.get().await.unwrap();
 
         let Ok(user) = users
             .filter(nickname.eq(request.get_ref().nickname.clone()))
             .select(User::as_select())
-            .load(&mut db)
+            .load(&mut db).await
             else {
                 return Ok(Response::new(CheckValidReply {
                     is_successful: false
@@ -44,7 +50,7 @@ impl SecurityChat for SecurityChatService {
         request: Request<RegistrationRequest>,
     ) -> Result<Response<RegistrationReply>, Status> {
         info!("Got a request for `registration`: {:?}", request);
-        let mut db = self.db_pool.get().unwrap();
+        let mut db = self.db_pool.get().await.unwrap();
 
         let uuid_authkey = uuid::Uuid::new_v4().to_string();
         let new_user = NewUser {
@@ -54,7 +60,7 @@ impl SecurityChat for SecurityChatService {
 
         let Ok(_) = diesel::insert_into(users)
         .values(&new_user)
-        .execute(&mut db) else {
+        .execute(&mut db).await else {
             return  Ok(Response::new(RegistrationReply { status: Some(ProtocolStatus::default()), authkey: "".to_string() } )); // TODO
         };
 
@@ -69,16 +75,17 @@ impl SecurityChat for SecurityChatService {
         request: Request<NicknameIsTakenRequest>,
     ) -> Result<Response<NicknameIsTakenReply>, Status> {
         info!("Got a request for `nickname_is_taken`: {:?}", request);
-        let mut db = self.db_pool.get().unwrap();
+        let mut db = self.db_pool.get().await.unwrap();
 
         return match users
             .filter(nickname.eq(request.get_ref().nickname.clone()))
             .limit(1)
             .select(User::as_select())
             .load(&mut db)
+            .await
         {
             Ok(e) => Ok(Response::new(NicknameIsTakenReply {
-                is_taken: e.len() >= 1,
+                is_taken: !e.is_empty(),
             })),
             Err(e) => {
                 error!("database error in nickname_is_taken: {:?}", e);

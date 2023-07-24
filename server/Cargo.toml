@@ -5,8 +5,10 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.72"
+bb8 = "0.8.1"
 color-eyre = "0.6.2"
-diesel = { version = "2.1.0", features = ["postgres", "r2d2"] }
+diesel = "2.1.0"
+diesel-async = { version = "0.3.1", features = ["postgres", "bb8"] }
 dotenv = "0.15.0"
 log = "0.4.19"
 log4rs = { version = "1.2.0", default-features = false, features = ["file_appender", "threshold_filter", "console_appender"] }
