@@ -3,7 +3,9 @@ pub(crate) mod crypto;
 pub mod error;
 
 use self::error::Error;
-use crate::client::security_chat::{CheckValidRequest, NicknameIsTakenRequest, RegistrationRequest};
+use crate::client::security_chat::{
+    CheckValidRequest, NicknameIsTakenRequest, RegistrationRequest,
+};
 use crypto::Crypto;
 use security_chat::security_chat_client::SecurityChatClient;
 use serde::{Deserialize, Serialize};
@@ -13,6 +15,7 @@ use tonic::transport::Channel;
 
 pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
 
+#[allow(non_snake_case)]
 pub mod security_chat {
     tonic::include_proto!("security_chat");
 }

@@ -40,6 +40,12 @@ impl SecurityChat for SecurityChatService {
                 }));
         };
 
+        if user.is_empty() {
+            return Ok(Response::new(CheckValidReply {
+                is_successful: false
+            }));
+        }
+
         Ok(Response::new(CheckValidReply {
             is_successful: user[0].authkey == request.get_ref().authkey,
         }))
