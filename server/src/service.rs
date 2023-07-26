@@ -27,7 +27,7 @@ impl SecurityChat for SecurityChatService {
         &self,
         request: Request<CheckValidRequest>,
     ) -> Result<Response<CheckValidReply>, Status> {
-        info!("Got a request for `check_valid`: {:?}", request);
+        info!("Got a request for `check_valid`: {:?}", request.get_ref());
         let mut db = self.db_pool.get().await.unwrap();
 
         let Ok(user) = users
@@ -42,7 +42,7 @@ impl SecurityChat for SecurityChatService {
 
         if user.is_empty() {
             return Ok(Response::new(CheckValidReply {
-                is_successful: false
+                is_successful: false,
             }));
         }
 
@@ -55,7 +55,7 @@ impl SecurityChat for SecurityChatService {
         &self,
         request: Request<RegistrationRequest>,
     ) -> Result<Response<RegistrationReply>, Status> {
-        info!("Got a request for `registration`: {:?}", request);
+        info!("Got a request for `registration`: {:?}", request.get_ref());
         let mut db = self.db_pool.get().await.unwrap();
 
         let uuid_authkey = uuid::Uuid::new_v4().to_string();
@@ -80,7 +80,10 @@ impl SecurityChat for SecurityChatService {
         &self,
         request: Request<NicknameIsTakenRequest>,
     ) -> Result<Response<NicknameIsTakenReply>, Status> {
-        info!("Got a request for `nickname_is_taken`: {:?}", request);
+        info!(
+            "Got a request for `nickname_is_taken`: {:?}",
+            request.get_ref()
+        );
         let mut db = self.db_pool.get().await.unwrap();
 
         return match users

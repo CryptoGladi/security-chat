@@ -30,8 +30,4 @@ diesel::table! {
 
 diesel::joinable!(conversation_messages -> conversation (conversation_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    conversation,
-    conversation_messages,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(conversation, conversation_messages, users,);
