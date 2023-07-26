@@ -6,7 +6,7 @@ use self::error::Error;
 use crate::client::security_chat::{
     CheckValidRequest, NicknameIsTakenRequest, RegistrationRequest,
 };
-use crypto::Crypto;
+use crypto::AES;
 use security_chat::security_chat_client::SecurityChatClient;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -22,7 +22,7 @@ pub mod security_chat {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ClientData {
-    pub cryptos_strorage: HashMap<String, Crypto>,
+    pub cryptos_strorage: HashMap<String, AES>,
     pub nickname: String,
     pub auth_key: String,
 }
