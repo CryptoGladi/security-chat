@@ -29,8 +29,8 @@ fn criterion_benchmark(c: &mut Criterion) {
                 let authkey = "d515004d-c283-4b38-abe7-3e7403addc93";
 
                 impl_chat::client::Client::check_valid(test_nickname, authkey)
-                .await
-                .unwrap()
+                    .await
+                    .unwrap()
             });
     });
 }

@@ -96,10 +96,12 @@ pub async fn nickname_is_taken(nickname: &str) -> Result<bool, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils;
 
     #[tokio::test]
     async fn registration() {
-        let client = Client::registration("test_nickname").await.unwrap();
+        let nickname = test_utils::get_rand_string();
+        let client = Client::registration(&nickname).await.unwrap();
         println!("client info: {:?}", client);
 
         assert_eq!(client.data.auth_key.is_empty(), false);
@@ -107,15 +109,21 @@ mod tests {
 
     #[tokio::test]
     async fn nickname_is_taken() {
-        let result = super::nickname_is_taken("nickname_dont_taken")
-            .await
-            .unwrap();
+        let nickname = test_utils::get_rand_string();
+        let result = super::nickname_is_taken(&nickname).await.unwrap();
+
         assert_eq!(result, false);
+
+        let client = Client::registration(&nickname).await.unwrap();
+        let result = super::nickname_is_taken(&nickname).await.unwrap();
+        assert_eq!(result, true);
     }
 
     #[tokio::test]
-    async fn login() {
-        let client = Client::registration("nickname_for_login").await.unwrap();
+    async fn check_valid() {
+        let client = Client::registration(&test_utils::get_rand_string())
+            .await
+            .unwrap();
         let nickname = client.data.nickname.clone();
         let auth_key = client.data.auth_key.clone();
         assert_eq!(auth_key.is_empty(), false);
@@ -124,5 +132,8 @@ mod tests {
 
         let is_successful = Client::check_valid(&nickname, &auth_key).await.unwrap();
         assert_eq!(is_successful, true);
+
+        let is_successful = Client::check_valid("dddddd", "dddd").await.unwrap();
+        assert_eq!(is_successful, false);
     }
 }

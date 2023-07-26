@@ -1,7 +1,7 @@
 pub mod aes;
-pub mod ecdh;
 pub mod common;
+pub mod ecdh;
 pub mod error;
 
-pub use aes::{AES, EncryptedMessage};
+pub use aes::{EncryptedMessage, AES};
 pub use error::CryptoError;

@@ -1,6 +1,6 @@
+use super::{aes, common::get_rand, CryptoError};
 use log::info;
 use p384::{ecdh::EphemeralSecret, EncodedPoint, PublicKey};
-use super::{common::get_rand, CryptoError, aes};
 
 pub struct SharedSecret(p384::ecdh::SharedSecret);
 
@@ -10,8 +10,7 @@ impl SharedSecret {
     }
 }
 
-pub fn get_public_info() -> Result<(EphemeralSecret, PublicKey), CryptoError>
-{
+pub fn get_public_info() -> Result<(EphemeralSecret, PublicKey), CryptoError> {
     info!("run get_public_info");
     let secret = EphemeralSecret::random(&mut get_rand());
     let private_key = EncodedPoint::from(secret.public_key());
@@ -38,9 +37,15 @@ mod tests {
         let bob_shared_secret = get_shared_secret(&bob_secret, &alice_public_key);
 
         println!("secret: {:?}", alice_shared_secret.0.raw_secret_bytes());
-        println!("secter len: {}", alice_shared_secret.0.raw_secret_bytes().len());
+        println!(
+            "secter len: {}",
+            alice_shared_secret.0.raw_secret_bytes().len()
+        );
 
-        assert_eq!(alice_shared_secret.0.raw_secret_bytes(), bob_shared_secret.0.raw_secret_bytes());
+        assert_eq!(
+            alice_shared_secret.0.raw_secret_bytes(),
+            bob_shared_secret.0.raw_secret_bytes()
+        );
         assert_eq!(alice_shared_secret.get_key_for_aes_256().len(), 32);
     }
 }
