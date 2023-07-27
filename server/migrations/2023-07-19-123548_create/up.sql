@@ -12,13 +12,14 @@ CREATE TABLE conversation (
 CREATE TABLE conversation_messages (
   id BIGSERIAL PRIMARY KEY,
   conversation_id BIGSERIAL REFERENCES conversation(id) ON DELETE CASCADE,
-  sender_nickname VARCHAR(40) REFERENCES users(nickname),
+  sender_id BIGSERIAL REFERENCES users(id),
   message JSON NOT NULL
 );
 
---CREATE TABLE order_add_keys {
---  id BIGSERIAL PRIMARY KEY,
---  user_to VARCHAR(40) REFERENCES users(nickname),
---  user_from VARCHAR(40) REFERENCES users(nickname)
---  
---}
+CREATE TABLE order_add_keys (
+  id BIGSERIAL PRIMARY KEY,
+  user_to_id BIGSERIAL REFERENCES users(id) ON DELETE CASCADE,
+  user_from_id BIGSERIAL REFERENCES users(id) ON DELETE CASCADE,
+  user_to_public_key BYTEA NOT NULL,
+  user_from_public_key BYTEA NOT NULL
+);
