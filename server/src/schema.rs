@@ -1,7 +1,7 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    conversation (id) {
+    chat (id) {
         id -> Int8,
         #[max_length = 40]
         title -> Varchar,
@@ -9,9 +9,9 @@ diesel::table! {
 }
 
 diesel::table! {
-    conversation_messages (id) {
+    chat_messages (id) {
         id -> Int8,
-        conversation_id -> Int8,
+        chat_id -> Int8,
         sender_id -> Int8,
         message -> Json,
     }
@@ -23,7 +23,7 @@ diesel::table! {
         user_to_id -> Int8,
         user_from_id -> Int8,
         user_to_public_key -> Bytea,
-        user_from_public_key -> Bytea,
+        user_from_public_key -> Nullable<Bytea>,
     }
 }
 
@@ -37,12 +37,7 @@ diesel::table! {
     }
 }
 
-diesel::joinable!(conversation_messages -> conversation (conversation_id));
-diesel::joinable!(conversation_messages -> users (sender_id));
+diesel::joinable!(chat_messages -> chat (chat_id));
+diesel::joinable!(chat_messages -> users (sender_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    conversation,
-    conversation_messages,
-    order_add_keys,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(chat, chat_messages, order_add_keys, users,);

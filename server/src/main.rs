@@ -3,10 +3,13 @@ use crate::service::{
 };
 use dotenv::dotenv;
 use log::warn;
-use mimalloc::MiMalloc;
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Server;
 
+#[cfg(not(debug_assertions))]
+use mimalloc::MiMalloc;
+
+#[cfg(not(debug_assertions))]
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
 
