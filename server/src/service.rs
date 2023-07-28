@@ -1,9 +1,9 @@
 use self::security_chat::{
     CheckValidReply, CheckValidRequest, DeleteAesKeyReply, DeleteAesKeyRequest, GetAesKeyReply,
     GetAesKeyRequest, NicknameIsTakenReply, NicknameIsTakenRequest, RegistrationReply,
-    SendAesKeyReply, SendAesKeyRequest,
+    SendAesKeyReply, SendAesKeyRequest, AesKeyInfo
 };
-use crate::database::DbPool;
+use crate::database::{DbPool, get_user_by_id};
 use crate::models::*;
 use crate::schema::order_add_keys::dsl::*;
 use crate::schema::users::dsl::*;
@@ -51,7 +51,7 @@ impl SecurityChat for SecurityChatService {
             return Ok(Response::new(SendAesKeyReply {
                 is_successful: false,
             }));
-        } else if user_to[0].authkey == authkey_for_check {
+        } else if user_to[0].authkey != authkey_for_check {
             return Ok(Response::new(SendAesKeyReply {
                 is_successful: false,
             }));
@@ -78,31 +78,54 @@ impl SecurityChat for SecurityChatService {
         request: Request<GetAesKeyRequest>,
     ) -> Result<Response<GetAesKeyReply>, Status> {
         info!("Got a request for `get_aes_key`: {:?}", request.get_ref());
-        let mut db = self.db_pool.get().await.unwrap();
-        let user = request.get_ref().clone().nickname.unwrap();
-        
-        let user_to = users
-        .filter(nickname.eq(user.nickname)) // filter(nickname.eq(user.nickname) and authkey.eq(user.authkey))
-        .select(User::as_select())
-        .load(&mut db)
-        .await
-        .unwrap();
+        let mut db: bb8::PooledConnection<'_, diesel_async::pooled_connection::AsyncDieselConnectionManager<diesel_async::AsyncPgConnection>> = self.db_pool.get().await.unwrap();
+        let user_for_check = request.get_ref().clone().nickname.unwrap();
 
-        if user_to.is_empty() {
+        let user = users
+            .filter(nickname.eq(user_for_check.nickname)) // filter(nickname.eq(user.nickname) and authkey.eq(user.authkey))
+            .select(User::as_select())
+            .load(&mut db)
+            .await
+            .unwrap();
+
+        if user.is_empty() {
             return Ok(Response::new(GetAesKeyReply {
                 is_successful: false,
-                info: vec![]
+                info: vec![],
             }));
-        } else if user_to[0].authkey == user.authkey {
+        } else if user[0].authkey != user_for_check.authkey {
             return Ok(Response::new(GetAesKeyReply {
                 is_successful: false,
-                info: vec![]
+                info: vec![],
             }));
         }
 
+        let keys = order_add_keys
+            .filter(user_to_id.eq(user[0].id))
+            .or_filter(user_from_id.eq(user[0].id))
+            .select(Key::as_select())
+            .load(&mut db)
+            .await
+            .unwrap();
 
+        let mut info = vec![];
+        for x in keys {
+            let user_to = &get_user_by_id(&mut db, x.user_to_id).await[0];
+            let user_from = &get_user_by_id(&mut db, x.user_from_id).await[0];
 
-        todo!()
+            info.push(AesKeyInfo {
+            id: x.id,
+            nickname_to: user_to.nickname.clone(),
+            nickname_from: user_from.nickname.clone(),
+            nickname_to_public_key: x.user_to_public_key,
+            nickname_from_public_key: x.user_from_public_key
+            });
+        }
+
+        return Ok(Response::new(GetAesKeyReply {
+            is_successful: true,
+            info
+        }));
     }
 
     async fn delete_aes_key(

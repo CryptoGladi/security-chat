@@ -3,8 +3,9 @@ pub(crate) mod crypto;
 pub mod error;
 
 use self::error::Error;
+use self::security_chat::Check;
 use crate::client::security_chat::{
-    CheckValidRequest, NicknameIsTakenRequest, RegistrationRequest,
+    CheckValidRequest, NicknameIsTakenRequest, RegistrationRequest, SendAesKeyRequest, GetAesKeyRequest, AesKeyInfo
 };
 use crypto::AES;
 use security_chat::security_chat_client::SecurityChatClient;
@@ -12,6 +13,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
+use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
 
 pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
 
@@ -81,6 +83,38 @@ impl Client {
 
         Ok(status.get_ref().is_successful)
     }
+
+    pub async fn send_aes_key(&mut self, nickname_form: &str) -> Result<EphemeralSecret, Error> {
+        let (secret, public_key) = crypto::ecdh::get_public_info()?;
+
+        let request = tonic::Request::new(SendAesKeyRequest {
+            nickname_to: Some(Check {
+                nickname: self.data.nickname.clone(),
+                authkey: self.data.auth_key.clone(),
+            }),
+            nickname_from: nickname_form.to_string(),
+            public_key: public_key.to_encoded_point(true).as_bytes().to_vec()
+        });
+
+        let status = self.api.send_aes_key(request).await?; // TODO
+        assert_eq!(status.get_ref().is_successful, true);
+
+        Ok(secret)
+    }
+
+    pub async fn get_aes_keys(&mut self) -> Result<Vec<AesKeyInfo>, Error> {
+        let request = tonic::Request::new(GetAesKeyRequest {
+            nickname: Some(Check {
+                nickname: self.data.nickname.clone(),
+                authkey: self.data.auth_key.clone(),
+            }),
+        });
+
+        let info = self.api.get_aes_key(request).await?;
+        assert_eq!(info.get_ref().is_successful, true);
+
+        Ok(info.get_ref().info.clone())
+    }
 }
 
 pub async fn nickname_is_taken(nickname: &str) -> Result<bool, Error> {
@@ -97,6 +131,19 @@ pub async fn nickname_is_taken(nickname: &str) -> Result<bool, Error> {
 mod tests {
     use super::*;
     use crate::test_utils;
+
+    #[tokio::test]
+    async fn send_and_get_aes_key() {
+        let mut client_to = Client::registration(&test_utils::get_rand_string()).await.unwrap();
+        let mut client_from = Client::registration(&test_utils::get_rand_string()).await.unwrap();
+        println!("client_to data: {:?}", client_to.data);
+        // TODO Добавить проверку на отправку на самого себя ключа
+
+        let secret = client_to.send_aes_key(&client_from.data.nickname).await.unwrap();
+        let keys = client_from.get_aes_keys().await.unwrap();
+
+        println!("keys: {:?}", keys);
+    }
 
     #[tokio::test]
     async fn registration() {

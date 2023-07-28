@@ -1566,6 +1566,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "high-level-client"
+version = "0.1.0"
+
+[[package]]
 name = "hkdf"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1750,27 +1754,6 @@ dependencies = [
  "color_quant",
  "num-rational",
  "num-traits",
-]
-
-[[package]]
-name = "impl-chat"
-version = "0.0.0"
-dependencies = [
- "aes-gcm",
- "criterion",
- "log",
- "p384",
- "prost",
- "prost-types",
- "rand 0.8.5",
- "rand_chacha 0.3.1",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tonic",
- "tonic-build",
- "uuid",
 ]
 
 [[package]]
@@ -2030,6 +2013,27 @@ dependencies = [
  "serde_json",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "lower-level"
+version = "0.0.0"
+dependencies = [
+ "aes-gcm",
+ "criterion",
+ "log",
+ "p384",
+ "prost",
+ "prost-types",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tonic",
+ "tonic-build",
+ "uuid",
 ]
 
 [[package]]
@@ -3038,9 +3042,9 @@ name = "security-chat"
 version = "0.0.0"
 dependencies = [
  "dirs",
- "impl-chat",
  "log",
  "log4rs",
+ "lower-level",
  "open 5.0.0",
  "serde",
  "serde_json",

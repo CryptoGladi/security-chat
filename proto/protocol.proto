@@ -58,7 +58,7 @@ message AESKeyInfo {
   string nickname_to = 2;
   string nickname_from = 3;
   bytes nickname_to_public_key = 4;
-  bytes nickname_from_public_key = 5;
+  optional bytes nickname_from_public_key = 5;
 }
 
 message GetAESKeyReply {

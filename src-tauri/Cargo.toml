@@ -8,7 +8,7 @@ repository = ""
 edition = "2021"
 
 [workspace]
-members = ["impl-chat"]
+members = ["lower-level", "high-level-client"]
 
 [workspace.dependencies]
 log = "0.4.19"
@@ -19,7 +19,7 @@ serde_json = "1.0"
 tauri = { version = "1.4", features = ["shell-open"] }
 serde.workspace = true
 serde_json.workspace = true
-impl-chat = { path = "impl-chat" }
+lower-level = { path = "lower-level" }
 open = "5.0.0"
 log.workspace = true
 log4rs = { version = "1.2.0", default-features = false, features = ["file_appender", "threshold_filter", "console_appender"] }

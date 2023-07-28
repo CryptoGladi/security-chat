@@ -1,6 +1,8 @@
 use super::{aes, common::get_rand, CryptoError};
 use log::info;
-use p384::{ecdh::EphemeralSecret, EncodedPoint, PublicKey};
+pub use p384::{EncodedPoint, PublicKey};
+pub use p384::ecdh::EphemeralSecret;
+pub use p384::elliptic_curve::sec1::ToEncodedPoint;
 
 pub struct SharedSecret(p384::ecdh::SharedSecret);
 
@@ -26,15 +28,12 @@ pub fn get_shared_secret(secret: &EphemeralSecret, public_key: &PublicKey) -> Sh
 
 #[cfg(test)]
 mod tests {
-    use p384::elliptic_curve::sec1::ToEncodedPoint;
-
     use super::*;
 
     #[test]
     fn ecdh() {
         let (alice_secret, alice_public_key) = get_public_info().unwrap();
         let (bob_secret, bob_public_key) = get_public_info().unwrap();
-        //alice_public_key.to_encoded_point(true).as_bytes();
         let alice_shared_secret = get_shared_secret(&alice_secret, &bob_public_key);
         let bob_shared_secret = get_shared_secret(&bob_secret, &alice_public_key);
 

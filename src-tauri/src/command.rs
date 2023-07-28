@@ -1,5 +1,5 @@
 use crate::path;
-use impl_chat::prelude::{client_save, Client};
+use lower_level::prelude::{client_save, Client};
 use log::{debug, error, info};
 
 pub trait KillUnwrap<T> {
@@ -34,7 +34,7 @@ pub async fn nickname_is_taken(nickname: String) -> bool {
         nickname
     );
 
-    let nickname_is_taken = impl_chat::client::nickname_is_taken(nickname)
+    let nickname_is_taken = lower_level::client::nickname_is_taken(nickname)
         .await
         .kill_unwrap();
     debug!("nickname_is_taken: {}", nickname_is_taken);

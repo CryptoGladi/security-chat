@@ -14,7 +14,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                         .collect::<String>()
                 },
                 |rand_string| async move {
-                    let _client = impl_chat::client::Client::registration(&rand_string)
+                    let _client = lower_level::client::Client::registration(&rand_string)
                         .await
                         .unwrap();
                 },
@@ -28,7 +28,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                 let test_nickname = "test_nickname";
                 let authkey = "d515004d-c283-4b38-abe7-3e7403addc93";
 
-                impl_chat::client::Client::check_valid(test_nickname, authkey)
+                lower_level::client::Client::check_valid(test_nickname, authkey)
                     .await
                     .unwrap()
             });
