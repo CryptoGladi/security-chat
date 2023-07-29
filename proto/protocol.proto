@@ -71,7 +71,28 @@ message DeleteAESKeyRequest {
   int64 id = 2;
 }
 
-message DeleteAESKeyReply { bool is_successful = 1; }
+message DeleteAESKeyReply {
+  bool is_successful = 1;
+}
+
+message SetUserFromAESKeyRequest {
+  Check nickname = 1;
+  int64 id = 2;
+  bytes public_key = 3;
+}
+
+message SetUserFromAESKeyReply {
+
+}
+
+message AcceptAESKeyRequest {
+  Check nickname = 1;
+  int64 id = 2;
+}
+
+message AcceptAESKeyReply {
+
+}
 
 service SecurityChat {
   rpc Registration(RegistrationRequest) returns (RegistrationReply);
@@ -83,6 +104,10 @@ service SecurityChat {
   rpc SendAESKey(SendAESKeyRequest) returns (SendAESKeyReply);
 
   rpc GetAESKey(GetAESKeyRequest) returns (GetAESKeyReply);
+
+  rpc SetUserFromAESKey(SetUserFromAESKeyRequest) returns (SetUserFromAESKeyReply);
+
+  rpc AcceptAESKey(AcceptAESKeyRequest) returns (AcceptAESKeyReply);
 
   rpc DeleteAESKey(DeleteAESKeyRequest) returns (DeleteAESKeyReply);
 }

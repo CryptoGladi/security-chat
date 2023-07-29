@@ -24,6 +24,8 @@ diesel::table! {
         user_from_id -> Int8,
         user_to_public_key -> Bytea,
         user_from_public_key -> Nullable<Bytea>,
+        user_to_accepted -> Bool,
+        user_from_accepted -> Bool,
     }
 }
 

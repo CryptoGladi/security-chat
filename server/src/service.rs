@@ -1,12 +1,13 @@
 use self::security_chat::{
-    CheckValidReply, CheckValidRequest, DeleteAesKeyReply, DeleteAesKeyRequest, GetAesKeyReply,
-    GetAesKeyRequest, NicknameIsTakenReply, NicknameIsTakenRequest, RegistrationReply,
-    SendAesKeyReply, SendAesKeyRequest, AesKeyInfo
+    AcceptAesKeyReply, AcceptAesKeyRequest, AesKeyInfo, CheckValidReply, CheckValidRequest,
+    DeleteAesKeyReply, DeleteAesKeyRequest, GetAesKeyReply, GetAesKeyRequest, NicknameIsTakenReply,
+    NicknameIsTakenRequest, RegistrationReply, SendAesKeyReply, SendAesKeyRequest,
+    SetUserFromAesKeyReply, SetUserFromAesKeyRequest,
 };
-use crate::database::{DbPool, get_user_by_id};
+use crate::database::{get_user_by_id, DbPool};
 use crate::models::*;
 use crate::schema::order_add_keys::dsl::*;
-use crate::schema::users::dsl::*;
+use crate::schema::users::dsl::{nickname, users};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use log::{error, info};
@@ -78,7 +79,7 @@ impl SecurityChat for SecurityChatService {
         request: Request<GetAesKeyRequest>,
     ) -> Result<Response<GetAesKeyReply>, Status> {
         info!("Got a request for `get_aes_key`: {:?}", request.get_ref());
-        let mut db: bb8::PooledConnection<'_, diesel_async::pooled_connection::AsyncDieselConnectionManager<diesel_async::AsyncPgConnection>> = self.db_pool.get().await.unwrap();
+        let mut db = self.db_pool.get().await.unwrap();
         let user_for_check = request.get_ref().clone().nickname.unwrap();
 
         let user = users
@@ -114,18 +115,81 @@ impl SecurityChat for SecurityChatService {
             let user_from = &get_user_by_id(&mut db, x.user_from_id).await[0];
 
             info.push(AesKeyInfo {
-            id: x.id,
-            nickname_to: user_to.nickname.clone(),
-            nickname_from: user_from.nickname.clone(),
-            nickname_to_public_key: x.user_to_public_key,
-            nickname_from_public_key: x.user_from_public_key
+                id: x.id,
+                nickname_to: user_to.nickname.clone(),
+                nickname_from: user_from.nickname.clone(),
+                nickname_to_public_key: x.user_to_public_key,
+                nickname_from_public_key: x.user_from_public_key,
             });
         }
 
         return Ok(Response::new(GetAesKeyReply {
             is_successful: true,
-            info
+            info,
         }));
+    }
+
+    async fn set_user_from_aes_key(
+        &self,
+        request: Request<SetUserFromAesKeyRequest>,
+    ) -> Result<Response<SetUserFromAesKeyReply>, Status> {
+        info!(
+            "Got a request for `set_user_from_aes_key`: {:?}",
+            request.get_ref()
+        );
+        let mut db = self.db_pool.get().await.unwrap();
+        let user_for_check = request.get_ref().clone().nickname.unwrap();
+
+        let user = users
+            .filter(nickname.eq(user_for_check.nickname)) // filter(nickname.eq(user.nickname) and authkey.eq(user.authkey))
+            .select(User::as_select())
+            .load(&mut db)
+            .await
+            .unwrap();
+
+        if user.is_empty() {
+            return Ok(Response::new(SetUserFromAesKeyReply {}));
+        } else if user[0].authkey != user_for_check.authkey {
+            return Ok(Response::new(SetUserFromAesKeyReply {}));
+        }
+
+        diesel::update(order_add_keys)
+            .filter(id.eq(request.get_ref().id.clone()))
+            .set((
+                user_from_accepted.eq(true),
+                user_from_public_key.eq(request.get_ref().public_key.clone()),
+            ))
+            .execute(&mut db);
+
+        Ok(Response::new(SetUserFromAesKeyReply {}))
+    }
+
+    async fn accept_aes_key(
+        &self,
+        request: Request<AcceptAesKeyRequest>,
+    ) -> Result<Response<AcceptAesKeyReply>, Status> {
+        info!(
+            "Got a request for `accept_aes_key`: {:?}",
+            request.get_ref()
+        );
+        let mut db = self.db_pool.get().await.unwrap();
+        let user_for_check = request.get_ref().clone().nickname.unwrap();
+
+        let user = users
+            .filter(nickname.eq(user_for_check.nickname)) // filter(nickname.eq(user.nickname) and authkey.eq(user.authkey))
+            .select(User::as_select())
+            .load(&mut db)
+            .await
+            .unwrap();
+
+        if user.is_empty() {
+            return Ok(Response::new(AcceptAesKeyReply {}));
+        } else if user[0].authkey != user_for_check.authkey {
+            return Ok(Response::new(AcceptAesKeyReply {}));
+        }
+
+        diesel::delete(order_add_keys.filter(id.eq(request.get_ref().id))).execute(&mut db).await.unwrap();
+        Ok(Response::new(AcceptAesKeyReply {}))
     }
 
     async fn delete_aes_key(
@@ -137,7 +201,7 @@ impl SecurityChat for SecurityChatService {
             request.get_ref()
         );
         let mut db = self.db_pool.get().await.unwrap();
-
+        // TODO НУЖНО ЛИ ЭТО?
         todo!()
     }
 

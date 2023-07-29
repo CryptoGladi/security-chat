@@ -16,7 +16,7 @@ pub struct NewUser<'a> {
     pub authkey: &'a str,
 }
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Clone)]
 #[diesel(table_name = crate::schema::order_add_keys)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Key {
@@ -25,6 +25,8 @@ pub struct Key {
     pub user_from_id: i64,
     pub user_to_public_key: Vec<u8>,
     pub user_from_public_key: Option<Vec<u8>>,
+    pub user_to_accepted: bool,
+    pub user_from_accepted: bool,
 }
 
 #[derive(Insertable)]
