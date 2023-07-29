@@ -5,7 +5,7 @@ pub mod error;
 use self::error::Error;
 use self::security_chat::Check;
 use crate::client::security_chat::{
-    CheckValidRequest, NicknameIsTakenRequest, RegistrationRequest, SendAesKeyRequest, GetAesKeyRequest, AesKeyInfo
+    CheckValidRequest, NicknameIsTakenRequest, RegistrationRequest, SendAesKeyRequest, GetAesKeyRequest, AesKeyInfo, SetUserFromAesKeyRequest
 };
 use crypto::AES;
 use security_chat::security_chat_client::SecurityChatClient;
@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
-use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
+use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint, PublicKey};
 
 pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
 
@@ -115,6 +115,22 @@ impl Client {
 
         Ok(info.get_ref().info.clone())
     }
+
+    pub async fn set_aes_key(&mut self, key_info: &AesKeyInfo) -> Result<EphemeralSecret, Error> {
+        let (secret, public_key) = crypto::ecdh::get_public_info()?;
+        let request = tonic::Request::new(SetUserFromAesKeyRequest {
+            nickname: Some(Check {
+                nickname: self.data.nickname.clone(),
+                authkey: self.data.auth_key.clone(),
+            }),
+            id: key_info.id,
+            public_key: public_key.to_encoded_point(true).as_bytes().to_vec()
+        });
+
+        let ii = self.api.set_user_from_aes_key(request).await.unwrap(); // TODO
+
+        Ok(secret)
+    }
 }
 
 pub async fn nickname_is_taken(nickname: &str) -> Result<bool, Error> {
@@ -139,10 +155,21 @@ mod tests {
         println!("client_to data: {:?}", client_to.data);
         // TODO Добавить проверку на отправку на самого себя ключа
 
-        let secret = client_to.send_aes_key(&client_from.data.nickname).await.unwrap();
+        let secret_to = client_to.send_aes_key(&client_from.data.nickname).await.unwrap();
         let keys = client_from.get_aes_keys().await.unwrap();
 
         println!("keys: {:?}", keys);
+
+        let secter_from = client_from.set_aes_key(&keys[0]).await.unwrap();
+        let new_keys = client_from.get_aes_keys().await.unwrap();
+        println!("new_keys: {:?}", new_keys);
+
+        let public_from = PublicKey::from_sec1_bytes(&new_keys[0].nickname_from_public_key.clone().unwrap()[..]).unwrap();
+        let public_to = PublicKey::from_sec1_bytes(&new_keys[0].nickname_to_public_key.clone()[..]).unwrap();
+        let sect = crypto::ecdh::get_shared_secret(&secret_to, &public_from);
+        let sss = crypto::ecdh::get_shared_secret(&secter_from, &public_to);
+
+        assert_eq!(sect.0.raw_secret_bytes(), sss.0.raw_secret_bytes());
     }
 
     #[tokio::test]

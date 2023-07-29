@@ -4,7 +4,7 @@ pub use p384::{EncodedPoint, PublicKey};
 pub use p384::ecdh::EphemeralSecret;
 pub use p384::elliptic_curve::sec1::ToEncodedPoint;
 
-pub struct SharedSecret(p384::ecdh::SharedSecret);
+pub struct SharedSecret(pub p384::ecdh::SharedSecret);
 
 impl SharedSecret {
     pub fn get_key_for_aes_256(&self) -> &[u8] {

@@ -159,7 +159,7 @@ impl SecurityChat for SecurityChatService {
                 user_from_accepted.eq(true),
                 user_from_public_key.eq(request.get_ref().public_key.clone()),
             ))
-            .execute(&mut db);
+            .execute(&mut db).await.unwrap();
 
         Ok(Response::new(SetUserFromAesKeyReply {}))
     }
@@ -201,8 +201,24 @@ impl SecurityChat for SecurityChatService {
             request.get_ref()
         );
         let mut db = self.db_pool.get().await.unwrap();
-        // TODO НУЖНО ЛИ ЭТО?
-        todo!()
+        let user_for_check = request.get_ref().clone().nickname.unwrap();
+
+        let user = users
+            .filter(nickname.eq(user_for_check.nickname)) // filter(nickname.eq(user.nickname) and authkey.eq(user.authkey))
+            .select(User::as_select())
+            .load(&mut db)
+            .await
+            .unwrap();
+
+            if user.is_empty() {
+                return Ok(Response::new(DeleteAesKeyReply {}));
+            } else if user[0].authkey != user_for_check.authkey {
+                return Ok(Response::new(DeleteAesKeyReply {}));
+            }
+
+            diesel::delete(order_add_keys.filter(id.eq(request.get_ref().id))).execute(&mut db).await.unwrap();
+
+        Ok(Response::new(DeleteAesKeyReply {  }))
     }
 
     async fn check_valid(
