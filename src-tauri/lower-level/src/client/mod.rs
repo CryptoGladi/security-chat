@@ -1,19 +1,19 @@
-pub mod config;
 pub(crate) mod crypto;
 pub mod error;
 
 use self::error::Error;
 use self::security_chat::Check;
+use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
 use crate::client::security_chat::{
-    CheckValidRequest, NicknameIsTakenRequest, RegistrationRequest, SendAesKeyRequest, GetAesKeyRequest, AesKeyInfo, SetUserFromAesKeyRequest
+    AesKeyInfo, CheckValidRequest, GetAesKeyRequest, NicknameIsTakenRequest, RegistrationRequest,
+    SendAesKeyRequest, SetUserFromAesKeyRequest,
 };
-use crypto::AES;
+use crypto::Aes;
 use security_chat::security_chat_client::SecurityChatClient;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
-use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint, PublicKey};
 
 pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
 
@@ -24,7 +24,7 @@ pub mod security_chat {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ClientData {
-    pub cryptos_strorage: HashMap<String, AES>,
+    pub cryptos_strorage: HashMap<String, Aes>,
     pub nickname: String,
     pub auth_key: String,
 }
@@ -57,19 +57,14 @@ impl Client {
 
         let status = api.registration(request).await?;
 
-        // TODO
-        if !status.get_ref().authkey.is_empty() {
-            Ok(Self {
-                data: ClientData {
-                    cryptos_strorage: HashMap::default(),
-                    nickname: nickname.to_string(),
-                    auth_key: status.get_ref().authkey.clone(),
-                },
-                api,
-            })
-        } else {
-            Err(Error::NicknameIsTaken)
-        }
+        Ok(Self {
+            data: ClientData {
+                cryptos_strorage: HashMap::default(),
+                nickname: nickname.to_string(),
+                auth_key: status.get_ref().authkey.clone(),
+            },
+            api,
+        })
     }
 
     pub async fn check_valid(nickname: &str, authkey: &str) -> Result<bool, Error> {
@@ -79,12 +74,12 @@ impl Client {
             authkey: authkey.to_string(),
         });
 
-        let status = api.check_valid(request).await?;
-
-        Ok(status.get_ref().is_successful)
+        let response = api.check_valid(request).await?;
+        Ok(response.get_ref().is_valid)
     }
 
     pub async fn send_aes_key(&mut self, nickname_form: &str) -> Result<EphemeralSecret, Error> {
+        assert_ne!(nickname_form, self.data.nickname, "ТЫ СОВСЕМ ЕБНУТЫЙ!?");
         let (secret, public_key) = crypto::ecdh::get_public_info()?;
 
         let request = tonic::Request::new(SendAesKeyRequest {
@@ -93,11 +88,10 @@ impl Client {
                 authkey: self.data.auth_key.clone(),
             }),
             nickname_from: nickname_form.to_string(),
-            public_key: public_key.to_encoded_point(true).as_bytes().to_vec()
+            public_key: public_key.to_encoded_point(true).as_bytes().to_vec(),
         });
 
-        let status = self.api.send_aes_key(request).await?; // TODO
-        assert_eq!(status.get_ref().is_successful, true);
+        self.api.send_aes_key(request).await?;
 
         Ok(secret)
     }
@@ -111,8 +105,6 @@ impl Client {
         });
 
         let info = self.api.get_aes_key(request).await?;
-        assert_eq!(info.get_ref().is_successful, true);
-
         Ok(info.get_ref().info.clone())
     }
 
@@ -124,11 +116,10 @@ impl Client {
                 authkey: self.data.auth_key.clone(),
             }),
             id: key_info.id,
-            public_key: public_key.to_encoded_point(true).as_bytes().to_vec()
+            public_key: public_key.to_encoded_point(true).as_bytes().to_vec(),
         });
 
-        let ii = self.api.set_user_from_aes_key(request).await.unwrap(); // TODO
-
+        self.api.set_user_from_aes_key(request).await.unwrap();
         Ok(secret)
     }
 }
@@ -146,16 +137,23 @@ pub async fn nickname_is_taken(nickname: &str) -> Result<bool, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::client::crypto::ecdh::PublicKey;
     use crate::test_utils;
 
     #[tokio::test]
     async fn send_and_get_aes_key() {
-        let mut client_to = Client::registration(&test_utils::get_rand_string()).await.unwrap();
-        let mut client_from = Client::registration(&test_utils::get_rand_string()).await.unwrap();
+        let mut client_to = Client::registration(&test_utils::get_rand_string())
+            .await
+            .unwrap();
+        let mut client_from = Client::registration(&test_utils::get_rand_string())
+            .await
+            .unwrap();
         println!("client_to data: {:?}", client_to.data);
-        // TODO Добавить проверку на отправку на самого себя ключа
 
-        let secret_to = client_to.send_aes_key(&client_from.data.nickname).await.unwrap();
+        let secret_to = client_to
+            .send_aes_key(&client_from.data.nickname)
+            .await
+            .unwrap();
         let keys = client_from.get_aes_keys().await.unwrap();
 
         println!("keys: {:?}", keys);
@@ -164,8 +162,11 @@ mod tests {
         let new_keys = client_from.get_aes_keys().await.unwrap();
         println!("new_keys: {:?}", new_keys);
 
-        let public_from = PublicKey::from_sec1_bytes(&new_keys[0].nickname_from_public_key.clone().unwrap()[..]).unwrap();
-        let public_to = PublicKey::from_sec1_bytes(&new_keys[0].nickname_to_public_key.clone()[..]).unwrap();
+        let public_from =
+            PublicKey::from_sec1_bytes(&new_keys[0].nickname_from_public_key.clone().unwrap()[..])
+                .unwrap();
+        let public_to =
+            PublicKey::from_sec1_bytes(&new_keys[0].nickname_to_public_key.clone()[..]).unwrap();
         let sect = crypto::ecdh::get_shared_secret(&secret_to, &public_from);
         let sss = crypto::ecdh::get_shared_secret(&secter_from, &public_to);
 
@@ -188,8 +189,9 @@ mod tests {
 
         assert_eq!(result, false);
 
-        let client = Client::registration(&nickname).await.unwrap();
+        let _client = Client::registration(&nickname).await.unwrap();
         let result = super::nickname_is_taken(&nickname).await.unwrap();
+
         assert_eq!(result, true);
     }
 

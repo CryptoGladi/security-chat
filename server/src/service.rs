@@ -1,9 +1,4 @@
-use self::security_chat::{
-    AcceptAesKeyReply, AcceptAesKeyRequest, AesKeyInfo, CheckValidReply, CheckValidRequest,
-    DeleteAesKeyReply, DeleteAesKeyRequest, GetAesKeyReply, GetAesKeyRequest, NicknameIsTakenReply,
-    NicknameIsTakenRequest, RegistrationReply, SendAesKeyReply, SendAesKeyRequest,
-    SetUserFromAesKeyReply, SetUserFromAesKeyRequest,
-};
+use security_chat::*;
 use crate::database::{get_user_by_id, DbPool};
 use crate::models::*;
 use crate::schema::order_add_keys::dsl::*;
@@ -12,8 +7,9 @@ use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use log::{error, info};
 use security_chat::security_chat_server::SecurityChat;
-use security_chat::{RegistrationRequest, Status as ProtocolStatus};
 use tonic::{Request, Response, Status};
+
+// TODO Изменить все unwrap на tonic::Status!
 
 #[allow(non_snake_case)]
 pub mod security_chat {
@@ -29,7 +25,7 @@ impl SecurityChat for SecurityChatService {
     async fn send_aes_key(
         &self,
         request: Request<SendAesKeyRequest>,
-    ) -> Result<Response<SendAesKeyReply>, Status> {
+    ) -> Result<Response<()>, Status> {
         info!("Got a request for `send_aes_key`: {:?}", request.get_ref());
         let mut db = self.db_pool.get().await.unwrap();
         let nickname_for_check = request.get_ref().clone().nickname_to.unwrap().nickname;
@@ -49,13 +45,9 @@ impl SecurityChat for SecurityChatService {
             .unwrap();
 
         if user_to.is_empty() || user_from.is_empty() {
-            return Ok(Response::new(SendAesKeyReply {
-                is_successful: false,
-            }));
+            return Err(tonic::Status::not_found("user not found"));
         } else if user_to[0].authkey != authkey_for_check {
-            return Ok(Response::new(SendAesKeyReply {
-                is_successful: false,
-            }));
+            return Err(tonic::Status::not_found("authkey is invalid"));
         }
 
         let new_aes_key = NewKey {
@@ -69,9 +61,7 @@ impl SecurityChat for SecurityChatService {
             .await
             .unwrap();
 
-        return Ok(Response::new(SendAesKeyReply {
-            is_successful: true,
-        }));
+            Ok(Response::new(()))
     }
 
     async fn get_aes_key(
@@ -90,15 +80,9 @@ impl SecurityChat for SecurityChatService {
             .unwrap();
 
         if user.is_empty() {
-            return Ok(Response::new(GetAesKeyReply {
-                is_successful: false,
-                info: vec![],
-            }));
+            return Err(tonic::Status::not_found("user not found"));
         } else if user[0].authkey != user_for_check.authkey {
-            return Ok(Response::new(GetAesKeyReply {
-                is_successful: false,
-                info: vec![],
-            }));
+            return Err(tonic::Status::not_found("authkey is invalid"));
         }
 
         let keys = order_add_keys
@@ -124,7 +108,6 @@ impl SecurityChat for SecurityChatService {
         }
 
         return Ok(Response::new(GetAesKeyReply {
-            is_successful: true,
             info,
         }));
     }
@@ -132,7 +115,7 @@ impl SecurityChat for SecurityChatService {
     async fn set_user_from_aes_key(
         &self,
         request: Request<SetUserFromAesKeyRequest>,
-    ) -> Result<Response<SetUserFromAesKeyReply>, Status> {
+    ) -> Result<Response<()>, Status> {
         info!(
             "Got a request for `set_user_from_aes_key`: {:?}",
             request.get_ref()
@@ -148,9 +131,9 @@ impl SecurityChat for SecurityChatService {
             .unwrap();
 
         if user.is_empty() {
-            return Ok(Response::new(SetUserFromAesKeyReply {}));
+            return Err(tonic::Status::not_found("user not found"));
         } else if user[0].authkey != user_for_check.authkey {
-            return Ok(Response::new(SetUserFromAesKeyReply {}));
+            return Err(tonic::Status::not_found("authkey is invalid"));
         }
 
         diesel::update(order_add_keys)
@@ -161,13 +144,13 @@ impl SecurityChat for SecurityChatService {
             ))
             .execute(&mut db).await.unwrap();
 
-        Ok(Response::new(SetUserFromAesKeyReply {}))
+        Ok(Response::new(()))
     }
 
     async fn accept_aes_key(
         &self,
         request: Request<AcceptAesKeyRequest>,
-    ) -> Result<Response<AcceptAesKeyReply>, Status> {
+    ) -> Result<Response<()>, Status> {
         info!(
             "Got a request for `accept_aes_key`: {:?}",
             request.get_ref()
@@ -183,19 +166,19 @@ impl SecurityChat for SecurityChatService {
             .unwrap();
 
         if user.is_empty() {
-            return Ok(Response::new(AcceptAesKeyReply {}));
+            return Err(tonic::Status::not_found("user not found"));
         } else if user[0].authkey != user_for_check.authkey {
-            return Ok(Response::new(AcceptAesKeyReply {}));
+            return Err(tonic::Status::not_found("authkey is invalid"));
         }
 
         diesel::delete(order_add_keys.filter(id.eq(request.get_ref().id))).execute(&mut db).await.unwrap();
-        Ok(Response::new(AcceptAesKeyReply {}))
+        Ok(Response::new(()))
     }
 
     async fn delete_aes_key(
         &self,
         request: Request<DeleteAesKeyRequest>,
-    ) -> Result<Response<DeleteAesKeyReply>, Status> {
+    ) -> Result<Response<()>, Status> {
         info!(
             "Got a request for `delete_aes_key`: {:?}",
             request.get_ref()
@@ -211,14 +194,14 @@ impl SecurityChat for SecurityChatService {
             .unwrap();
 
             if user.is_empty() {
-                return Ok(Response::new(DeleteAesKeyReply {}));
+                return Err(tonic::Status::not_found("user not found"));
             } else if user[0].authkey != user_for_check.authkey {
-                return Ok(Response::new(DeleteAesKeyReply {}));
+                return Err(tonic::Status::not_found("authkey is invalid"));
             }
 
             diesel::delete(order_add_keys.filter(id.eq(request.get_ref().id))).execute(&mut db).await.unwrap();
 
-        Ok(Response::new(DeleteAesKeyReply {  }))
+        Ok(Response::new(()))
     }
 
     async fn check_valid(
@@ -228,24 +211,19 @@ impl SecurityChat for SecurityChatService {
         info!("Got a request for `check_valid`: {:?}", request.get_ref());
         let mut db = self.db_pool.get().await.unwrap();
 
-        let Ok(user) = users
+        let user = users
             .filter(nickname.eq(request.get_ref().nickname.clone()))
             .select(User::as_select())
-            .load(&mut db).await
-            else {
-                return Ok(Response::new(CheckValidReply {
-                    is_successful: false
-                }));
-        };
+            .load(&mut db).await.unwrap();
 
         if user.is_empty() {
             return Ok(Response::new(CheckValidReply {
-                is_successful: false,
+                is_valid: false,
             }));
         }
 
         Ok(Response::new(CheckValidReply {
-            is_successful: user[0].authkey == request.get_ref().authkey,
+            is_valid: user[0].authkey == request.get_ref().authkey,
         }))
     }
 
@@ -262,14 +240,11 @@ impl SecurityChat for SecurityChatService {
             authkey: &uuid_authkey,
         };
 
-        let Ok(_) = diesel::insert_into(users)
+        diesel::insert_into(users)
         .values(&new_user)
-        .execute(&mut db).await else {
-            return  Ok(Response::new(RegistrationReply { status: Some(ProtocolStatus::default()), authkey: "".to_string() } )); // TODO
-        };
+        .execute(&mut db).await.unwrap();
 
         Ok(Response::new(RegistrationReply {
-            status: Some(ProtocolStatus::default()),
             authkey: uuid_authkey,
         }))
     }

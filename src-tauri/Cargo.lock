@@ -1569,8 +1569,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
-name = "high-level-client"
-version = "0.1.0"
+name = "high-level"
+version = "0.0.0"
+dependencies = [
+ "log",
+ "lower-level",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
 
 [[package]]
 name = "hkdf"
@@ -2020,7 +2027,6 @@ dependencies = [
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "serde",
- "serde_json",
  "thiserror",
  "tokio",
  "tonic",
@@ -3033,6 +3039,7 @@ name = "security-chat"
 version = "0.0.0"
 dependencies = [
  "dirs",
+ "high-level",
  "log",
  "log4rs",
  "lower-level",

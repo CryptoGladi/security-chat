@@ -1,3 +1,4 @@
+use super::ecdh::SharedSecret;
 use crate::client::crypto::{common::get_rand, CryptoError};
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, Nonce},
@@ -5,12 +6,11 @@ use aes_gcm::{
 };
 use log::info;
 use serde::{Deserialize, Serialize};
-use super::ecdh::SharedSecret;
 
 pub const SIZE_KEY: usize = 256 / 8; // = 32
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct AES {
+pub struct Aes {
     key: [u8; SIZE_KEY],
 }
 
@@ -20,7 +20,7 @@ pub struct EncryptedMessage {
     nonce: Nonce<Aes256Gcm>,
 }
 
-impl AES {
+impl Aes {
     pub fn generate() -> Self {
         info!("generating key...");
         let key_array = Aes256Gcm::generate_key(get_rand());
@@ -41,7 +41,7 @@ impl AES {
         let cipher = Aes256Gcm::new(key);
         let nonce = Aes256Gcm::generate_nonce(&mut get_rand());
 
-        let data = cipher.encrypt(&nonce, message).map_err(CryptoError::AES)?;
+        let data = cipher.encrypt(&nonce, message).map_err(CryptoError::Aes)?;
 
         Ok(EncryptedMessage { data, nonce })
     }
@@ -53,7 +53,7 @@ impl AES {
 
         let data = cipher
             .decrypt(&message.nonce, message.data.as_ref())
-            .map_err(CryptoError::AES)?;
+            .map_err(CryptoError::Aes)?;
 
         Ok(data)
     }
@@ -68,7 +68,7 @@ mod tests {
     fn with_generate() {
         const MESSAGE_FOR_CRYPTO: &[u8] = b"test message";
 
-        let crypto = AES::generate();
+        let crypto = Aes::generate();
         let encrypted_message = crypto.encrypt(MESSAGE_FOR_CRYPTO).unwrap();
         let decrypted_message = crypto.decrypt(&encrypted_message).unwrap();
 
@@ -91,7 +91,7 @@ mod tests {
 
         let shared_secret = get_shared_secret(&alice_secret, &bob_public_key);
 
-        let crypto = AES::with_shared_key(shared_secret);
+        let crypto = Aes::with_shared_key(shared_secret);
         let encrypted_message = crypto.encrypt(MESSAGE_FOR_CRYPTO).unwrap();
         let decrypted_message = crypto.decrypt(&encrypted_message).unwrap();
 

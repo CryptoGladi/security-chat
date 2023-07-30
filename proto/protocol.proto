@@ -1,24 +1,8 @@
 syntax = "proto3";
 
-import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
 
 package security_chat;
-
-message Status {
-  // The status code, which should be an enum value of
-  // [google.rpc.Code][google.rpc.Code].
-  int32 code = 1;
-
-  // A developer-facing error message, which should be in English. Any
-  // user-facing error message should be localized and sent in the
-  // [google.rpc.Status.details][google.rpc.Status.details] field, or localized
-  // by the client.
-  string message = 2;
-
-  // A list of messages that carry the error details.  There is a common set of
-  // message types for APIs to use.
-  repeated google.protobuf.Any details = 3;
-}
 
 message Check {
   string nickname = 1;
@@ -29,7 +13,6 @@ message RegistrationRequest { string nickname = 1; }
 
 message RegistrationReply {
   string authkey = 1;
-  Status status = 2;
 }
 
 message NicknameIsTakenRequest { string nickname = 1; }
@@ -41,15 +24,11 @@ message CheckValidRequest {
   string authkey = 2;
 }
 
-message CheckValidReply { bool is_successful = 1; }
-
 message SendAESKeyRequest {
   Check nickname_to = 1;
   string nickname_from = 3;
   bytes public_key = 4;
 }
-
-message SendAESKeyReply { bool is_successful = 1; }
 
 message GetAESKeyRequest { Check nickname = 1; }
 
@@ -63,7 +42,6 @@ message AESKeyInfo {
 
 message GetAESKeyReply {
   repeated AESKeyInfo info = 1;
-  bool is_successful = 2;
 }
 
 message DeleteAESKeyRequest {
@@ -71,22 +49,20 @@ message DeleteAESKeyRequest {
   int64 id = 2;
 }
 
-message DeleteAESKeyReply {}
-
 message SetUserFromAESKeyRequest {
   Check nickname = 1;
   int64 id = 2;
   bytes public_key = 3;
 }
 
-message SetUserFromAESKeyReply {}
-
 message AcceptAESKeyRequest {
   Check nickname = 1;
   int64 id = 2;
 }
 
-message AcceptAESKeyReply {}
+message CheckValidReply {
+  bool is_valid = 1;
+}
 
 service SecurityChat {
   rpc Registration(RegistrationRequest) returns (RegistrationReply);
@@ -95,14 +71,14 @@ service SecurityChat {
 
   rpc NicknameIsTaken(NicknameIsTakenRequest) returns (NicknameIsTakenReply);
 
-  rpc SendAESKey(SendAESKeyRequest) returns (SendAESKeyReply);
+  rpc SendAESKey(SendAESKeyRequest) returns (google.protobuf.Empty);
 
   rpc GetAESKey(GetAESKeyRequest) returns (GetAESKeyReply);
 
   rpc SetUserFromAESKey(SetUserFromAESKeyRequest)
-      returns (SetUserFromAESKeyReply);
+      returns (google.protobuf.Empty);
 
-  rpc AcceptAESKey(AcceptAESKeyRequest) returns (AcceptAESKeyReply);
+  rpc AcceptAESKey(AcceptAESKeyRequest) returns (google.protobuf.Empty);
 
-  rpc DeleteAESKey(DeleteAESKeyRequest) returns (DeleteAESKeyReply);
+  rpc DeleteAESKey(DeleteAESKeyRequest) returns (google.protobuf.Empty);
 }

@@ -1,8 +1,8 @@
 use super::{aes, common::get_rand, CryptoError};
 use log::info;
-pub use p384::{EncodedPoint, PublicKey};
-pub use p384::ecdh::EphemeralSecret;
+pub use p384::ecdh::{EphemeralSecret, SharedSecret as RawSharedSecter};
 pub use p384::elliptic_curve::sec1::ToEncodedPoint;
+pub use p384::{EncodedPoint, PublicKey};
 
 pub struct SharedSecret(pub p384::ecdh::SharedSecret);
 
@@ -16,7 +16,7 @@ pub fn get_public_info() -> Result<(EphemeralSecret, PublicKey), CryptoError> {
     info!("run get_public_info");
     let secret = EphemeralSecret::random(&mut get_rand());
     let private_key = EncodedPoint::from(secret.public_key());
-    let public_key = PublicKey::from_sec1_bytes(private_key.as_ref()).map_err(CryptoError::ECDH)?;
+    let public_key = PublicKey::from_sec1_bytes(private_key.as_ref()).map_err(CryptoError::Ecdh)?;
 
     Ok((secret, public_key))
 }
