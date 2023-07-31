@@ -1,4 +1,5 @@
-use lower_level::client::ClientData;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::marker::PhantomData;
 use std::{
     fs::OpenOptions,
     io::{BufReader, Write},
@@ -15,20 +16,26 @@ pub enum Error {
     Serde(serde_json::Error),
 }
 
-pub struct Config
+pub struct Config<'a, T>
+where
+    T: Serialize + Deserialize<'a>,
 {
     path: PathBuf,
+    phantom: PhantomData<&'a T>,
 }
 
-impl Config
+impl<'b, T> Config<'b, T>
+where
+    T: Serialize + DeserializeOwned,
 {
     pub fn new(path: impl AsRef<Path>) -> Self {
         Self {
-            path: path.as_ref().to_path_buf()
+            path: path.as_ref().to_path_buf(),
+            phantom: PhantomData,
         }
     }
 
-    pub fn save(&self, data: &ClientData) -> Result<(), Error> {
+    pub fn save(&self, data: &T) -> Result<(), Error> {
         let mut file = OpenOptions::new()
             .write(true)
             .create(true)
@@ -45,7 +52,7 @@ impl Config
     /// Загрузить [`ClientData`]
     ///
     /// **Загрузить можно только если файл существует!**
-    pub fn load(&self) -> Result<ClientData, Error> {
+    pub fn load(&self) -> Result<T, Error> {
         let file = OpenOptions::new()
             .read(true)
             .open(self.path.clone())

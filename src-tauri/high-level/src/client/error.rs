@@ -9,5 +9,5 @@ pub enum Error {
     Config(#[from] crate::config::Error),
 
     #[error("account is invalid")]
-    AccoutIsInvalid
+    AccoutIsInvalid,
 }

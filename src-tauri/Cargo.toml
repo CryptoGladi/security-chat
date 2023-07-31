@@ -21,7 +21,6 @@ http = "0.2.9"
 tauri = { version = "1.4", features = ["shell-open"] }
 serde.workspace = true
 serde_json.workspace = true
-lower-level = { path = "lower-level" }
 high-level = { path = "high-level" }
 open = "5.0.0"
 log.workspace = true

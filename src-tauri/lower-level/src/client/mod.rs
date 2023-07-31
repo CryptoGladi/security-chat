@@ -1,4 +1,4 @@
-pub(crate) mod crypto;
+pub mod crypto;
 pub mod error;
 
 use self::error::Error;
@@ -9,10 +9,8 @@ use crate::client::security_chat::{
     SendAesKeyRequest, SetUserFromAesKeyRequest,
 };
 use crate::utils::MustBool;
-use crypto::Aes;
 use security_chat::security_chat_client::SecurityChatClient;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
 use http::uri::Uri;
@@ -24,7 +22,6 @@ pub mod security_chat {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ClientData {
-    pub cryptos_strorage: HashMap<String, Aes>,
     pub nickname: String,
     pub auth_key: String,
 }
@@ -59,7 +56,6 @@ impl Client {
 
         Ok(Self {
             data: ClientData {
-                cryptos_strorage: HashMap::default(),
                 nickname: nickname.to_string(),
                 auth_key: status.get_ref().authkey.clone(),
             },
