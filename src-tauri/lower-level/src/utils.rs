@@ -6,7 +6,7 @@ pub struct MustUseVariable<T>{
 
 impl<T> MustUseVariable<T> {
     pub fn new(value: T) -> Self {
-        Self { value: value }
+        Self { value }
     }
 }
 

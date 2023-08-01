@@ -1,5 +1,5 @@
+pub mod bincode_config;
 pub mod client;
-pub mod json_config;
 pub mod prelude;
 
 #[cfg(test)]

@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 pub const SIZE_KEY: usize = 256 / 8; // = 32
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize, Clone, Copy)]
 pub struct Aes {
     key: [u8; SIZE_KEY],
 }

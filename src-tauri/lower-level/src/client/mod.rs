@@ -20,7 +20,7 @@ pub mod security_chat {
     tonic::include_proto!("security_chat");
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct ClientData {
     pub nickname: String,
     pub auth_key: String,
@@ -62,7 +62,6 @@ impl Client {
         })
     }
 
-    #[must_use]
     pub async fn check_valid(nickname: &str, authkey: &str, address: Uri) -> Result<MustBool, Error> {
         let mut api = Client::api_connect(address).await?;
         let request = tonic::Request::new(CheckValidRequest {
