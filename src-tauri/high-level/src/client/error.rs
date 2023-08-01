@@ -6,8 +6,11 @@ pub enum Error {
     Client(#[from] lower_level::client::error::Error),
 
     #[error("from config: {0}")]
-    Config(#[from] crate::config::Error),
+    Config(#[from] crate::json_config::Error),
 
     #[error("account is invalid")]
     AccoutIsInvalid,
+
+    #[error("nickname is same")]
+    NicknameSame,
 }

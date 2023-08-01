@@ -3,14 +3,22 @@ use lower_level::client::crypto::Aes;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Username(pub String);
+pub struct Nickname(pub String);
 
-#[derive(Debug, Default, Serialize, Deserialize)]
-pub struct Usernames {
-    aes: HashMap<Username, Aes>,
+impl std::ops::Deref for Nickname {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
 
-impl Username {
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct Nicknames {
+    aes: HashMap<Nickname, Aes>,
+}
+
+impl Nickname {
     pub fn get_user() -> Self {
         todo!()
     }

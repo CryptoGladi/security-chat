@@ -1607,8 +1607,10 @@ dependencies = [
  "http",
  "log",
  "lower-level",
+ "rand 0.8.5",
  "serde",
  "serde_json",
+ "temp-dir",
  "thiserror",
  "tokio",
 ]
@@ -3683,6 +3685,12 @@ dependencies = [
  "embed-resource",
  "toml 0.7.6",
 ]
+
+[[package]]
+name = "temp-dir"
+version = "0.1.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af547b166dd1ea4b472165569fc456cfb6818116f854690b0ff205e636523dab"
 
 [[package]]
 name = "tempfile"

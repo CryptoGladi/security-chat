@@ -16,7 +16,7 @@ pub enum Error {
     Serde(serde_json::Error),
 }
 
-pub struct Config<'a, T>
+pub struct JsonConfig<'a, T>
 where
     T: Serialize + Deserialize<'a>,
 {
@@ -24,7 +24,7 @@ where
     phantom: PhantomData<&'a T>,
 }
 
-impl<'b, T> Config<'b, T>
+impl<'b, T> JsonConfig<'b, T>
 where
     T: Serialize + DeserializeOwned,
 {

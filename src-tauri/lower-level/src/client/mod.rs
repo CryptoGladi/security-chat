@@ -36,8 +36,7 @@ impl Client {
     pub async fn api_connect(address: Uri) -> Result<SecurityChatClient<Channel>, Error> {
         let channel = Channel::builder(address)
             .connect()
-            .await
-            .unwrap();
+            .await?;
 
         let api = SecurityChatClient::new(channel)
             .send_compressed(CompressionEncoding::Gzip)
