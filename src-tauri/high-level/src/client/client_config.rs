@@ -1,12 +1,13 @@
 use std::path::{PathBuf, Path};
 
-pub struct ClientConfig {
+#[derive(Debug, Clone)]
+pub struct ClientInitConfig {
     pub path_to_config_file: PathBuf,
     pub path_to_usernames: PathBuf,
     pub address_to_server: http::Uri,
 }
 
-impl ClientConfig {
+impl ClientInitConfig {
     pub fn new(
         path_to_config_file: impl AsRef<Path>,
         path_to_usernames: impl AsRef<Path>,
@@ -22,4 +23,8 @@ impl ClientConfig {
             address_to_server,
         }
     }
+}
+
+pub struct ClientConfig {
+    
 }
