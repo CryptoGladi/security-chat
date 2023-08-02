@@ -12,9 +12,10 @@ use storage_crypto::Nickname;
 
 pub mod client_config;
 pub mod error;
-pub mod storage_crypto;
 pub mod impl_crypto;
+pub mod storage_crypto;
 
+#[derive(Debug)]
 pub struct Client {
     raw_client: RawClient,
     config: ClientConfig,
@@ -22,6 +23,7 @@ pub struct Client {
 }
 
 impl Client {
+    #[tracing::instrument]
     pub async fn registration(
         nickname: &str,
         init_config: ClientInitConfig,
@@ -39,6 +41,7 @@ impl Client {
         })
     }
 
+    #[tracing::instrument]
     pub async fn load(init_config: ClientInitConfig) -> Result<Client, Error> {
         let config: ClientConfig = bincode_config::load(init_config.path_to_config_file.clone())?;
         let api = RawClient::api_connect(init_config.address_to_server.clone()).await?;
@@ -63,11 +66,13 @@ impl Client {
         })
     }
 
+    #[tracing::instrument]
     pub fn save(&self) -> Result<(), Error> {
         bincode_config::save(&self.config, &self.init_config.path_to_config_file)?;
         Ok(())
     }
 
+    #[tracing::instrument]
     pub fn get_nickname(&self) -> Nickname {
         Nickname(self.config.client_data.nickname.clone())
     }
@@ -79,6 +84,7 @@ mod tests {
     use crate::test_utils::get_rand_string;
     use std::path::PathBuf;
     use temp_dir::TempDir;
+    use tracing_test::traced_test;
 
     pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
 
@@ -99,16 +105,16 @@ mod tests {
     }
 
     macro_rules! get_client {
-        () => {
-            {
+        () => {{
             let paths = PathsForTest::get();
-            let client_config = ClientInitConfig::new(paths.path_to_config_file.clone(), ADDRESS_SERVER);
+            let client_config =
+                ClientInitConfig::new(paths.path_to_config_file.clone(), ADDRESS_SERVER);
             let client = Client::registration(&get_rand_string(), client_config.clone())
-                .await.unwrap();
+                .await
+                .unwrap();
 
             (paths, client_config, client)
-            }
-        };
+        }};
     }
 
     #[tokio::test]
@@ -127,11 +133,31 @@ mod tests {
     }
 
     #[tokio::test]
+    #[traced_test]
     async fn shared_keys() {
         let (_paths, _, mut client_to) = get_client!();
         let (_paths, _, mut client_from) = get_client!();
 
-        client_to.send_crypto(client_from.get_nickname()).await.unwrap();
-        client_from.get_cryptos().await.unwrap();
+        client_to
+            .send_crypto(client_from.get_nickname())
+            .await
+            .unwrap();
+        let mut cryptos = client_from.get_cryptos_for_accept().await.unwrap();
+        cryptos[0].accept(&mut client_from).await.unwrap();
+
+        client_from.update_cryptos().await.unwrap();
+
+        assert_eq!(
+            client_to
+                .config
+                .storage_crypto
+                .get(&client_from.get_nickname())
+                .unwrap(),
+            client_from
+                .config
+                .storage_crypto
+                .get(&client_to.get_nickname())
+                .unwrap()
+        );
     }
 }

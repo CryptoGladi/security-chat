@@ -1,15 +1,14 @@
 use super::{aes, common::get_rand, CryptoError};
 use log::info;
-use p384::NistP384;
 pub use p384::ecdh::{EphemeralSecret, SharedSecret as RawSharedSecter};
-use p384::elliptic_curve::{NonZeroScalar};
 pub use p384::elliptic_curve::sec1::ToEncodedPoint;
+use p384::elliptic_curve::NonZeroScalar;
+use p384::NistP384;
 pub use p384::{EncodedPoint, PublicKey};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct EphemeralSecretDef
-{
+pub struct EphemeralSecretDef {
     pub scalar: NonZeroScalar<NistP384>,
 }
 
@@ -57,7 +56,7 @@ mod tests {
         let bob_shared_secret = get_shared_secret(&bob_secret, &alice_public_key);
 
         unsafe {
-            let _secret =  EphemeralSecretDef::from(alice_secret);
+            let _secret = EphemeralSecretDef::from(alice_secret);
         }
 
         println!("secret: {:?}", alice_shared_secret.0.raw_secret_bytes());

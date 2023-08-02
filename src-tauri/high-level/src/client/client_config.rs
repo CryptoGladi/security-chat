@@ -3,6 +3,7 @@ use hashbrown::HashMap;
 use lower_level::client::crypto::{ecdh::EphemeralSecretDef, Aes};
 use lower_level::client::ClientData;
 use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
@@ -34,4 +35,13 @@ pub struct ClientConfig {
 
     /// nickname_from - secter_to
     pub order_adding_crypto: HashMap<Nickname, EphemeralSecretDef>,
+}
+
+impl Debug for ClientConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_tuple("ClientConfig")
+            .field(&self.client_data)
+              .field(&self.storage_crypto)
+            .finish()
+    }
 }

@@ -1,7 +1,7 @@
 #[must_use]
 #[derive(Debug)]
-pub struct MustUseVariable<T>{
-    pub value: T
+pub struct MustUseVariable<T> {
+    pub value: T,
 }
 
 impl<T> MustUseVariable<T> {

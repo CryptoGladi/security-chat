@@ -1,6 +1,6 @@
 use crate::path;
-use lower_level::prelude::{client_save, Client};
 use log::{debug, error, info};
+use lower_level::prelude::{client_save, Client};
 
 pub trait KillUnwrap<T> {
     fn kill_unwrap(self) -> T;

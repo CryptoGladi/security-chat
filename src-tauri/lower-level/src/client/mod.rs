@@ -2,18 +2,18 @@ pub mod crypto;
 pub mod error;
 
 use self::error::Error;
-use self::security_chat::Check;
+use self::security_chat::{Check, DeleteAesKeyRequest};
 use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
 use crate::client::security_chat::{
     AesKeyInfo, CheckValidRequest, GetAesKeyRequest, NicknameIsTakenRequest, RegistrationRequest,
     SendAesKeyRequest, SetUserFromAesKeyRequest,
 };
 use crate::utils::MustBool;
+use http::uri::Uri;
 use security_chat::security_chat_client::SecurityChatClient;
 use serde::{Deserialize, Serialize};
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
-use http::uri::Uri;
 
 #[allow(non_snake_case)]
 pub mod security_chat {
@@ -34,9 +34,7 @@ pub struct Client {
 
 impl Client {
     pub async fn api_connect(address: Uri) -> Result<SecurityChatClient<Channel>, Error> {
-        let channel = Channel::builder(address)
-            .connect()
-            .await?;
+        let channel = Channel::builder(address).connect().await?;
 
         let api = SecurityChatClient::new(channel)
             .send_compressed(CompressionEncoding::Gzip)
@@ -62,7 +60,25 @@ impl Client {
         })
     }
 
-    pub async fn check_valid(nickname: &str, authkey: &str, address: Uri) -> Result<MustBool, Error> {
+    pub async fn delete_key(&mut self, id: i64) -> Result<(), Error> {
+        let request = tonic::Request::new(DeleteAesKeyRequest {
+            nickname: Some(Check {
+                nickname: self.data.nickname.clone(),
+                authkey: self.data.auth_key.clone(),
+            }),
+            id
+        });
+
+        self.api.delete_aes_key(request).await?;
+
+        Ok(())
+    }
+
+    pub async fn check_valid(
+        nickname: &str,
+        authkey: &str,
+        address: Uri,
+    ) -> Result<MustBool, Error> {
         let mut api = Client::api_connect(address).await?;
         let request = tonic::Request::new(CheckValidRequest {
             nickname: nickname.to_string(),
@@ -138,12 +154,18 @@ mod tests {
 
     #[tokio::test]
     async fn send_and_get_aes_key() {
-        let mut client_to = Client::registration(&test_utils::get_rand_string(), ADDRESS_SERVER.parse().unwrap())
-            .await
-            .unwrap();
-        let mut client_from = Client::registration(&test_utils::get_rand_string(), ADDRESS_SERVER.parse().unwrap())
-            .await
-            .unwrap();
+        let mut client_to = Client::registration(
+            &test_utils::get_rand_string(),
+            ADDRESS_SERVER.parse().unwrap(),
+        )
+        .await
+        .unwrap();
+        let mut client_from = Client::registration(
+            &test_utils::get_rand_string(),
+            ADDRESS_SERVER.parse().unwrap(),
+        )
+        .await
+        .unwrap();
         println!("client_to data: {:?}", client_to.data);
 
         let secret_to = client_to
@@ -172,7 +194,9 @@ mod tests {
     #[tokio::test]
     async fn registration() {
         let nickname = test_utils::get_rand_string();
-        let client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap()).await.unwrap();
+        let client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
+            .await
+            .unwrap();
         println!("client info: {:?}", client);
 
         assert_eq!(client.data.auth_key.is_empty(), false);
@@ -181,31 +205,45 @@ mod tests {
     #[tokio::test]
     async fn nickname_is_taken() {
         let nickname = test_utils::get_rand_string();
-        let result = super::nickname_is_taken(&nickname, ADDRESS_SERVER.parse().unwrap()).await.unwrap();
+        let result = super::nickname_is_taken(&nickname, ADDRESS_SERVER.parse().unwrap())
+            .await
+            .unwrap();
 
         assert_eq!(result, false);
 
-        let _client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap()).await.unwrap();
-        let result = super::nickname_is_taken(&nickname, ADDRESS_SERVER.parse().unwrap()).await.unwrap();
+        let _client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
+            .await
+            .unwrap();
+        let result = super::nickname_is_taken(&nickname, ADDRESS_SERVER.parse().unwrap())
+            .await
+            .unwrap();
 
         assert_eq!(result, true);
     }
 
     #[tokio::test]
     async fn check_valid() {
-        let client = Client::registration(&test_utils::get_rand_string(), ADDRESS_SERVER.parse().unwrap())
-            .await
-            .unwrap();
+        let client = Client::registration(
+            &test_utils::get_rand_string(),
+            ADDRESS_SERVER.parse().unwrap(),
+        )
+        .await
+        .unwrap();
         let nickname = client.data.nickname.clone();
         let auth_key = client.data.auth_key.clone();
         assert_eq!(auth_key.is_empty(), false);
 
         drop(client);
 
-        let is_successful = Client::check_valid(&nickname, &auth_key, ADDRESS_SERVER.parse().unwrap()).await.unwrap();
+        let is_successful =
+            Client::check_valid(&nickname, &auth_key, ADDRESS_SERVER.parse().unwrap())
+                .await
+                .unwrap();
         assert_eq!(*is_successful, true);
 
-        let is_successful = Client::check_valid("dddddd", "dddd", ADDRESS_SERVER.parse().unwrap()).await.unwrap();
+        let is_successful = Client::check_valid("dddddd", "dddd", ADDRESS_SERVER.parse().unwrap())
+            .await
+            .unwrap();
         assert_eq!(*is_successful, false);
     }
 }

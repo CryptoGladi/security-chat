@@ -16,9 +16,12 @@ fn criterion_benchmark(c: &mut Criterion) {
                         .collect::<String>()
                 },
                 |rand_string| async move {
-                    let _client = lower_level::client::Client::registration(&rand_string, ADDRESS_SERVER.parse().unwrap())
-                        .await
-                        .unwrap();
+                    let _client = lower_level::client::Client::registration(
+                        &rand_string,
+                        ADDRESS_SERVER.parse().unwrap(),
+                    )
+                    .await
+                    .unwrap();
                 },
                 BatchSize::SmallInput,
             );
@@ -30,9 +33,13 @@ fn criterion_benchmark(c: &mut Criterion) {
                 let test_nickname = "test_nickname";
                 let authkey = "d515004d-c283-4b38-abe7-3e7403addc93";
 
-                lower_level::client::Client::check_valid(test_nickname, authkey, ADDRESS_SERVER.parse().unwrap())
-                    .await
-                    .unwrap()
+                lower_level::client::Client::check_valid(
+                    test_nickname,
+                    authkey,
+                    ADDRESS_SERVER.parse().unwrap(),
+                )
+                .await
+                .unwrap()
             });
     });
 }
