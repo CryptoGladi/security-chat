@@ -1,12 +1,19 @@
 use crate::bincode_config;
 use client_config::{ClientConfig, ClientInitConfig};
 use error::Error;
-use lower_level::client::Client as RawClient;
+use lower_level::client::{
+    crypto::{
+        ecdh::{get_shared_secret, EphemeralSecretDef, PublicKey},
+        Aes,
+    },
+    Client as RawClient,
+};
 use storage_crypto::Nickname;
 
 pub mod client_config;
 pub mod error;
 pub mod storage_crypto;
+pub mod impl_crypto;
 
 pub struct Client {
     raw_client: RawClient,
@@ -61,18 +68,8 @@ impl Client {
         Ok(())
     }
 
-    pub async fn send_crypto(&mut self, nickname_from: Nickname) -> Result<(), Error> {
-        if self.raw_client.data.nickname == *nickname_from {
-            return Err(Error::NicknameSame(nickname_from));
-        }
-        if self.config.order_adding_crypto.contains_key(&nickname_from) {
-            return Err(Error::NicknameSame(nickname_from));
-        }
-
-        let secret = self.raw_client.send_aes_key(&nickname_from).await?;
-        //self.config.order_adding_crypto.insert(nickname_from, ); // TODO
-
-        Ok(())
+    pub fn get_nickname(&self) -> Nickname {
+        Nickname(self.config.client_data.nickname.clone())
     }
 }
 
@@ -101,13 +98,22 @@ mod tests {
         }
     }
 
+    macro_rules! get_client {
+        () => {
+            {
+            let paths = PathsForTest::get();
+            let client_config = ClientInitConfig::new(paths.path_to_config_file.clone(), ADDRESS_SERVER);
+            let client = Client::registration(&get_rand_string(), client_config.clone())
+                .await.unwrap();
+
+            (paths, client_config, client)
+            }
+        };
+    }
+
     #[tokio::test]
     async fn save_and_load() {
-        let paths = PathsForTest::get();
-        let client_config = ClientInitConfig::new(paths.path_to_config_file, ADDRESS_SERVER);
-        let client = Client::registration(&get_rand_string(), client_config.clone())
-            .await
-            .unwrap();
+        let (_paths, client_config, client) = get_client!();
 
         client.save().unwrap();
 
@@ -118,5 +124,14 @@ mod tests {
             loaded_client.raw_client.data.nickname,
             client.raw_client.data.nickname
         )
+    }
+
+    #[tokio::test]
+    async fn shared_keys() {
+        let (_paths, _, mut client_to) = get_client!();
+        let (_paths, _, mut client_from) = get_client!();
+
+        client_to.send_crypto(client_from.get_nickname()).await.unwrap();
+        client_from.get_cryptos().await.unwrap();
     }
 }

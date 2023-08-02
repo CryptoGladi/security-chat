@@ -1,5 +1,3 @@
-use hashbrown::HashMap;
-use lower_level::client::crypto::Aes;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
@@ -17,11 +15,6 @@ impl std::ops::Deref for Nickname {
     fn deref(&self) -> &Self::Target {
         &self.0
     }
-}
-
-#[derive(Debug, Default, Serialize, Deserialize, Clone)]
-pub struct StorageCrypto {
-    aes: HashMap<Nickname, Aes>,
 }
 
 impl Nickname {
