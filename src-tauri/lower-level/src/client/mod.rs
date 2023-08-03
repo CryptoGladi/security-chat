@@ -2,23 +2,13 @@ pub mod crypto;
 pub mod error;
 
 use self::error::Error;
-use self::security_chat::{Check, DeleteAesKeyRequest};
 use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
-use crate::client::security_chat::{
-    AesKeyInfo, CheckValidRequest, GetAesKeyRequest, NicknameIsTakenRequest, RegistrationRequest,
-    SendAesKeyRequest, SetUserFromAesKeyRequest,
-};
 use crate::utils::MustBool;
 use http::uri::Uri;
-use security_chat::security_chat_client::SecurityChatClient;
 use serde::{Deserialize, Serialize};
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
-
-#[allow(non_snake_case)]
-pub mod security_chat {
-    tonic::include_proto!("security_chat");
-}
+use crate_proto::*;
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct ClientData {

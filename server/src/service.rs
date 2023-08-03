@@ -50,6 +50,10 @@ impl SecurityChat for SecurityChatService {
             return Err(tonic::Status::not_found("authkey is invalid"));
         }
 
+        if user_to[0].id == user_from[0].id {
+            return Err(tonic::Status::invalid_argument("user_to same user_from"));
+        }
+
         let new_aes_key = NewKey {
             user_to_id: user_to[0].id,
             user_from_id: user_from[0].id,
@@ -138,10 +142,9 @@ impl SecurityChat for SecurityChatService {
 
         diesel::update(order_add_keys)
             .filter(id.eq(request.get_ref().id.clone()))
-            .set((
-                user_from_accepted.eq(true),
+            .set(
                 user_from_public_key.eq(request.get_ref().public_key.clone()),
-            ))
+            )
             .execute(&mut db).await.unwrap();
 
         Ok(Response::new(()))

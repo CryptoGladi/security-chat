@@ -22,6 +22,4 @@ CREATE TABLE order_add_keys ( -- only for chat
   user_from_id BIGSERIAL REFERENCES users(id) ON DELETE CASCADE,
   user_to_public_key BYTEA NOT NULL,
   user_from_public_key BYTEA,
-  user_to_accepted BOOLEAN DEFAULT FALSE NOT NULL,
-  user_from_accepted BOOLEAN DEFAULT FALSE NOT NULL
 );

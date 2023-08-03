@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use super::{aes, common::get_rand, CryptoError};
 use log::info;
 pub use p384::ecdh::{EphemeralSecret, SharedSecret as RawSharedSecter};
@@ -10,6 +12,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone)]
 pub struct EphemeralSecretDef {
     pub scalar: NonZeroScalar<NistP384>,
+}
+
+impl Debug for EphemeralSecretDef {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "EphemeralSecretDef")
+    }
 }
 
 impl EphemeralSecretDef {

@@ -13,6 +13,7 @@ use storage_crypto::Nickname;
 pub mod client_config;
 pub mod error;
 pub mod impl_crypto;
+pub mod impl_message;
 pub mod storage_crypto;
 
 #[derive(Debug)]
@@ -118,6 +119,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[traced_test]
     async fn save_and_load() {
         let (_paths, client_config, client) = get_client!();
 
@@ -142,12 +144,11 @@ mod tests {
             .send_crypto(client_from.get_nickname())
             .await
             .unwrap();
-        let mut cryptos = client_from.get_cryptos_for_accept().await.unwrap();
-        cryptos[0].accept(&mut client_from).await.unwrap();
 
-        client_from.update_cryptos().await.unwrap();
+        client_from.accept_all_cryptos().await.unwrap();
+        client_to.update_cryptos().await.unwrap();
 
-        assert_eq!(
+        assert_eq!( // Проверка ключей
             client_to
                 .config
                 .storage_crypto

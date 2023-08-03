@@ -1,11 +1,11 @@
 use super::*;
-use lower_level::client::security_chat::AesKeyInfo;
+use crate_proto::AesKeyInfo;
 
 #[derive(Debug)]
 pub struct AesKeyForAccept(pub AesKeyInfo);
 
 impl AesKeyForAccept {
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip(client))]
     pub async fn accept(&mut self, client: &mut Client) -> Result<(), Error> {
         tracing::info!("run");
         let secret = client.raw_client.set_aes_key(&self.0).await?;
@@ -39,6 +39,7 @@ impl Client {
         self.config
             .order_adding_crypto
             .insert(nickname_from, secret_def);
+        self.save()?;
         Ok(())
     }
 
@@ -50,14 +51,27 @@ impl Client {
     }
 
     #[tracing::instrument(skip(self))]
+    pub async fn accept_all_cryptos(&mut self) -> Result<(), Error> {
+        tracing::info!("run");
+        let mut aes_info = self.get_cryptos_for_accept().await?;
+
+        for i in aes_info.iter_mut() {
+            i.accept(self).await?;
+        }
+
+        Ok(())
+    }
+
+    #[tracing::instrument(skip(self))]
     pub async fn update_cryptos(&mut self) -> Result<(), Error> {
         tracing::info!("run");
         let keys_info = self.raw_client.get_aes_keys().await?;
 
-        for i in keys_info
-            .iter()
-            .filter(|x| x.nickname_from_public_key.is_some())
-        {
+        for i in keys_info {
+            let Some(nickname_from_public_key) = i.nickname_from_public_key else {
+                break;
+            };
+
             let nickname_from = Nickname(i.nickname_from.clone());
             let secret = unsafe {
                 self.config
@@ -70,8 +84,7 @@ impl Client {
 
             let shared_secret = get_shared_secret(
                 &secret,
-                &PublicKey::from_sec1_bytes(&i.nickname_from_public_key.clone().unwrap()[..])
-                    .unwrap(),
+                &PublicKey::from_sec1_bytes(&nickname_from_public_key[..]).unwrap(),
             );
             let aes = Aes::with_shared_key(shared_secret);
 

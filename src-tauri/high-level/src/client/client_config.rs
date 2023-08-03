@@ -41,7 +41,7 @@ impl Debug for ClientConfig {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_tuple("ClientConfig")
             .field(&self.client_data)
-              .field(&self.storage_crypto)
+            .field(&self.storage_crypto)
             .finish()
     }
 }
