@@ -64,6 +64,24 @@ message CheckValidReply {
   bool is_valid = 1;
 }
 
+message Notification {
+  string nickname_from = 1;
+
+  oneof notice {
+    Message new_message = 2;
+  }
+}
+
+message Message {
+  bytes text = 1;
+}
+
+message SendMessageRequest {
+  Check nickname = 1;
+  string nickname_from = 2;
+  Message message = 3;
+}
+
 service SecurityChat {
   rpc Registration(RegistrationRequest) returns (RegistrationReply);
 
@@ -81,4 +99,8 @@ service SecurityChat {
   rpc AcceptAESKey(AcceptAESKeyRequest) returns (google.protobuf.Empty);
 
   rpc DeleteAESKey(DeleteAESKeyRequest) returns (google.protobuf.Empty);
+
+  rpc Subscribe(Check) returns (stream Notification);
+
+  rpc SendMessage(SendMessageRequest) returns (google.protobuf.Empty);
 }

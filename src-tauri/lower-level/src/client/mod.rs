@@ -1,15 +1,18 @@
 pub mod crypto;
 pub mod error;
 pub mod impl_aes;
+pub mod max_size;
 
-use self::error::Error;
+use error::Error;
+use max_size::*;
 use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
 use crate::utils::MustBool;
+use crate_proto::*;
 use http::uri::Uri;
 use serde::{Deserialize, Serialize};
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
-use crate_proto::*;
+use tonic::{Response, Streaming};
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct ClientData {
@@ -65,6 +68,37 @@ impl Client {
         let response = api.check_valid(request).await?;
         Ok(MustBool::new(response.get_ref().is_valid))
     }
+
+    pub async fn send_message(
+        &mut self,
+        nickname_from: String,
+        message: Message,
+    ) -> Result<(), Error> {
+        if message.text.len() >= MAX_LEN_MESSAGE {
+            return Err(Error::TooBigMessage);
+        }
+
+        let request = tonic::Request::new(SendMessageRequest {
+            nickname: Some(Check {
+                nickname: self.data.nickname.clone(),
+                authkey: self.data.auth_key.clone(),
+            }),
+            nickname_from,
+            message: Some(message),
+        });
+
+        self.api.send_message(request).await?;
+        Ok(())
+    }
+
+    pub async fn subscribe(&mut self) -> Result<Response<Streaming<Notification>>, Error> {
+        let request = tonic::Request::new(Check {
+            nickname: self.data.nickname.clone(),
+            authkey: self.data.auth_key.clone(),
+        });
+
+        Ok(self.api.subscribe(request).await?)
+    }
 }
 
 pub async fn nickname_is_taken(nickname: &str, address: Uri) -> Result<bool, Error> {
@@ -80,20 +114,83 @@ pub async fn nickname_is_taken(nickname: &str, address: Uri) -> Result<bool, Err
 #[cfg(test)]
 mod tests {
     pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
+
     use super::*;
     use crate::client::crypto::ecdh::PublicKey;
     use crate::test_utils;
 
     #[tokio::test]
-    async fn send_and_get_aes_key() {
+    async fn too_big_message() {
         let mut client_to = Client::registration(
-            &test_utils::get_rand_string(),
+            &test_utils::get_rand_string(20),
+            ADDRESS_SERVER.parse().unwrap(),
+        )
+        .await
+        .unwrap();
+        let client_from = Client::registration(
+            &test_utils::get_rand_string(20),
+            ADDRESS_SERVER.parse().unwrap(),
+        )
+        .await
+        .unwrap();
+
+        let text = test_utils::get_rand_string(MAX_LEN_MESSAGE + 100);
+        let error = client_to.send_message(client_from.data.nickname, Message { text: text.into_bytes() }).await.err().unwrap(); 
+
+        assert!(matches!(error, Error::TooBigMessage));
+    }
+
+    #[tokio::test]
+    async fn send_message_and_subscribe() {
+        let mut client_to = Client::registration(
+            &test_utils::get_rand_string(20),
             ADDRESS_SERVER.parse().unwrap(),
         )
         .await
         .unwrap();
         let mut client_from = Client::registration(
-            &test_utils::get_rand_string(),
+            &test_utils::get_rand_string(20),
+            ADDRESS_SERVER.parse().unwrap(),
+        )
+        .await
+        .unwrap();
+        const TEST_MESSAGE: &[u8] = "What hath God wrought!".as_bytes();
+
+        let mut notification = client_from.subscribe().await.unwrap();
+        client_to
+            .send_message(
+                client_from.data.nickname.clone(),
+                Message {
+                    text: TEST_MESSAGE.to_vec(),
+                },
+            )
+            .await
+            .unwrap();
+
+        let Some(notify) = notification.get_mut().message().await.unwrap() else {
+            panic!("not found notification");
+        };
+
+        let Notice::NewMessage(new_message) = notify.notice.unwrap();
+
+        println!("new_message: {:?}", new_message);
+        println!("nickname_from: {}", notify.nickname_from);
+        println!("client_from: {}", client_from.data.nickname);
+        println!("client_to: {}", client_to.data.nickname);
+        assert_eq!(new_message.text, TEST_MESSAGE);
+        assert_eq!(client_from.data.nickname, notify.nickname_from);
+    }
+
+    #[tokio::test]
+    async fn send_and_get_aes_key() {
+        let mut client_to = Client::registration(
+            &test_utils::get_rand_string(20),
+            ADDRESS_SERVER.parse().unwrap(),
+        )
+        .await
+        .unwrap();
+        let mut client_from = Client::registration(
+            &test_utils::get_rand_string(20),
             ADDRESS_SERVER.parse().unwrap(),
         )
         .await
@@ -125,23 +222,23 @@ mod tests {
 
     #[tokio::test]
     async fn registration() {
-        let nickname = test_utils::get_rand_string();
+        let nickname = test_utils::get_rand_string(20);
         let client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
         println!("client info: {:?}", client);
 
-        assert_eq!(client.data.auth_key.is_empty(), false);
+        assert!(!client.data.auth_key.is_empty());
     }
 
     #[tokio::test]
     async fn nickname_is_taken() {
-        let nickname = test_utils::get_rand_string();
+        let nickname = test_utils::get_rand_string(20);
         let result = super::nickname_is_taken(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
 
-        assert_eq!(result, false);
+        assert!(!result);
 
         let _client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
@@ -150,20 +247,20 @@ mod tests {
             .await
             .unwrap();
 
-        assert_eq!(result, true);
+        assert!(result);
     }
 
     #[tokio::test]
     async fn check_valid() {
         let client = Client::registration(
-            &test_utils::get_rand_string(),
+            &test_utils::get_rand_string(20),
             ADDRESS_SERVER.parse().unwrap(),
         )
         .await
         .unwrap();
         let nickname = client.data.nickname.clone();
         let auth_key = client.data.auth_key.clone();
-        assert_eq!(auth_key.is_empty(), false);
+        assert!(!auth_key.is_empty());
 
         drop(client);
 
@@ -171,11 +268,11 @@ mod tests {
             Client::check_valid(&nickname, &auth_key, ADDRESS_SERVER.parse().unwrap())
                 .await
                 .unwrap();
-        assert_eq!(*is_successful, true);
+        assert!(*is_successful);
 
         let is_successful = Client::check_valid("dddddd", "dddd", ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
-        assert_eq!(*is_successful, false);
+        assert!(*is_successful);
     }
 }

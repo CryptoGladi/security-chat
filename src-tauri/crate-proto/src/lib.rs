@@ -1,3 +1,4 @@
+pub use security_chat::notification::Notice;
 pub use security_chat::*;
 pub use security_chat_client::SecurityChatClient;
 

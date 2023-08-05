@@ -1,6 +1,6 @@
-use super::storage_crypto::Nickname;
+use super::storage_crypto::{Nickname, StorageCrypto};
 use hashbrown::HashMap;
-use lower_level::client::crypto::{ecdh::EphemeralSecretDef, Aes};
+use lower_level::client::crypto::ecdh::EphemeralSecretDef;
 use lower_level::client::ClientData;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -31,7 +31,7 @@ impl ClientInitConfig {
 #[derive(Serialize, Deserialize, Default, Clone)]
 pub struct ClientConfig {
     pub client_data: ClientData,
-    pub storage_crypto: HashMap<Nickname, Aes>,
+    pub storage_crypto: StorageCrypto,
 
     /// nickname_from - secter_to
     pub order_adding_crypto: HashMap<Nickname, EphemeralSecretDef>,

@@ -1,4 +1,3 @@
-use security_chat::*;
 use crate::database::{get_user_by_id, DbPool};
 use crate::models::*;
 use crate::schema::order_add_keys::dsl::*;
@@ -7,9 +6,15 @@ use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use log::{error, info};
 use security_chat::security_chat_server::SecurityChat;
+use security_chat::*;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Request, Response, Status};
 
 // TODO Изменить все unwrap на tonic::Status!
+
+type MessageProducer = tokio::sync::broadcast::Sender<Notification>;
+type MessageConsumer = tokio::sync::broadcast::Receiver<Notification>;
 
 #[allow(non_snake_case)]
 pub mod security_chat {
@@ -18,6 +23,8 @@ pub mod security_chat {
 
 pub struct SecurityChatService {
     pub db_pool: DbPool,
+    pub producer: MessageProducer,
+    pub consumer: MessageConsumer,
 }
 
 #[tonic::async_trait]
@@ -65,7 +72,7 @@ impl SecurityChat for SecurityChatService {
             .await
             .unwrap();
 
-            Ok(Response::new(()))
+        Ok(Response::new(()))
     }
 
     async fn get_aes_key(
@@ -111,9 +118,7 @@ impl SecurityChat for SecurityChatService {
             });
         }
 
-        return Ok(Response::new(GetAesKeyReply {
-            info,
-        }));
+        return Ok(Response::new(GetAesKeyReply { info }));
     }
 
     async fn set_user_from_aes_key(
@@ -142,10 +147,10 @@ impl SecurityChat for SecurityChatService {
 
         diesel::update(order_add_keys)
             .filter(id.eq(request.get_ref().id.clone()))
-            .set(
-                user_from_public_key.eq(request.get_ref().public_key.clone()),
-            )
-            .execute(&mut db).await.unwrap();
+            .set(user_from_public_key.eq(request.get_ref().public_key.clone()))
+            .execute(&mut db)
+            .await
+            .unwrap();
 
         Ok(Response::new(()))
     }
@@ -174,7 +179,10 @@ impl SecurityChat for SecurityChatService {
             return Err(tonic::Status::not_found("authkey is invalid"));
         }
 
-        diesel::delete(order_add_keys.filter(id.eq(request.get_ref().id))).execute(&mut db).await.unwrap();
+        diesel::delete(order_add_keys.filter(id.eq(request.get_ref().id)))
+            .execute(&mut db)
+            .await
+            .unwrap();
         Ok(Response::new(()))
     }
 
@@ -196,13 +204,16 @@ impl SecurityChat for SecurityChatService {
             .await
             .unwrap();
 
-            if user.is_empty() {
-                return Err(tonic::Status::not_found("user not found"));
-            } else if user[0].authkey != user_for_check.authkey {
-                return Err(tonic::Status::not_found("authkey is invalid"));
-            }
+        if user.is_empty() {
+            return Err(tonic::Status::not_found("user not found"));
+        } else if user[0].authkey != user_for_check.authkey {
+            return Err(tonic::Status::not_found("authkey is invalid"));
+        }
 
-            diesel::delete(order_add_keys.filter(id.eq(request.get_ref().id))).execute(&mut db).await.unwrap();
+        diesel::delete(order_add_keys.filter(id.eq(request.get_ref().id)))
+            .execute(&mut db)
+            .await
+            .unwrap();
 
         Ok(Response::new(()))
     }
@@ -217,17 +228,88 @@ impl SecurityChat for SecurityChatService {
         let user = users
             .filter(nickname.eq(request.get_ref().nickname.clone()))
             .select(User::as_select())
-            .load(&mut db).await.unwrap();
+            .load(&mut db)
+            .await
+            .unwrap();
 
         if user.is_empty() {
-            return Ok(Response::new(CheckValidReply {
-                is_valid: false,
-            }));
+            return Ok(Response::new(CheckValidReply { is_valid: false }));
         }
 
         Ok(Response::new(CheckValidReply {
             is_valid: user[0].authkey == request.get_ref().authkey,
         }))
+    }
+
+    type SubscribeStream = ReceiverStream<Result<Notification, Status>>;
+
+    async fn subscribe(
+        &self,
+        request: Request<Check>,
+    ) -> Result<Response<Self::SubscribeStream>, Status> {
+        info!("new subscribe: {:?}", request.get_ref());
+        let mut db = self.db_pool.get().await.unwrap();
+        let user_for_check = request.get_ref().clone();
+
+        let user = users
+            .filter(nickname.eq(user_for_check.nickname.clone())) // filter(nickname.eq(user.nickname) and authkey.eq(user.authkey))
+            .select(User::as_select())
+            .load(&mut db)
+            .await
+            .unwrap();
+
+        if user.is_empty() {
+            return Err(tonic::Status::not_found("user not found"));
+        } else if user[0].authkey != user_for_check.authkey {
+            return Err(tonic::Status::not_found("authkey is invalid"));
+        }
+        drop(db);
+
+        let (tx, rx) = mpsc::channel(4);
+        let mut notification = self.producer.subscribe();
+
+        tokio::spawn(async move {
+            loop {
+                let n = notification.recv().await.unwrap();
+
+                if n.nickname_from == user_for_check.nickname {
+                    tx.send(Ok(n)).await.unwrap();
+                }
+            }
+        });
+
+        Ok(Response::new(ReceiverStream::new(rx)))
+    }
+
+    async fn send_message(
+        &self,
+        request: Request<SendMessageRequest>,
+    ) -> Result<Response<()>, Status> {
+        info!("Got a request for `send_message`: {:?}", request.get_ref());
+        let mut db = self.db_pool.get().await.unwrap();
+        let user_for_check = request.get_ref().clone().nickname.unwrap();
+
+        let user = users
+            .filter(nickname.eq(user_for_check.nickname.clone())) // filter(nickname.eq(user.nickname) and authkey.eq(user.authkey))
+            .select(User::as_select())
+            .load(&mut db)
+            .await
+            .unwrap();
+
+        if user.is_empty() {
+            return Err(tonic::Status::not_found("user not found"));
+        } else if user[0].authkey != user_for_check.authkey {
+            return Err(tonic::Status::not_found("authkey is invalid"));
+        }
+
+        self.producer.send(Notification {
+            nickname_from: request.get_ref().nickname_from.clone(),
+            notice: Some(notification::Notice::NewMessage(request.get_ref().clone().message.unwrap()))
+        }).unwrap();
+
+        // TODO DB
+
+        Ok(Response::new(()))
     }
 
     async fn registration(
@@ -244,8 +326,10 @@ impl SecurityChat for SecurityChatService {
         };
 
         diesel::insert_into(users)
-        .values(&new_user)
-        .execute(&mut db).await.unwrap();
+            .values(&new_user)
+            .execute(&mut db)
+            .await
+            .unwrap();
 
         Ok(Response::new(RegistrationReply {
             authkey: uuid_authkey,

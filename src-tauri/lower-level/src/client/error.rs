@@ -14,4 +14,7 @@ pub enum Error {
 
     #[error("api problem: `{0}`")]
     Api(#[from] tonic::Status),
+
+    #[error("too big message")]
+    TooBigMessage,
 }

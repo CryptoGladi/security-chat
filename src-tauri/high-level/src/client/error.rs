@@ -1,5 +1,5 @@
+use lower_level::client::crypto::CryptoError;
 use thiserror::Error;
-
 use super::storage_crypto::Nickname;
 
 #[derive(Error, Debug)]
@@ -18,4 +18,10 @@ pub enum Error {
 
     #[error("storage already have nickname: {0}")]
     StorageAlreadyHaveNickname(Nickname),
+
+    #[error("problem in storage crypto: {0}")]
+    StorageCrypto(#[from] crate::client::storage_crypto::error::Error),
+
+    #[error("cryptography problem: `{0}`")]
+    Crypto(#[from] CryptoError),
 }

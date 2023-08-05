@@ -40,9 +40,4 @@ diesel::table! {
 diesel::joinable!(chat_messages -> chat (chat_id));
 diesel::joinable!(chat_messages -> users (sender_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    chat,
-    chat_messages,
-    order_add_keys,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(chat, chat_messages, order_add_keys, users,);

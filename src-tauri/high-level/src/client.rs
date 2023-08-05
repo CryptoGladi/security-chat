@@ -152,12 +152,12 @@ mod tests {
             // Проверка ключей
             client_to
                 .config
-                .storage_crypto
+                .storage_crypto.0
                 .get(&client_from.get_nickname())
                 .unwrap(),
             client_from
                 .config
-                .storage_crypto
+                .storage_crypto.0
                 .get(&client_to.get_nickname())
                 .unwrap()
         );

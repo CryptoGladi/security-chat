@@ -7,7 +7,7 @@ impl Client {
                 nickname: self.data.nickname.clone(),
                 authkey: self.data.auth_key.clone(),
             }),
-            id
+            id,
         });
 
         self.api.delete_aes_key(request).await?;
