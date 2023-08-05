@@ -34,8 +34,6 @@ impl Client {
         message: crate_proto::Message,
         nickname_from: Nickname,
     ) -> Result<Message, Error> {
-        println!("srypto stote: {:?}", self.config.storage_crypto.0);
-        println!("nickname_from: {}", nickname_from);
         let aes = self.config.storage_crypto.get(&nickname_from)?;
         let decrypted_body = aes.decrypt(&EncryptedMessage {
             data: message.body,

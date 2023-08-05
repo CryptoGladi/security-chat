@@ -13,10 +13,7 @@ pub struct Notification {
 }
 
 impl Client {
-    pub(crate) fn nofity(&mut self, raw: RawNotification) -> Result<Notification, Error> {
-        let nickname_from = Nickname::from(raw.nickname_from);
-        println!("nofityttt: {}", nickname_from);
-        
+    pub(crate) fn nofity(&mut self, raw: RawNotification) -> Result<Notification, Error> {        
         let event = match raw.notice.unwrap() {
             crate_proto::Notice::NewMessage(s) => {
                 Event::NewMessage(self.decrypt_message(s, Nickname(raw.by_nickname.clone()))?)

@@ -85,7 +85,6 @@ impl Client {
 
         loop {
             let notify = subscribe.get_mut().message().await.unwrap().unwrap();
-            println!("new notify: {:?}", notify);
             f(Client::nofity(self, notify)?)
         }
     }

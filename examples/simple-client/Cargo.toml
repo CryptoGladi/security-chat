@@ -1,0 +1,9 @@
+[package]
+name = "simple-client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+high-level = { path = "../../src-tauri/high-level" }
+structopt = "0.3.26"
+tokio = { version = "1.29.1", features = ["full"] }
