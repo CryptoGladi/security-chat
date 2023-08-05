@@ -8,16 +8,17 @@ use log::info;
 use serde::{Deserialize, Serialize};
 
 pub const SIZE_KEY: usize = 256 / 8; // = 32
+pub const SIZE_NONCE: usize = 96 / 8; // = 12
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub struct Aes {
     key: [u8; SIZE_KEY],
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct EncryptedMessage {
-    data: Vec<u8>,
-    nonce: Nonce<Aes256Gcm>,
+    pub data: Vec<u8>,
+    pub nonce: [u8; SIZE_NONCE],
 }
 
 impl Aes {
@@ -43,16 +44,17 @@ impl Aes {
 
         let data = cipher.encrypt(&nonce, message).map_err(CryptoError::Aes)?;
 
-        Ok(EncryptedMessage { data, nonce })
+        Ok(EncryptedMessage { data, nonce: nonce.try_into().unwrap() })
     }
 
     pub fn decrypt(&self, message: &EncryptedMessage) -> Result<Vec<u8>, CryptoError> {
         info!("decrypting message...");
         let key = Key::<Aes256Gcm>::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
+        let nonce = Nonce::<Aes256Gcm>::clone_from_slice(&message.nonce);
 
         let data = cipher
-            .decrypt(&message.nonce, message.data.as_ref())
+            .decrypt(&nonce, message.data.as_ref())
             .map_err(CryptoError::Aes)?;
 
         Ok(data)

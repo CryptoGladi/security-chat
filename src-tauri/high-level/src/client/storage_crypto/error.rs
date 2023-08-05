@@ -6,5 +6,5 @@ pub enum Error {
     AlreadyExists,
 
     #[error("not found")]
-    NotFound
+    NotFound,
 }

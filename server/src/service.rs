@@ -304,6 +304,7 @@ impl SecurityChat for SecurityChatService {
 
         self.producer.send(Notification {
             nickname_from: request.get_ref().nickname_from.clone(),
+            by_nickname: user_for_check.nickname,
             notice: Some(notification::Notice::NewMessage(request.get_ref().clone().message.unwrap()))
         }).unwrap();
 

@@ -1,12 +1,18 @@
+use error::Error;
 use hashbrown::HashMap;
 use lower_level::client::crypto::Aes;
 use serde::{Deserialize, Serialize};
-use error::Error;
 
 pub mod error;
 
 #[derive(Debug, Default, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub struct Nickname(pub String);
+
+impl From<String> for Nickname {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
 
 impl std::fmt::Display for Nickname {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -37,14 +43,14 @@ impl StorageCrypto {
             return Err(Error::AlreadyExists);
         }
 
-        self.0.insert(nickname, aes);
+        self.0.insert_unique_unchecked(nickname, aes);
         Ok(())
     }
 
     pub fn get(&self, nickname: &Nickname) -> Result<&Aes, Error> {
         match self.0.get(nickname) {
             Some(aes) => Ok(aes),
-            None => Err(Error::NotFound)
-        } 
+            None => Err(Error::NotFound),
+        }
     }
 }

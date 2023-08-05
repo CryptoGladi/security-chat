@@ -74,7 +74,7 @@ impl Client {
         nickname_from: String,
         message: Message,
     ) -> Result<(), Error> {
-        if message.text.len() >= MAX_LEN_MESSAGE {
+        if message.body.len() >= MAX_LEN_MESSAGE {
             return Err(Error::TooBigMessage);
         }
 
@@ -135,7 +135,7 @@ mod tests {
         .unwrap();
 
         let text = test_utils::get_rand_string(MAX_LEN_MESSAGE + 100);
-        let error = client_to.send_message(client_from.data.nickname, Message { text: text.into_bytes() }).await.err().unwrap(); 
+        let error = client_to.send_message(client_from.data.nickname, Message {  body: text.into_bytes(), nonce: vec![] }).await.err().unwrap(); 
 
         assert!(matches!(error, Error::TooBigMessage));
     }
@@ -161,7 +161,8 @@ mod tests {
             .send_message(
                 client_from.data.nickname.clone(),
                 Message {
-                    text: TEST_MESSAGE.to_vec(),
+                    body: TEST_MESSAGE.to_vec(),
+                    nonce: vec![]
                 },
             )
             .await
@@ -177,7 +178,7 @@ mod tests {
         println!("nickname_from: {}", notify.nickname_from);
         println!("client_from: {}", client_from.data.nickname);
         println!("client_to: {}", client_to.data.nickname);
-        assert_eq!(new_message.text, TEST_MESSAGE);
+        assert_eq!(new_message.body, TEST_MESSAGE);
         assert_eq!(client_from.data.nickname, notify.nickname_from);
     }
 
@@ -273,6 +274,6 @@ mod tests {
         let is_successful = Client::check_valid("dddddd", "dddd", ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
-        assert!(*is_successful);
+        assert!(!*is_successful);
     }
 }

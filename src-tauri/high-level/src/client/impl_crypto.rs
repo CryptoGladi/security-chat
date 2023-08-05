@@ -82,9 +82,7 @@ impl Client {
             );
             let aes = Aes::with_shared_key(shared_secret);
 
-            self.config
-                .storage_crypto
-                .add(nickname_from.clone(), aes)?;
+            self.config.storage_crypto.add(nickname_from.clone(), aes)?;
 
             self.config
                 .order_adding_crypto

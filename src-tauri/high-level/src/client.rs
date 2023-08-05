@@ -9,12 +9,14 @@ use lower_level::client::{
     Client as RawClient,
 };
 use storage_crypto::Nickname;
+use self::notification::Notification;
 
 pub mod client_config;
 pub mod error;
 pub mod impl_crypto;
 pub mod impl_message;
 pub mod storage_crypto;
+pub mod notification;
 
 #[derive(Debug)]
 pub struct Client {
@@ -77,14 +79,25 @@ impl Client {
     pub fn get_nickname(&self) -> Nickname {
         Nickname(self.config.client_data.nickname.clone())
     }
+
+    pub async fn subscribe(&mut self, mut f: impl FnMut(Notification)) -> Result<(), Error> {
+        let mut subscribe = self.raw_client.subscribe().await?;
+
+        loop {
+            let notify = subscribe.get_mut().message().await.unwrap().unwrap();
+            println!("new notify: {:?}", notify);
+            f(Client::nofity(self, notify)?)
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::get_rand_string;
-    use std::path::PathBuf;
+    use crate::{client::impl_message::Message, test_utils::get_rand_string};
+    use std::{path::PathBuf, time::Duration, sync::Arc};
     use temp_dir::TempDir;
+    use std::sync::Mutex;
     use tracing_test::traced_test;
 
     pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
@@ -119,6 +132,56 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn send_message_with_subscribe() {
+        let (_paths, _, mut client_to) = get_client!();
+        let (_paths, _, mut client_from) = get_client!();
+
+        client_to
+            .send_crypto(client_from.get_nickname())
+            .await
+            .unwrap();
+
+        client_from.accept_all_cryptos().await.unwrap();
+        client_to.update_cryptos().await.unwrap();
+        let nickname_from = client_from.get_nickname();
+        let done = Arc::new(Mutex::new(false));
+
+        println!("nickname_to: {}", client_to.raw_client.data.nickname);
+        println!("nickname_from: {}", client_from.raw_client.data.nickname);
+
+        const TEST_MESSAGE: &str = "Фёдор, я тебя очень сильно люблю";
+
+        let done_clone = done.clone();
+        tokio::spawn(async move {
+            client_from
+                .subscribe(|new_notification| {
+                    println!("n: {:?}", new_notification);
+                    
+                    let notification::Event::NewMessage(message) = new_notification.event;
+                    if message.text == TEST_MESSAGE.to_string() {
+                        *done_clone.lock().unwrap() = true;
+                    }
+                })
+                .await
+                .unwrap();
+        });
+        tokio::time::sleep(Duration::from_secs(1)).await;
+
+        client_to
+            .send_message(
+                nickname_from,
+                Message {
+                    text: TEST_MESSAGE.to_string(),
+                },
+            )
+            .await
+            .unwrap();
+        tokio::time::sleep(Duration::from_secs(1)).await;
+
+        assert_eq!(*done.lock().unwrap(), true);
+    }
+
+    #[tokio::test]
     #[traced_test]
     async fn save_and_load() {
         let (_paths, client_config, client) = get_client!();
@@ -148,16 +211,20 @@ mod tests {
         client_from.accept_all_cryptos().await.unwrap();
         client_to.update_cryptos().await.unwrap();
 
+        // Проверка ключей
+        println!("nickname_to: {}", client_to.get_nickname());
+        println!("client_to: {:?}", client_to.config.storage_crypto);
+        println!("nickname_from: {}", client_from.get_nickname());
+        println!("client_from: {:?}", client_from.config.storage_crypto);
         assert_eq!(
-            // Проверка ключей
             client_to
                 .config
-                .storage_crypto.0
+                .storage_crypto
                 .get(&client_from.get_nickname())
                 .unwrap(),
             client_from
                 .config
-                .storage_crypto.0
+                .storage_crypto
                 .get(&client_to.get_nickname())
                 .unwrap()
         );
