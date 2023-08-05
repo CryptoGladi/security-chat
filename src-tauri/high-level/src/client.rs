@@ -148,7 +148,8 @@ mod tests {
         client_from.accept_all_cryptos().await.unwrap();
         client_to.update_cryptos().await.unwrap();
 
-        assert_eq!( // Проверка ключей
+        assert_eq!(
+            // Проверка ключей
             client_to
                 .config
                 .storage_crypto

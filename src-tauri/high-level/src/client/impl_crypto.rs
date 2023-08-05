@@ -18,6 +18,7 @@ impl AesKeyForAccept {
             .config
             .storage_crypto
             .insert(Nickname(self.0.nickname_to.clone()), aes);
+        client.save()?;
         Ok(())
     }
 }
@@ -68,18 +69,13 @@ impl Client {
         let keys_info = self.raw_client.get_aes_keys().await?;
 
         for i in keys_info {
-            let Some(nickname_from_public_key) = i.nickname_from_public_key else {
+            let nickname_from = Nickname(i.nickname_from.clone());
+            let (Some(nickname_from_public_key), Some(ephemeral_secret_def)) = (i.nickname_from_public_key, self.config.order_adding_crypto.get(&nickname_from)) else {
                 break;
             };
 
-            let nickname_from = Nickname(i.nickname_from.clone());
             let secret = unsafe {
-                self.config
-                    .order_adding_crypto
-                    .get(&nickname_from)
-                    .unwrap()
-                    .clone()
-                    .get()
+                ephemeral_secret_def.clone().get()
             };
 
             let shared_secret = get_shared_secret(
