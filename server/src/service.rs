@@ -273,7 +273,9 @@ impl SecurityChat for SecurityChatService {
                 let n = notification.recv().await.unwrap();
 
                 if n.nickname_from == user_for_check.nickname {
-                    tx.send(Ok(n)).await.unwrap();
+                    if tx.send(Ok(n)).await.is_err() {
+                        break;
+                    }
                 }
             }
         });

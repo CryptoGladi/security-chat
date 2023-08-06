@@ -5,5 +5,9 @@ edition = "2021"
 
 [dependencies]
 high-level = { path = "../../src-tauri/high-level" }
+log = "0.4.19"
+once_cell = "1.18.0"
+rustyline = "12.0.0"
+simple_logger = "4.2.0"
 structopt = "0.3.26"
 tokio = { version = "1.29.1", features = ["full"] }

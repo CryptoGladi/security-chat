@@ -1,4 +1,4 @@
-use super::*;
+use super::{*, storage_crypto::StorageCrypto};
 use lower_level::client::crypto::EncryptedMessage;
 use serde::{Deserialize, Serialize};
 
@@ -29,12 +29,12 @@ impl Client {
         Ok(())
     }
 
-    pub fn decrypt_message(
-        &self,
+    pub(crate) fn decrypt_message(
+        storage_crypto: StorageCrypto,
         message: crate_proto::Message,
         nickname_from: Nickname,
     ) -> Result<Message, Error> {
-        let aes = self.config.storage_crypto.get(&nickname_from)?;
+        let aes = storage_crypto.get(&nickname_from)?;
         let decrypted_body = aes.decrypt(&EncryptedMessage {
             data: message.body,
             nonce: message.nonce.try_into().unwrap(),

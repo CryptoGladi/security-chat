@@ -1,6 +1,7 @@
 use crate::bincode_config;
 use client_config::{ClientConfig, ClientInitConfig};
 use error::Error;
+use kanal::AsyncReceiver;
 use lower_level::client::{
     crypto::{
         ecdh::{get_shared_secret, EphemeralSecretDef, PublicKey},
@@ -44,6 +45,10 @@ impl Client {
         })
     }
 
+    pub fn have_account(init_config: ClientInitConfig) -> Result<bool, Error> {
+        Ok(init_config.path_to_config_file.is_file())
+    }
+
     #[tracing::instrument]
     pub async fn load(init_config: ClientInitConfig) -> Result<Client, Error> {
         let config: ClientConfig = bincode_config::load(init_config.path_to_config_file.clone())?;
@@ -80,13 +85,17 @@ impl Client {
         Nickname(self.config.client_data.nickname.clone())
     }
 
-    pub async fn subscribe(&mut self, mut f: impl FnMut(Notification)) -> Result<(), Error> {
+    pub async fn subscribe(&mut self) -> Result<AsyncReceiver<Notification>, Error> {
         let mut subscribe = self.raw_client.subscribe().await?;
+        let (send, recv) = kanal::unbounded_async();
+        let storage_crypto = self.config.storage_crypto.clone();
 
-        loop {
+        tokio::spawn(async move {
             let notify = subscribe.get_mut().message().await.unwrap().unwrap();
-            f(Client::nofity(self, notify)?)
-        }
+            send.send(Client::nofity(storage_crypto, notify).unwrap()).await.unwrap();
+        });
+
+        Ok(recv)
     }
 }
 
@@ -95,6 +104,7 @@ mod tests {
     use super::*;
     use crate::{client::impl_message::Message, test_utils::get_rand_string};
     use std::{path::PathBuf, time::Duration, sync::Arc};
+    use http::header::TE;
     use temp_dir::TempDir;
     use std::sync::Mutex;
     use tracing_test::traced_test;
@@ -131,6 +141,42 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn send_many_message_with_subscribe() {
+        let (_paths, _, mut client_to) = get_client!();
+        let (_paths, _, mut client_from) = get_client!();
+        client_to
+            .send_crypto(client_from.get_nickname())
+            .await
+            .unwrap();
+
+        client_from.accept_all_cryptos().await.unwrap();
+        client_to.update_cryptos().await.unwrap();
+
+        const TEST_MESSAGE: &str = "MANY MESSAGES";
+        const LEN: usize = 10_000;
+
+        let recv = client_from
+        .subscribe()
+        .await
+        .unwrap();
+
+        for _ in 0..LEN {
+            client_to
+            .send_message(
+                client_from.get_nickname(),
+                Message {
+                    text: TEST_MESSAGE.to_string(),
+                },
+            )
+            .await
+            .unwrap();
+
+            let new_event = recv.recv().await.unwrap();
+            println!("new event: {:?}", new_event);
+        }
+    }
+
+    #[tokio::test]
     async fn send_message_with_subscribe() {
         let (_paths, _, mut client_to) = get_client!();
         let (_paths, _, mut client_from) = get_client!();
@@ -142,42 +188,35 @@ mod tests {
 
         client_from.accept_all_cryptos().await.unwrap();
         client_to.update_cryptos().await.unwrap();
-        let nickname_from = client_from.get_nickname();
-        let done = Arc::new(Mutex::new(false));
 
         println!("nickname_to: {}", client_to.raw_client.data.nickname);
         println!("nickname_from: {}", client_from.raw_client.data.nickname);
 
         const TEST_MESSAGE: &str = "Фёдор, я тебя очень сильно люблю";
 
-        let done_clone = done.clone();
-        tokio::spawn(async move {
-            client_from
-                .subscribe(|new_notification| {
-                    println!("n: {:?}", new_notification);
-                    
-                    let notification::Event::NewMessage(message) = new_notification.event;
-                    if message.text == TEST_MESSAGE.to_string() {
-                        *done_clone.lock().unwrap() = true;
-                    }
-                })
-                .await
-                .unwrap();
-        });
-        tokio::time::sleep(Duration::from_secs(1)).await;
+        let recv = client_from
+        .subscribe()
+        .await
+        .unwrap();
 
         client_to
             .send_message(
-                nickname_from,
+                client_from.get_nickname(),
                 Message {
                     text: TEST_MESSAGE.to_string(),
                 },
             )
             .await
             .unwrap();
-        tokio::time::sleep(Duration::from_secs(1)).await;
 
-        assert_eq!(*done.lock().unwrap(), true);
+        let new_event = recv.recv().await.unwrap();
+        println!("new event: {:?}", new_event);
+
+        match new_event.event {
+            notification::Event::NewMessage(message) => {
+                assert_eq!(message.text, TEST_MESSAGE);
+            }
+        }
     }
 
     #[tokio::test]
