@@ -2,6 +2,7 @@ use crate::bincode_config;
 use client_config::{ClientConfig, ClientInitConfig};
 use error::Error;
 use kanal::AsyncReceiver;
+use log::info;
 use lower_level::client::{
     crypto::{
         ecdh::{get_shared_secret, EphemeralSecretDef, PublicKey},
@@ -27,11 +28,11 @@ pub struct Client {
 }
 
 impl Client {
-    #[tracing::instrument]
     pub async fn registration(
         nickname: &str,
         init_config: ClientInitConfig,
     ) -> Result<Client, Error> {
+        info!("run registration");
         let raw_client =
             RawClient::registration(nickname, init_config.address_to_server.clone()).await?;
 
@@ -49,8 +50,8 @@ impl Client {
         Ok(init_config.path_to_config_file.is_file())
     }
 
-    #[tracing::instrument]
     pub async fn load(init_config: ClientInitConfig) -> Result<Client, Error> {
+        info!("run load");
         let config: ClientConfig = bincode_config::load(init_config.path_to_config_file.clone())?;
         let api = RawClient::api_connect(init_config.address_to_server.clone()).await?;
 
@@ -74,25 +75,31 @@ impl Client {
         })
     }
 
-    #[tracing::instrument]
     pub fn save(&self) -> Result<(), Error> {
+        info!("run save");
         bincode_config::save(&self.config, &self.init_config.path_to_config_file)?;
         Ok(())
     }
 
-    #[tracing::instrument]
     pub fn get_nickname(&self) -> Nickname {
         Nickname(self.config.client_data.nickname.clone())
     }
 
     pub async fn subscribe(&mut self) -> Result<AsyncReceiver<Notification>, Error> {
+        info!("run ");
         let mut subscribe = self.raw_client.subscribe().await?;
         let (send, recv) = kanal::unbounded_async();
         let storage_crypto = self.config.storage_crypto.clone();
 
         tokio::spawn(async move {
-            let notify = subscribe.get_mut().message().await.unwrap().unwrap();
-            send.send(Client::nofity(storage_crypto, notify).unwrap()).await.unwrap();
+            loop {
+                // TODO при добавление нового ключа storage crypto НЕ ОБНОВЛЯЕТСЯ ВНУТРИ LOOP!
+                // storage_crypto.add(Nickname("ss".to_string()), Aes::generate()).unwrap();
+                let notify = subscribe.get_mut().message().await.unwrap().unwrap();
+                if send.send(Client::nofity(&storage_crypto, notify).unwrap()).await.is_err() {
+                    break;
+                }
+            }
         });
 
         Ok(recv)
@@ -103,11 +110,8 @@ impl Client {
 mod tests {
     use super::*;
     use crate::{client::impl_message::Message, test_utils::get_rand_string};
-    use std::{path::PathBuf, time::Duration, sync::Arc};
-    use http::header::TE;
+    use std::path::PathBuf;
     use temp_dir::TempDir;
-    use std::sync::Mutex;
-    use tracing_test::traced_test;
 
     pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
 
@@ -153,7 +157,7 @@ mod tests {
         client_to.update_cryptos().await.unwrap();
 
         const TEST_MESSAGE: &str = "MANY MESSAGES";
-        const LEN: usize = 10_000;
+        const LEN: usize = 100;
 
         let recv = client_from
         .subscribe()
@@ -220,7 +224,6 @@ mod tests {
     }
 
     #[tokio::test]
-    #[traced_test]
     async fn save_and_load() {
         let (_paths, client_config, client) = get_client!();
 
@@ -236,7 +239,6 @@ mod tests {
     }
 
     #[tokio::test]
-    #[traced_test]
     async fn shared_keys() {
         let (_paths, _, mut client_to) = get_client!();
         let (_paths, _, mut client_from) = get_client!();

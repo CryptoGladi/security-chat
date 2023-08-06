@@ -13,7 +13,7 @@ pub struct Notification {
 }
 
 impl Client {
-    pub(crate) fn nofity(storage_crypto: StorageCrypto, raw: RawNotification) -> Result<Notification, Error> {        
+    pub(crate) fn nofity(storage_crypto: &StorageCrypto, raw: RawNotification) -> Result<Notification, Error> {        
         let event = match raw.notice.unwrap() {
             crate_proto::Notice::NewMessage(message) => {
                 Event::NewMessage(Client::decrypt_message(storage_crypto, message, Nickname(raw.by_nickname.clone()))?)

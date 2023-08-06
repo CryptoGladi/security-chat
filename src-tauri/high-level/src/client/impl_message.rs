@@ -30,7 +30,7 @@ impl Client {
     }
 
     pub(crate) fn decrypt_message(
-        storage_crypto: StorageCrypto,
+        storage_crypto: &StorageCrypto,
         message: crate_proto::Message,
         nickname_from: Nickname,
     ) -> Result<Message, Error> {

@@ -34,10 +34,11 @@ async fn main() {
     let recv_event = client.subscribe().await.unwrap();
     
     tokio::spawn(async move {
-        let notification = recv_event.recv().await.unwrap();
-        
-        match notification.event {
-            Event::NewMessage(message) => println!("new message {}; from user: {}", message.text, notification.by_nickname)
+        loop {
+            let notification = recv_event.recv().await.unwrap();
+            match notification.event {
+                Event::NewMessage(message) => println!("new message {}; from user: {}", message.text, notification.by_nickname)
+            }
         }
     });
 
