@@ -678,11 +678,11 @@ dependencies = [
  "hashbrown 0.14.0",
  "http",
  "kanal",
+ "log",
  "lower-level",
  "serde",
  "thiserror",
  "tokio",
- "tracing",
 ]
 
 [[package]]

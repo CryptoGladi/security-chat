@@ -86,7 +86,7 @@ impl Client {
     }
 
     pub async fn subscribe(&mut self) -> Result<AsyncReceiver<Notification>, Error> {
-        info!("run ");
+        info!("run subscribe");
         let mut subscribe = self.raw_client.subscribe().await?;
         let (send, recv) = kanal::unbounded_async();
         let storage_crypto = self.config.storage_crypto.clone();
@@ -95,6 +95,7 @@ impl Client {
             loop {
                 // TODO при добавление нового ключа storage crypto НЕ ОБНОВЛЯЕТСЯ ВНУТРИ LOOP!
                 // storage_crypto.add(Nickname("ss".to_string()), Aes::generate()).unwrap();
+                // ЕДИНСТВЕННЫЙ ВЫХОД - при update надо перезапускать subscribe
                 let notify = subscribe.get_mut().message().await.unwrap().unwrap();
                 if send.send(Client::nofity(&storage_crypto, notify).unwrap()).await.is_err() {
                     break;

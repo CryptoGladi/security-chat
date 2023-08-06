@@ -13,6 +13,7 @@ impl Client {
         nickname_from: Nickname,
         message: Message,
     ) -> Result<(), Error> {
+        info!("run send_message");
         let aes = self.config.storage_crypto.get(&nickname_from)?;
         let bincode = bincode::serialize(&message)?;
         let encryptred_data = aes.encrypt(&bincode[..])?;
@@ -34,6 +35,7 @@ impl Client {
         message: crate_proto::Message,
         nickname_from: Nickname,
     ) -> Result<Message, Error> {
+        info!("run decrypt_message");
         let aes = storage_crypto.get(&nickname_from)?;
         let decrypted_body = aes.decrypt(&EncryptedMessage {
             data: message.body,

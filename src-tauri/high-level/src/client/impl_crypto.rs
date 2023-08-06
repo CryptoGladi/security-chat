@@ -6,6 +6,7 @@ pub struct AesKeyForAccept(pub AesKeyInfo);
 
 impl AesKeyForAccept {
     pub async fn accept(&mut self, client: &mut Client) -> Result<(), Error> {
+        info!("run accept for AesKeyForAccept");
         let secret = client.raw_client.set_aes_key(&self.0).await?;
         let public_key =
             PublicKey::from_sec1_bytes(&self.0.nickname_to_public_key.clone()[..]).unwrap();
@@ -23,6 +24,7 @@ impl AesKeyForAccept {
 
 impl Client {
     pub async fn send_crypto(&mut self, nickname_from: Nickname) -> Result<(), Error> {
+        info!("run send_crypto");
         if self.raw_client.data.nickname == *nickname_from {
             return Err(Error::NicknameSame(nickname_from));
         }
@@ -41,11 +43,13 @@ impl Client {
     }
 
     pub async fn get_cryptos_for_accept(&mut self) -> Result<Vec<AesKeyForAccept>, Error> {
+        info!("run get_cryptos_for_accept");
         let aes_info = self.raw_client.get_aes_keys().await?;
         Ok(aes_info.into_iter().map(AesKeyForAccept).collect())
     }
 
     pub async fn accept_all_cryptos(&mut self) -> Result<(), Error> {
+        info!("run accept_all_cryptos");
         let mut aes_info = self.get_cryptos_for_accept().await?;
 
         for i in aes_info.iter_mut() {
@@ -56,6 +60,7 @@ impl Client {
     }
 
     pub async fn update_cryptos(&mut self) -> Result<(), Error> {
+        info!("run update_cryptos");
         let keys_info = self.raw_client.get_aes_keys().await?;
 
         for i in keys_info {
