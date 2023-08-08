@@ -1,5 +1,3 @@
-use std::fmt::Debug;
-
 use super::{aes, common::get_rand, CryptoError};
 use log::info;
 pub use p384::ecdh::{EphemeralSecret, SharedSecret as RawSharedSecter};
@@ -7,34 +5,9 @@ pub use p384::elliptic_curve::sec1::ToEncodedPoint;
 use p384::elliptic_curve::NonZeroScalar;
 use p384::NistP384;
 pub use p384::{EncodedPoint, PublicKey};
-use serde::{Deserialize, Serialize};
+pub use ephemeral_secret_def::EphemeralSecretDef;
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct EphemeralSecretDef {
-    pub scalar: NonZeroScalar<NistP384>,
-}
-
-impl Debug for EphemeralSecretDef {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "EphemeralSecretDef")
-    }
-}
-
-impl EphemeralSecretDef {
-    /// # Safety
-    ///
-    /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
-    pub unsafe fn from(x: EphemeralSecret) -> Self {
-        std::mem::transmute(x)
-    }
-
-    /// # Safety
-    ///
-    /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
-    pub unsafe fn get(self) -> EphemeralSecret {
-        std::mem::transmute(self)
-    }
-}
+pub mod ephemeral_secret_def;
 
 pub struct SharedSecret(pub p384::ecdh::SharedSecret);
 

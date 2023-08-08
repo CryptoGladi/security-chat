@@ -351,6 +351,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "built"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b99c4cdc7b2c2364182331055623bdf45254fcb679fea565c40c3c11c101889a"
+dependencies = [
+ "cargo-lock",
+ "semver",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -419,6 +429,18 @@ dependencies = [
  "glib-sys",
  "libc",
  "system-deps 6.1.1",
+]
+
+[[package]]
+name = "cargo-lock"
+version = "9.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e11c675378efb449ed3ce8de78d75d0d80542fc98487c26aba28eb3b82feac72"
+dependencies = [
+ "semver",
+ "serde",
+ "toml 0.7.6",
+ "url",
 ]
 
 [[package]]
@@ -2225,6 +2247,7 @@ name = "lower-level"
 version = "0.0.0"
 dependencies = [
  "aes-gcm",
+ "built",
  "crate-proto",
  "criterion",
  "http",
@@ -2232,8 +2255,8 @@ dependencies = [
  "p384",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
- "safe-transmute",
  "serde",
+ "static_assertions",
  "temp-dir",
  "thiserror",
  "tokio",
@@ -3262,12 +3285,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ad4cc8da4ef723ed60bced201181d83791ad433213d8c24efffda1eec85d741"
 
 [[package]]
-name = "safe-transmute"
-version = "0.11.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98a01dab6acf992653be49205bdd549f32f17cb2803e8eacf1560bf97259aae8"
-
-[[package]]
 name = "safemem"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3607,6 +3624,12 @@ checksum = "dbe866e1e51e8260c9eed836a042a5e7f6726bb2b411dffeaa712e19c388f23b"
 dependencies = [
  "loom",
 ]
+
+[[package]]
+name = "static_assertions"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "string_cache"
