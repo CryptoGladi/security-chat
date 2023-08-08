@@ -1,7 +1,7 @@
 use super::*;
 use crate_proto::AesKeyInfo;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AesKeyForAccept(pub AesKeyInfo);
 
 impl AesKeyForAccept {

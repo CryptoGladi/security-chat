@@ -7,6 +7,10 @@ license = ""
 repository = ""
 edition = "2021"
 
+[profile.dev]
+debug = 1
+split-debuginfo = "unpacked"
+
 [profile.release]
 incremental = true
 

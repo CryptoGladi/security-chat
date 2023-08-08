@@ -72,6 +72,20 @@ impl SecurityChat for SecurityChatService {
             .await
             .unwrap();
 
+        self.producer
+            .send(Notification {
+                nickname_from: user_from[0].nickname.clone(),
+                by_nickname: user_to[0].nickname.clone(),
+                notice: Some(notification::Notice::NewSendAesKey(AesKeyInfo {
+                    id: 0,
+                    nickname_to: user_to[0].nickname.clone(),
+                    nickname_from: user_from[0].nickname.clone(),
+                    nickname_to_public_key: request.get_ref().public_key.clone(),
+                    nickname_from_public_key: None,
+                })),
+            })
+            .unwrap();
+
         Ok(Response::new(()))
     }
 
@@ -305,11 +319,15 @@ impl SecurityChat for SecurityChatService {
             return Err(tonic::Status::not_found("authkey is invalid"));
         }
 
-        self.producer.send(Notification {
-            nickname_from: request.get_ref().nickname_from.clone(),
-            by_nickname: user_for_check.nickname,
-            notice: Some(notification::Notice::NewMessage(request.get_ref().clone().message.unwrap()))
-        }).unwrap();
+        self.producer
+            .send(Notification {
+                nickname_from: request.get_ref().nickname_from.clone(),
+                by_nickname: user_for_check.nickname,
+                notice: Some(notification::Notice::NewMessage(
+                    request.get_ref().clone().message.unwrap(),
+                )),
+            })
+            .unwrap();
 
         // TODO DB
 

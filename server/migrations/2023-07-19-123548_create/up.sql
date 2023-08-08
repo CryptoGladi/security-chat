@@ -8,7 +8,9 @@ CREATE TABLE chat_messages (
   id BIGSERIAL PRIMARY KEY,
   sender_id BIGSERIAL REFERENCES users(id),
   recipient_id BIGSERIAL REFERENCES users(id),
-  message_body BYTEA NOT NULL
+  message_body BYTEA NOT NULL,
+  nonce BYTEA NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE order_add_keys ( -- only for chat

@@ -1,9 +1,12 @@
+use super::impl_crypto::AesKeyForAccept;
 use super::{impl_message::Message, storage_crypto::StorageCrypto, *};
+use crate_proto::Notice::*;
 use crate_proto::Notification as RawNotification;
 
 #[derive(Debug, Clone)]
 pub enum Event {
     NewMessage(Message),
+    NewAcceptAesKey(AesKeyForAccept),
 }
 
 #[derive(Debug, Clone)]
@@ -18,11 +21,12 @@ impl Client {
         raw: RawNotification,
     ) -> Result<Notification, Error> {
         let event = match raw.notice.unwrap() {
-            crate_proto::Notice::NewMessage(message) => Event::NewMessage(Client::decrypt_message(
+            NewMessage(message) => Event::NewMessage(Client::decrypt_message(
                 storage_crypto,
                 message,
                 Nickname(raw.by_nickname.clone()),
             )?),
+            NewSendAesKey(info) => Event::NewAcceptAesKey(AesKeyForAccept(info)),
         };
 
         Ok(Notification {

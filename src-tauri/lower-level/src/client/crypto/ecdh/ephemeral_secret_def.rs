@@ -27,7 +27,7 @@ impl EphemeralSecretDef {
     ///
     /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
     pub unsafe fn from(x: EphemeralSecret) -> Self {
-        debug_assert_eq!(crate::built_info::check_package(CRATE_FOR_MODULE), true);
+        debug_assert!(crate::built_info::check_package(CRATE_FOR_MODULE));
         std::mem::transmute(x)
     }
 
@@ -35,7 +35,7 @@ impl EphemeralSecretDef {
     ///
     /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
     pub unsafe fn get(self) -> EphemeralSecret {
-        debug_assert_eq!(crate::built_info::check_package(CRATE_FOR_MODULE), true);
+        debug_assert!(crate::built_info::check_package(CRATE_FOR_MODULE));
         std::mem::transmute(self)
     }
 }
@@ -46,6 +46,6 @@ mod tests {
 
     #[test]
     fn check_package()  {
-        assert_eq!(crate::built_info::check_package(CRATE_FOR_MODULE), true);
+        assert!(crate::built_info::check_package(CRATE_FOR_MODULE));
     }
 }

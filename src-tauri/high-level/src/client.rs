@@ -92,13 +92,17 @@ impl Client {
         let storage_crypto = self.config.storage_crypto.clone();
 
         tokio::spawn(async move {
+            use notification::Event::*;
+
             loop {
                 // TODO при добавление нового ключа storage crypto НЕ ОБНОВЛЯЕТСЯ ВНУТРИ LOOP!
                 // storage_crypto.add(Nickname("ss".to_string()), Aes::generate()).unwrap();
                 // ЕДИНСТВЕННЫЙ ВЫХОД - при update надо перезапускать subscribe
                 let notify = subscribe.get_mut().message().await.unwrap().unwrap();
+                let notify = Client::nofity(&storage_crypto, notify).unwrap();
+
                 if send
-                    .send(Client::nofity(&storage_crypto, notify).unwrap())
+                    .send(notify)
                     .await
                     .is_err()
                 {
@@ -216,9 +220,8 @@ mod tests {
         println!("new event: {:?}", new_event);
 
         match new_event.event {
-            notification::Event::NewMessage(message) => {
-                assert_eq!(message.text, TEST_MESSAGE);
-            }
+            notification::Event::NewMessage(message) => assert_eq!(message.text, TEST_MESSAGE),
+            _ => panic!("event is invalid"),
         }
     }
 
