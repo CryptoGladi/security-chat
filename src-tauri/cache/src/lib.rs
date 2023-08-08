@@ -1,4 +1,4 @@
-use std::fmt::{Display, Debug};
+use std::fmt::Debug;
 use error::{CacheResult, Error};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -13,9 +13,9 @@ pub struct Cache {
 impl Cache {
     pub fn new<P>(path: P) -> CacheResult<Self>
     where
-        P: AsRef<std::path::Path> + Display,
+        P: AsRef<std::path::Path>,
     {
-        info!("new with path: {}", path);
+        info!("new with path: {}", path.as_ref().display());
         let mut options = rocksdb::Options::default();
         options.create_if_missing(true);
         options.create_missing_column_families(true);
@@ -53,7 +53,6 @@ impl Cache {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use http::header::TE;
     use serde::Deserialize;
     use temp_dir::TempDir;
 
@@ -89,7 +88,7 @@ mod tests {
             love: false,
         };
 
-        cache.put("new-key", &value);
+        cache.put("new-key", &value).unwrap();
 
         let got_value: TestValue = cache.get("new-key").unwrap();
         assert_eq!(value, got_value);
@@ -109,6 +108,6 @@ mod tests {
     #[test]
     fn new() {
         let temp_dir = TempDir::new().unwrap();
-        let cache = Cache::new(temp_dir.path()).unwrap();
+        let _cache = Cache::new(temp_dir.path()).unwrap();
     }
 }

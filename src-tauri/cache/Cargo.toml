@@ -9,3 +9,6 @@ bincode.workspace = true
 thiserror.workspace = true
 log.workspace = true
 serde.workspace = true
+
+[dev-dependencies]
+temp-dir = "0.1.11"

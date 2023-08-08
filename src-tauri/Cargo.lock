@@ -393,6 +393,7 @@ dependencies = [
  "log",
  "rocksdb",
  "serde",
+ "temp-dir",
  "thiserror",
 ]
 
