@@ -7,6 +7,8 @@ pub struct AesKeyForAccept(pub AesKeyInfo);
 impl AesKeyForAccept {
     pub async fn accept(&mut self, client: &mut Client) -> Result<(), Error> {
         info!("run accept for AesKeyForAccept");
+        debug_assert!(self.0.nickname_from_public_key.is_none());
+
         let secret = client.raw_client.set_aes_key(&self.0).await?;
         let public_key =
             PublicKey::from_sec1_bytes(&self.0.nickname_to_public_key.clone()[..]).unwrap();
@@ -15,7 +17,7 @@ impl AesKeyForAccept {
 
         client
             .config
-            .storage_crypto
+            .storage_crypto.write().unwrap()
             .add(Nickname(self.0.nickname_to.clone()), aes)?;
         client.save()?;
         Ok(())
@@ -77,7 +79,7 @@ impl Client {
             );
             let aes = Aes::with_shared_key(shared_secret);
 
-            self.config.storage_crypto.add(nickname_from.clone(), aes)?;
+            self.config.storage_crypto.write().unwrap().add(nickname_from.clone(), aes)?;
 
             self.config
                 .order_adding_crypto

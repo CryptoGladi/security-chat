@@ -1,6 +1,6 @@
 use self::notification::Notification;
 use crate::bincode_config;
-use client_config::{ClientConfig, ClientInitConfig};
+use client_config::{ClientConfigData, ClientConfig, ClientInitConfig};
 use error::Error;
 use kanal::AsyncReceiver;
 use log::info;
@@ -37,10 +37,10 @@ impl Client {
             RawClient::registration(nickname, init_config.address_to_server.clone()).await?;
 
         Ok(Self {
-            config: ClientConfig {
+            config: ClientConfigData {
                 client_data: raw_client.data.clone(),
                 ..Default::default()
-            },
+            }.as_normal(),
             init_config,
             raw_client,
         })
@@ -52,7 +52,7 @@ impl Client {
 
     pub async fn load(init_config: ClientInitConfig) -> Result<Client, Error> {
         info!("run load");
-        let config: ClientConfig = bincode_config::load(init_config.path_to_config_file.clone())?;
+        let config: ClientConfigData = bincode_config::load(init_config.path_to_config_file.clone())?;
         let api = RawClient::api_connect(init_config.address_to_server.clone()).await?;
 
         if !*RawClient::check_valid(
@@ -70,14 +70,14 @@ impl Client {
                 api,
                 data: config.client_data.clone(),
             },
-            config,
+            config: config.as_normal(),
             init_config,
         })
     }
 
     pub fn save(&self) -> Result<(), Error> {
         info!("run save");
-        bincode_config::save(&self.config, &self.init_config.path_to_config_file)?;
+        bincode_config::save(&self.config.as_data(), &self.init_config.path_to_config_file)?;
         Ok(())
     }
 
@@ -99,7 +99,7 @@ impl Client {
                 // storage_crypto.add(Nickname("ss".to_string()), Aes::generate()).unwrap();
                 // ЕДИНСТВЕННЫЙ ВЫХОД - при update надо перезапускать subscribe
                 let notify = subscribe.get_mut().message().await.unwrap().unwrap();
-                let notify = Client::nofity(&storage_crypto, notify).unwrap();
+                let notify = Client::nofity(&storage_crypto.read().unwrap(), notify).unwrap();
 
                 if send
                     .send(notify)
@@ -151,6 +151,32 @@ mod tests {
 
             (paths, client_config, client)
         }};
+    }
+
+    #[tokio::test]
+    async fn add_crypto_via_subscribe() {
+        let (_paths, _, mut client_to) = get_client!();
+        let (_paths, _, mut client_from) = get_client!();
+
+        let recv_from = client_from.subscribe().await.unwrap();
+        let recv_to = client_to.subscribe().await.unwrap();
+
+        client_to
+            .send_crypto(client_from.get_nickname())
+            .await
+            .unwrap();
+
+        let notification = recv_from.recv().await.unwrap();
+        println!("new from notification: {:?}", notification);
+
+        if let notification::Event::NewAcceptAesKey(mut key) = notification.event {
+            key.accept(&mut client_from).await.unwrap();
+        }
+
+        //let notification = recv_to.recv().await.unwrap();
+        //println!("new to notification: {:?}", notification);
+
+        // TODO accept event
     }
 
     #[tokio::test]
@@ -262,11 +288,13 @@ mod tests {
             client_to
                 .config
                 .storage_crypto
+                .read().unwrap()
                 .get(&client_from.get_nickname())
                 .unwrap(),
             client_from
                 .config
                 .storage_crypto
+                .read().unwrap()
                 .get(&client_to.get_nickname())
                 .unwrap()
         );

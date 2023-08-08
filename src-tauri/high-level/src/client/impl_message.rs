@@ -14,7 +14,9 @@ impl Client {
         message: Message,
     ) -> Result<(), Error> {
         info!("run send_message");
-        let aes = self.config.storage_crypto.get(&nickname_from)?;
+        let storage_crypto = self.config.storage_crypto.read().unwrap();
+        
+        let aes = storage_crypto.get(&nickname_from)?;
         let bincode = bincode::serialize(&message)?;
         let encryptred_data = aes.encrypt(&bincode[..])?;
 
