@@ -22,14 +22,14 @@ impl Debug for EphemeralSecretDef {
 
 impl EphemeralSecretDef {
     /// # Safety
-    /// 
+    ///
     /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
     pub unsafe fn from(x: EphemeralSecret) -> Self {
         std::mem::transmute(x)
     }
 
     /// # Safety
-    /// 
+    ///
     /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
     pub unsafe fn get(self) -> EphemeralSecret {
         std::mem::transmute(self)

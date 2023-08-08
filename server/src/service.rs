@@ -183,6 +183,7 @@ impl SecurityChat for SecurityChatService {
             .execute(&mut db)
             .await
             .unwrap();
+
         Ok(Response::new(()))
     }
 

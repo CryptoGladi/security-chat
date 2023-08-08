@@ -4,16 +4,11 @@ CREATE TABLE users (
   authkey VARCHAR(40) NOT NULL
 );
 
-CREATE TABLE chat (
-  id BIGSERIAL PRIMARY KEY,
-  title VARCHAR(40) NOT NULL
-);
-
 CREATE TABLE chat_messages (
   id BIGSERIAL PRIMARY KEY,
-  chat_id BIGSERIAL REFERENCES chat(id) ON DELETE CASCADE,
   sender_id BIGSERIAL REFERENCES users(id),
-  message JSON NOT NULL
+  recipient_id BIGSERIAL REFERENCES users(id),
+  message_body BYTEA NOT NULL
 );
 
 CREATE TABLE order_add_keys ( -- only for chat

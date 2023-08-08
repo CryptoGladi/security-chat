@@ -3,12 +3,12 @@ pub mod error;
 pub mod impl_aes;
 pub mod max_size;
 
-use error::Error;
-use max_size::*;
 use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
 use crate::utils::MustBool;
 use crate_proto::*;
+use error::Error;
 use http::uri::Uri;
+use max_size::*;
 use serde::{Deserialize, Serialize};
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
@@ -135,7 +135,17 @@ mod tests {
         .unwrap();
 
         let text = test_utils::get_rand_string(MAX_LEN_MESSAGE + 100);
-        let error = client_to.send_message(client_from.data.nickname, Message {  body: text.into_bytes(), nonce: vec![] }).await.err().unwrap(); 
+        let error = client_to
+            .send_message(
+                client_from.data.nickname,
+                Message {
+                    body: text.into_bytes(),
+                    nonce: vec![],
+                },
+            )
+            .await
+            .err()
+            .unwrap();
 
         assert!(matches!(error, Error::TooBigMessage));
     }
@@ -162,7 +172,7 @@ mod tests {
                 client_from.data.nickname.clone(),
                 Message {
                     body: TEST_MESSAGE.to_vec(),
-                    nonce: vec![]
+                    nonce: vec![],
                 },
             )
             .await

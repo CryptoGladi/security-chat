@@ -14,12 +14,14 @@ rand = { version = "0.8.5", default-features = false, features = ["rand_chacha"]
 rand_chacha = "0.3.1"
 http.workspace = true
 crate-proto = { path = "../crate-proto"}
+safe-transmute = "0.11.2"
 
 [dev-dependencies]
 tokio = { version = "1.29.1", features = ["full"] }
 criterion = { version = "0.4", features = ["html_reports", "async_tokio"] }
 uuid = { version = "1.4.1", features = ["v4"] }
 rand = "0.8.5"
+temp-dir = "0.1.11"
 
 [[bench]]
 name = "registration"

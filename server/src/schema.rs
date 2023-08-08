@@ -11,9 +11,9 @@ diesel::table! {
 diesel::table! {
     chat_messages (id) {
         id -> Int8,
-        chat_id -> Int8,
         sender_id -> Int8,
-        message -> Json,
+        recipient_id -> Int8,
+        message_body -> Bytea,
     }
 }
 
@@ -36,9 +36,6 @@ diesel::table! {
         authkey -> Varchar,
     }
 }
-
-diesel::joinable!(chat_messages -> chat (chat_id));
-diesel::joinable!(chat_messages -> users (sender_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     chat,

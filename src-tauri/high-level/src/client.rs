@@ -1,3 +1,4 @@
+use self::notification::Notification;
 use crate::bincode_config;
 use client_config::{ClientConfig, ClientInitConfig};
 use error::Error;
@@ -11,14 +12,13 @@ use lower_level::client::{
     Client as RawClient,
 };
 use storage_crypto::Nickname;
-use self::notification::Notification;
 
 pub mod client_config;
 pub mod error;
 pub mod impl_crypto;
 pub mod impl_message;
-pub mod storage_crypto;
 pub mod notification;
+pub mod storage_crypto;
 
 #[derive(Debug)]
 pub struct Client {
@@ -97,7 +97,11 @@ impl Client {
                 // storage_crypto.add(Nickname("ss".to_string()), Aes::generate()).unwrap();
                 // ЕДИНСТВЕННЫЙ ВЫХОД - при update надо перезапускать subscribe
                 let notify = subscribe.get_mut().message().await.unwrap().unwrap();
-                if send.send(Client::nofity(&storage_crypto, notify).unwrap()).await.is_err() {
+                if send
+                    .send(Client::nofity(&storage_crypto, notify).unwrap())
+                    .await
+                    .is_err()
+                {
                     break;
                 }
             }
@@ -160,21 +164,18 @@ mod tests {
         const TEST_MESSAGE: &str = "MANY MESSAGES";
         const LEN: usize = 100;
 
-        let recv = client_from
-        .subscribe()
-        .await
-        .unwrap();
+        let recv = client_from.subscribe().await.unwrap();
 
         for _ in 0..LEN {
             client_to
-            .send_message(
-                client_from.get_nickname(),
-                Message {
-                    text: TEST_MESSAGE.to_string(),
-                },
-            )
-            .await
-            .unwrap();
+                .send_message(
+                    client_from.get_nickname(),
+                    Message {
+                        text: TEST_MESSAGE.to_string(),
+                    },
+                )
+                .await
+                .unwrap();
 
             let new_event = recv.recv().await.unwrap();
             println!("new event: {:?}", new_event);
@@ -199,10 +200,7 @@ mod tests {
 
         const TEST_MESSAGE: &str = "Фёдор, я тебя очень сильно люблю";
 
-        let recv = client_from
-        .subscribe()
-        .await
-        .unwrap();
+        let recv = client_from.subscribe().await.unwrap();
 
         client_to
             .send_message(

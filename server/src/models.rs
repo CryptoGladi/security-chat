@@ -35,3 +35,11 @@ pub struct NewKey {
     pub user_from_id: i64,
     pub user_to_public_key: Vec<u8>,
 }
+
+#[derive(Insertable)]
+#[diesel(table_name = crate::schema::chat_messages)]
+pub struct AddMessage {
+    pub sender_id: i64,
+    pub recipient_id: i64,
+    pub message_body: Vec<u8>,
+}

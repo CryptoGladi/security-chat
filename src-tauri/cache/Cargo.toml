@@ -1,0 +1,11 @@
+[package]
+name = "cache"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+rocksdb = { version = "0.21.0", default-features = false, features = ["zstd"] }
+bincode.workspace = true
+thiserror.workspace = true
+log.workspace = true
+serde.workspace = true

@@ -44,7 +44,10 @@ impl Aes {
 
         let data = cipher.encrypt(&nonce, message).map_err(CryptoError::Aes)?;
 
-        Ok(EncryptedMessage { data, nonce: nonce.try_into().unwrap() })
+        Ok(EncryptedMessage {
+            data,
+            nonce: nonce.try_into().unwrap(),
+        })
     }
 
     pub fn decrypt(&self, message: &EncryptedMessage) -> Result<Vec<u8>, CryptoError> {
