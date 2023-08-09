@@ -1,1 +1,1 @@
-pub const MAX_LEN_MESSAGE: usize = 300;
+pub const MAX_LEN_MESSAGE: usize = 1_000;

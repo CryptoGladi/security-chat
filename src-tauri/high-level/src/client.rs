@@ -1,5 +1,6 @@
 use self::notification::Notification;
-use crate::bincode_config;
+use crate::{bincode_config, cache_message::CacheMessage};
+use cache::prelude::CacheStruct;
 use client_config::{ClientConfig, ClientConfigData, ClientInitConfig};
 use error::Error;
 use kanal::AsyncReceiver;
@@ -25,6 +26,7 @@ pub struct Client {
     raw_client: RawClient,
     config: ClientConfig,
     init_config: ClientInitConfig,
+    cache_message: CacheMessage
 }
 
 impl Client {
@@ -36,6 +38,7 @@ impl Client {
 
         let raw_client =
             RawClient::registration(nickname, init_config.address_to_server.clone()).await?;
+        let cache = CacheMessage::new(init_config.path_to_cache_folder.clone())?;
 
         info!("new registration: {}", raw_client.data.nickname);
 
@@ -47,6 +50,7 @@ impl Client {
             .as_normal(),
             init_config,
             raw_client,
+            cache_message: cache
         })
     }
 
@@ -70,6 +74,8 @@ impl Client {
             return Err(Error::AccoutIsInvalid);
         }
 
+        let cache = CacheMessage::new(init_config.path_to_cache_folder.clone())?;
+
         Ok(Self {
             raw_client: RawClient {
                 api,
@@ -77,6 +83,7 @@ impl Client {
             },
             config: config.as_normal(),
             init_config,
+            cache_message: cache
         })
     }
 
@@ -101,9 +108,6 @@ impl Client {
 
         tokio::spawn(async move {
             loop {
-                // TODO при добавление нового ключа storage crypto НЕ ОБНОВЛЯЕТСЯ ВНУТРИ LOOP!
-                // storage_crypto.add(Nickname("ss".to_string()), Aes::generate()).unwrap();
-                // ЕДИНСТВЕННЫЙ ВЫХОД - при update надо перезапускать subscribe
                 let notify = subscribe.get_mut().message().await.unwrap().unwrap();
                 let notify = Client::nofity(&storage_crypto.read().unwrap(), notify).unwrap();
                 info!("new notify: {:?}", notify);
@@ -131,6 +135,7 @@ mod tests {
     struct PathsForTest {
         _temp_dir: TempDir, // for lifetime
         path_to_config_file: PathBuf,
+        path_to_cache_folder: PathBuf
     }
 
     impl PathsForTest {
@@ -139,6 +144,7 @@ mod tests {
 
             Self {
                 path_to_config_file: temp_dir.child("config.bin"),
+                path_to_cache_folder: temp_dir.child("cache-message"),
                 _temp_dir: temp_dir,
             }
         }
@@ -148,7 +154,7 @@ mod tests {
         () => {{
             let paths = PathsForTest::get();
             let client_config =
-                ClientInitConfig::new(paths.path_to_config_file.clone(), ADDRESS_SERVER);
+                ClientInitConfig::new(paths.path_to_config_file.clone(), paths.path_to_cache_folder.clone(), ADDRESS_SERVER);
             let client = Client::registration(&get_rand_string(), client_config.clone())
                 .await
                 .unwrap();
@@ -290,13 +296,15 @@ mod tests {
         let (_paths, client_config, client) = get_client!();
 
         client.save().unwrap();
+        let client_data = client.raw_client.data.clone();
+        drop(client); // for cache
 
         let loaded_client = Client::load(client_config).await.unwrap();
         println!("loaded_client data: {:#?}", loaded_client.raw_client.data);
-        println!("client data: {:#?}", client.raw_client.data);
+        println!("client data: {:#?}", client_data);
         assert_eq!(
             loaded_client.raw_client.data.nickname,
-            client.raw_client.data.nickname
+            client_data.nickname
         )
     }
 
