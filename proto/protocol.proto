@@ -71,6 +71,7 @@ message Notification {
   oneof notice {
     Message new_message = 3;
     AESKeyInfo new_send_aes_key = 4;
+    AESKeyInfo new_accept_aes_key = 5;
   }
 }
 

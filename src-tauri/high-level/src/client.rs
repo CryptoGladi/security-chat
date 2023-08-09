@@ -1,6 +1,6 @@
 use self::notification::Notification;
 use crate::bincode_config;
-use client_config::{ClientConfigData, ClientConfig, ClientInitConfig};
+use client_config::{ClientConfig, ClientConfigData, ClientInitConfig};
 use error::Error;
 use kanal::AsyncReceiver;
 use log::info;
@@ -40,7 +40,8 @@ impl Client {
             config: ClientConfigData {
                 client_data: raw_client.data.clone(),
                 ..Default::default()
-            }.as_normal(),
+            }
+            .as_normal(),
             init_config,
             raw_client,
         })
@@ -52,7 +53,8 @@ impl Client {
 
     pub async fn load(init_config: ClientInitConfig) -> Result<Client, Error> {
         info!("run load");
-        let config: ClientConfigData = bincode_config::load(init_config.path_to_config_file.clone())?;
+        let config: ClientConfigData =
+            bincode_config::load(init_config.path_to_config_file.clone())?;
         let api = RawClient::api_connect(init_config.address_to_server.clone()).await?;
 
         if !*RawClient::check_valid(
@@ -77,7 +79,10 @@ impl Client {
 
     pub fn save(&self) -> Result<(), Error> {
         info!("run save");
-        bincode_config::save(&self.config.as_data(), &self.init_config.path_to_config_file)?;
+        bincode_config::save(
+            &self.config.as_data(),
+            &self.init_config.path_to_config_file,
+        )?;
         Ok(())
     }
 
@@ -100,12 +105,9 @@ impl Client {
                 // ЕДИНСТВЕННЫЙ ВЫХОД - при update надо перезапускать subscribe
                 let notify = subscribe.get_mut().message().await.unwrap().unwrap();
                 let notify = Client::nofity(&storage_crypto.read().unwrap(), notify).unwrap();
+                info!("new notify: {:?}", notify);
 
-                if send
-                    .send(notify)
-                    .await
-                    .is_err()
-                {
+                if send.send(notify).await.is_err() {
                     break;
                 }
             }
@@ -118,6 +120,7 @@ impl Client {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test_log::test;
     use crate::{client::impl_message::Message, test_utils::get_rand_string};
     use std::path::PathBuf;
     use temp_dir::TempDir;
@@ -153,8 +156,9 @@ mod tests {
         }};
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn add_crypto_via_subscribe() {
+        log::info!("222");
         let (_paths, _, mut client_to) = get_client!();
         let (_paths, _, mut client_from) = get_client!();
 
@@ -169,14 +173,38 @@ mod tests {
         let notification = recv_from.recv().await.unwrap();
         println!("new from notification: {:?}", notification);
 
-        if let notification::Event::NewAcceptAesKey(mut key) = notification.event {
+        if let notification::Event::NewSentAcceptAesKey(mut key) = notification.event {
             key.accept(&mut client_from).await.unwrap();
+        } else {
+            panic!("!!");
         }
 
-        //let notification = recv_to.recv().await.unwrap();
-        //println!("new to notification: {:?}", notification);
+        log::info!("111");
+        let notification = recv_to.recv().await.unwrap();
+        println!("new to notification: {:?}", notification);
 
-        // TODO accept event
+        if let notification::Event::NewAcceptAesKey(key) = notification.event {
+            client_to.update_cryptos();
+        } else {
+            panic!("111");
+        }
+
+        const TEST_MESSAGE: &str = "MESSAGE";
+
+        client_to
+            .send_message(
+                client_from.get_nickname(),
+                Message {
+                    text: TEST_MESSAGE.to_string(),
+                },
+            )
+            .await
+            .unwrap();
+
+        let notification = recv_from.recv().await.unwrap();
+        if let notification::Event::NewMessage(message) = notification.event {
+            println!("new message: {}", message.text);
+        }
     }
 
     #[tokio::test]
@@ -288,13 +316,15 @@ mod tests {
             client_to
                 .config
                 .storage_crypto
-                .read().unwrap()
+                .read()
+                .unwrap()
                 .get(&client_from.get_nickname())
                 .unwrap(),
             client_from
                 .config
                 .storage_crypto
-                .read().unwrap()
+                .read()
+                .unwrap()
                 .get(&client_to.get_nickname())
                 .unwrap()
         );

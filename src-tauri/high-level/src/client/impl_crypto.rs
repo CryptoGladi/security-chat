@@ -17,7 +17,9 @@ impl AesKeyForAccept {
 
         client
             .config
-            .storage_crypto.write().unwrap()
+            .storage_crypto
+            .write()
+            .unwrap()
             .add(Nickname(self.0.nickname_to.clone()), aes)?;
         client.save()?;
         Ok(())
@@ -79,7 +81,11 @@ impl Client {
             );
             let aes = Aes::with_shared_key(shared_secret);
 
-            self.config.storage_crypto.write().unwrap().add(nickname_from.clone(), aes)?;
+            self.config
+                .storage_crypto
+                .write()
+                .unwrap()
+                .add(nickname_from.clone(), aes)?;
 
             self.config
                 .order_adding_crypto

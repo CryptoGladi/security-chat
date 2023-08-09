@@ -40,7 +40,11 @@ pub struct ClientConfigData {
 
 impl ClientConfigData {
     pub fn as_normal(&self) -> ClientConfig {
-        ClientConfig { client_data: self.client_data.clone(), storage_crypto: Arc::new(RwLock::new(self.storage_crypto.clone())), order_adding_crypto: self.order_adding_crypto.clone() }
+        ClientConfig {
+            client_data: self.client_data.clone(),
+            storage_crypto: Arc::new(RwLock::new(self.storage_crypto.clone())),
+            order_adding_crypto: self.order_adding_crypto.clone(),
+        }
     }
 }
 
@@ -53,7 +57,6 @@ impl Debug for ClientConfigData {
     }
 }
 
-
 #[derive(Default, Clone, Debug)]
 pub struct ClientConfig {
     pub client_data: ClientData,
@@ -65,6 +68,10 @@ pub struct ClientConfig {
 
 impl ClientConfig {
     pub fn as_data(&self) -> ClientConfigData {
-        ClientConfigData { client_data: self.client_data.clone(), storage_crypto: self.storage_crypto.read().unwrap().clone(), order_adding_crypto: self.order_adding_crypto.clone() }
+        ClientConfigData {
+            client_data: self.client_data.clone(),
+            storage_crypto: self.storage_crypto.read().unwrap().clone(),
+            order_adding_crypto: self.order_adding_crypto.clone(),
+        }
     }
 }

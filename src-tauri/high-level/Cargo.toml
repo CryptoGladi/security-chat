@@ -17,6 +17,8 @@ log.workspace = true
 cache = { path = "../cache" }
 
 [dev-dependencies]
+test-log = "0.2.12"
+env_logger = "0.10.0"
 rand = "0.8.5"
 temp-dir = "0.1.11"
 tokio = { version = "1.29.1", features = ["full"] }

@@ -3,6 +3,7 @@ use crate::models::*;
 use crate::schema::order_add_keys::dsl::*;
 use crate::schema::users::dsl::{nickname, users};
 use diesel::prelude::*;
+use diesel::OptionalExtension;
 use diesel_async::RunQueryDsl;
 use log::{error, info};
 use security_chat::security_chat_server::SecurityChat;
@@ -66,9 +67,10 @@ impl SecurityChat for SecurityChatService {
             user_from_id: user_from[0].id,
             user_to_public_key: request.get_ref().public_key.clone(),
         };
-        diesel::insert_into(order_add_keys)
+
+        let key_info: Key = diesel::insert_into(order_add_keys)
             .values(&new_aes_key)
-            .execute(&mut db)
+            .get_result(&mut db)
             .await
             .unwrap();
 
@@ -77,7 +79,7 @@ impl SecurityChat for SecurityChatService {
                 nickname_from: user_from[0].nickname.clone(),
                 by_nickname: user_to[0].nickname.clone(),
                 notice: Some(notification::Notice::NewSendAesKey(AesKeyInfo {
-                    id: 0,
+                    id: key_info.id,
                     nickname_to: user_to[0].nickname.clone(),
                     nickname_from: user_from[0].nickname.clone(),
                     nickname_to_public_key: request.get_ref().public_key.clone(),
@@ -193,9 +195,27 @@ impl SecurityChat for SecurityChatService {
             return Err(tonic::Status::not_found("authkey is invalid"));
         }
 
+        let key: Key = order_add_keys.find(id).first(&mut db).await.unwrap();
+        let user_to = &get_user_by_id(&mut db, key.user_to_id).await[0];
+        let user_from = &get_user_by_id(&mut db, key.user_from_id).await[0];
+
         diesel::delete(order_add_keys.filter(id.eq(request.get_ref().id)))
             .execute(&mut db)
             .await
+            .unwrap();
+
+        self.producer
+            .send(Notification {
+                nickname_from: user_from.nickname.clone(),
+                by_nickname: user_to.nickname.clone(),
+                notice: Some(notification::Notice::NewAcceptAesKey(AesKeyInfo {
+                    id: key.id,
+                    nickname_to: user_to.nickname.clone(),
+                    nickname_from: user_from.nickname.clone(),
+                    nickname_to_public_key: key.user_to_public_key,
+                    nickname_from_public_key: key.user_from_public_key,
+                })),
+            })
             .unwrap();
 
         Ok(Response::new(()))

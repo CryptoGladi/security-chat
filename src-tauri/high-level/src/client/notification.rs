@@ -1,12 +1,14 @@
 use super::impl_crypto::AesKeyForAccept;
 use super::{impl_message::Message, storage_crypto::StorageCrypto, *};
+use crate_proto::AesKeyInfo;
 use crate_proto::Notice::*;
 use crate_proto::Notification as RawNotification;
 
 #[derive(Debug, Clone)]
 pub enum Event {
     NewMessage(Message),
-    NewAcceptAesKey(AesKeyForAccept),
+    NewSentAcceptAesKey(AesKeyForAccept),
+    NewAcceptAesKey(AesKeyInfo),
 }
 
 #[derive(Debug, Clone)]
@@ -26,7 +28,8 @@ impl Client {
                 message,
                 Nickname(raw.by_nickname.clone()),
             )?),
-            NewSendAesKey(info) => Event::NewAcceptAesKey(AesKeyForAccept(info)),
+            NewSendAesKey(info) => Event::NewSentAcceptAesKey(AesKeyForAccept(info)),
+            NewAcceptAesKey(info) => Event::NewAcceptAesKey(info),
         };
 
         Ok(Notification {
