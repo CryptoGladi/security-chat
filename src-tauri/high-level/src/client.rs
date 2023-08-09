@@ -3,7 +3,7 @@ use crate::bincode_config;
 use client_config::{ClientConfig, ClientConfigData, ClientInitConfig};
 use error::Error;
 use kanal::AsyncReceiver;
-use log::info;
+use log::*;
 use lower_level::client::{
     crypto::{
         ecdh::{get_shared_secret, EphemeralSecretDef, PublicKey},
@@ -32,9 +32,12 @@ impl Client {
         nickname: &str,
         init_config: ClientInitConfig,
     ) -> Result<Client, Error> {
-        info!("run registration");
+        debug!("run registration...");
+
         let raw_client =
             RawClient::registration(nickname, init_config.address_to_server.clone()).await?;
+
+        info!("new registration: {}", raw_client.data.nickname);
 
         Ok(Self {
             config: ClientConfigData {
@@ -97,8 +100,6 @@ impl Client {
         let storage_crypto = self.config.storage_crypto.clone();
 
         tokio::spawn(async move {
-            use notification::Event::*;
-
             loop {
                 // TODO при добавление нового ключа storage crypto НЕ ОБНОВЛЯЕТСЯ ВНУТРИ LOOP!
                 // storage_crypto.add(Nickname("ss".to_string()), Aes::generate()).unwrap();
@@ -158,7 +159,6 @@ mod tests {
 
     #[test(tokio::test)]
     async fn add_crypto_via_subscribe() {
-        log::info!("222");
         let (_paths, _, mut client_to) = get_client!();
         let (_paths, _, mut client_from) = get_client!();
 
@@ -171,31 +171,34 @@ mod tests {
             .unwrap();
 
         let notification = recv_from.recv().await.unwrap();
-        println!("new from notification: {:?}", notification);
 
-        if let notification::Event::NewSentAcceptAesKey(mut key) = notification.event {
-            key.accept(&mut client_from).await.unwrap();
-        } else {
-            panic!("!!");
-        }
+        let notification::Event::NewSentAcceptAesKey(mut key_for_accept) = notification.event else {
+            panic!();
+        };
+        key_for_accept.accept(&mut client_from).await.unwrap();
 
-        log::info!("111");
         let notification = recv_to.recv().await.unwrap();
-        println!("new to notification: {:?}", notification);
 
         if let notification::Event::NewAcceptAesKey(key) = notification.event {
-            client_to.update_cryptos();
+            assert_eq!(key_for_accept.0.id, key.id);
+            assert_eq!(key_for_accept.0.nickname_from, key.nickname_from);
+            assert_eq!(key_for_accept.0.nickname_to, key.nickname_to);
+            assert_eq!(key_for_accept.0.nickname_to_public_key, key.nickname_to_public_key);
+            assert!(key.nickname_from_public_key.is_some());
+            assert!(key_for_accept.0.nickname_from_public_key.is_none());
+
+            client_to.update_cryptos().await.unwrap();
         } else {
-            panic!("111");
+            panic!();
         }
 
-        const TEST_MESSAGE: &str = "MESSAGE";
+        const TEXT_MESSAGE: &str = "MESSAGE";
 
         client_to
             .send_message(
                 client_from.get_nickname(),
                 Message {
-                    text: TEST_MESSAGE.to_string(),
+                    text: TEXT_MESSAGE.to_string(),
                 },
             )
             .await
@@ -203,11 +206,14 @@ mod tests {
 
         let notification = recv_from.recv().await.unwrap();
         if let notification::Event::NewMessage(message) = notification.event {
-            println!("new message: {}", message.text);
+            assert_eq!(message.text, TEXT_MESSAGE);
+        }
+        else {
+            panic!()
         }
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn send_many_message_with_subscribe() {
         let (_paths, _, mut client_to) = get_client!();
         let (_paths, _, mut client_from) = get_client!();
@@ -219,7 +225,7 @@ mod tests {
         client_from.accept_all_cryptos().await.unwrap();
         client_to.update_cryptos().await.unwrap();
 
-        const TEST_MESSAGE: &str = "MANY MESSAGES";
+        const TEXT_MESSAGE: &str = "MANY MESSAGES";
         const LEN: usize = 100;
 
         let recv = client_from.subscribe().await.unwrap();
@@ -229,7 +235,7 @@ mod tests {
                 .send_message(
                     client_from.get_nickname(),
                     Message {
-                        text: TEST_MESSAGE.to_string(),
+                        text: TEXT_MESSAGE.to_string(),
                     },
                 )
                 .await
@@ -240,7 +246,7 @@ mod tests {
         }
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn send_message_with_subscribe() {
         let (_paths, _, mut client_to) = get_client!();
         let (_paths, _, mut client_from) = get_client!();
@@ -279,7 +285,7 @@ mod tests {
         }
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn save_and_load() {
         let (_paths, client_config, client) = get_client!();
 
@@ -294,7 +300,7 @@ mod tests {
         )
     }
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn shared_keys() {
         let (_paths, _, mut client_to) = get_client!();
         let (_paths, _, mut client_from) = get_client!();

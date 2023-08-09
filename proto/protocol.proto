@@ -55,11 +55,6 @@ message SetUserFromAESKeyRequest {
   bytes public_key = 3;
 }
 
-message AcceptAESKeyRequest {
-  Check nickname = 1;
-  int64 id = 2;
-}
-
 message CheckValidReply {
   bool is_valid = 1;
 }
@@ -103,8 +98,6 @@ service SecurityChat {
 
   rpc SetUserFromAESKey(SetUserFromAESKeyRequest)
       returns (google.protobuf.Empty);
-
-  rpc AcceptAESKey(AcceptAESKeyRequest) returns (google.protobuf.Empty);
 
   rpc DeleteAESKey(DeleteAESKeyRequest) returns (google.protobuf.Empty);
 

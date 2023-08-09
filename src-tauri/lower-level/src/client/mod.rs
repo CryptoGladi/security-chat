@@ -182,7 +182,9 @@ mod tests {
             panic!("not found notification");
         };
 
-        let Notice::NewMessage(new_message) = notify.notice.unwrap();
+        let Notice::NewMessage(new_message) = notify.notice.unwrap() else {
+            panic!();
+        };
 
         println!("new_message: {:?}", new_message);
         println!("nickname_from: {}", notify.nickname_from);

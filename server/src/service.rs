@@ -161,53 +161,20 @@ impl SecurityChat for SecurityChatService {
             return Err(tonic::Status::not_found("authkey is invalid"));
         }
 
-        diesel::update(order_add_keys)
+        let key: Key = diesel::update(order_add_keys)
             .filter(id.eq(request.get_ref().id.clone()))
             .set(user_from_public_key.eq(request.get_ref().public_key.clone()))
-            .execute(&mut db)
+            .get_result(&mut db)
             .await
             .unwrap();
 
-        Ok(Response::new(()))
-    }
-
-    async fn accept_aes_key(
-        &self,
-        request: Request<AcceptAesKeyRequest>,
-    ) -> Result<Response<()>, Status> {
-        info!(
-            "Got a request for `accept_aes_key`: {:?}",
-            request.get_ref()
-        );
-        let mut db = self.db_pool.get().await.unwrap();
-        let user_for_check = request.get_ref().clone().nickname.unwrap();
-
-        let user = users
-            .filter(nickname.eq(user_for_check.nickname)) // filter(nickname.eq(user.nickname) and authkey.eq(user.authkey))
-            .select(User::as_select())
-            .load(&mut db)
-            .await
-            .unwrap();
-
-        if user.is_empty() {
-            return Err(tonic::Status::not_found("user not found"));
-        } else if user[0].authkey != user_for_check.authkey {
-            return Err(tonic::Status::not_found("authkey is invalid"));
-        }
-
-        let key: Key = order_add_keys.find(id).first(&mut db).await.unwrap();
         let user_to = &get_user_by_id(&mut db, key.user_to_id).await[0];
         let user_from = &get_user_by_id(&mut db, key.user_from_id).await[0];
 
-        diesel::delete(order_add_keys.filter(id.eq(request.get_ref().id)))
-            .execute(&mut db)
-            .await
-            .unwrap();
-
         self.producer
             .send(Notification {
-                nickname_from: user_from.nickname.clone(),
-                by_nickname: user_to.nickname.clone(),
+                nickname_from: user_to.nickname.clone(),
+                by_nickname: user_from.nickname.clone(),
                 notice: Some(notification::Notice::NewAcceptAesKey(AesKeyInfo {
                     id: key.id,
                     nickname_to: user_to.nickname.clone(),
