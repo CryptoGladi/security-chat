@@ -12,8 +12,6 @@ use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Request, Response, Status};
 
-// TODO Изменить все unwrap на tonic::Status!
-
 type MessageProducer = tokio::sync::broadcast::Sender<Notification>;
 type MessageConsumer = tokio::sync::broadcast::Receiver<Notification>;
 

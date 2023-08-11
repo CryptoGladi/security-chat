@@ -33,8 +33,8 @@ serde_json.workspace = true
 high-level = { path = "high-level" }
 open = "5.0.0"
 log.workspace = true
-log4rs = { version = "1.2.0", default-features = false, features = ["file_appender", "threshold_filter", "console_appender"] }
 dirs = "5.0.1"
+simple_logger = "4.2.0"
 
 [build-dependencies]
 tauri-build = { version = "1.4", features = [] }
