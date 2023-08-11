@@ -14,7 +14,6 @@ crate-proto = { path = "../crate-proto"}
 kanal = "0.1.0-pre8"
 tokio = "1.29.1"
 log.workspace = true
-cache = { path = "../cache" }
 
 [dev-dependencies]
 test-log = "0.2.12"

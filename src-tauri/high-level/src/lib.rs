@@ -1,5 +1,4 @@
 pub mod bincode_config;
-pub mod cache_message;
 pub mod client;
 pub mod prelude;
 

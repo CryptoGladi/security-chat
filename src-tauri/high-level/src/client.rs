@@ -1,5 +1,5 @@
 use self::notification::Notification;
-use crate::{bincode_config, cache_message::CacheMessage};
+use crate::bincode_config;
 use client_config::{ClientConfig, ClientConfigData, ClientInitConfig};
 use error::Error;
 use kanal::AsyncReceiver;
@@ -25,7 +25,6 @@ pub struct Client {
     raw_client: RawClient,
     config: ClientConfig,
     init_config: ClientInitConfig,
-    cache_message: CacheMessage,
 }
 
 impl Client {
@@ -37,7 +36,6 @@ impl Client {
 
         let raw_client =
             RawClient::registration(nickname, init_config.address_to_server.clone()).await?;
-        let cache = CacheMessage::new(init_config.path_to_cache_folder.clone())?;
 
         info!("new registration: {}", raw_client.data.nickname);
 
@@ -49,7 +47,6 @@ impl Client {
             .as_normal(),
             init_config,
             raw_client,
-            cache_message: cache,
         })
     }
 
@@ -73,16 +70,13 @@ impl Client {
             return Err(Error::AccoutIsInvalid);
         }
 
-        let cache = CacheMessage::new(init_config.path_to_cache_folder.clone())?;
-
         Ok(Self {
             raw_client: RawClient {
                 api,
                 data: config.client_data.clone(),
             },
             config: config.as_normal(),
-            init_config,
-            cache_message: cache,
+            init_config
         })
     }
 
