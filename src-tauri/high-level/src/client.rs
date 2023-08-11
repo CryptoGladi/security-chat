@@ -292,6 +292,23 @@ mod tests {
     }
 
     #[test(tokio::test)]
+    async fn send_message() {
+        let (_paths, _, mut client_to) = get_client!();
+        let (_paths, _, mut client_from) = get_client!();
+
+        client_to
+        .send_crypto(client_from.get_nickname())
+        .await
+        .unwrap();
+
+    client_from.accept_all_cryptos().await.unwrap();
+    client_to.update_cryptos().await.unwrap();
+
+    //client_to.send_message(nickname_from, message)
+    // TODO
+    }
+
+    #[test(tokio::test)]
     async fn save_and_load() {
         let (_paths, client_config, client) = get_client!();
 

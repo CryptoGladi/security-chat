@@ -22,7 +22,16 @@ pub async fn establish_pooled_connection() -> DbPool {
 
 pub async fn get_user_by_id<'a>(db: &mut PoolledDb<'a>, user_id: i64) -> Vec<User> {
     users
-        .filter(id.eq(user_id)) // filter(nickname.eq(user.nickname) and authkey.eq(user.authkey))
+        .filter(id.eq(user_id))
+        .select(User::as_select())
+        .load(db)
+        .await
+        .unwrap()
+}
+
+pub async fn get_user_by_nickname<'a>(db: &mut PoolledDb<'a>, user_nickname: &str) -> Vec<User> {
+    users
+        .filter(nickname.eq(user_nickname))
         .select(User::as_select())
         .load(db)
         .await

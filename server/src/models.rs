@@ -1,3 +1,4 @@
+use chrono::Utc;
 use diesel::prelude::*;
 
 #[derive(Queryable, Selectable)]
@@ -42,4 +43,17 @@ pub struct AddMessage {
     pub sender_id: i64,
     pub recipient_id: i64,
     pub message_body: Vec<u8>,
+    pub nonce: Vec<u8>,
+}
+
+#[derive(Queryable, Selectable, Clone)]
+#[diesel(table_name = crate::schema::chat_messages)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct Message {
+    pub id: i64,
+    pub sender_id: i64,
+    pub recipient_id: i64,
+    pub message_body: Vec<u8>,
+    pub nonce: Vec<u8>,
+    pub created_at: chrono::DateTime<Utc>,
 }

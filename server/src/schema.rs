@@ -14,6 +14,8 @@ diesel::table! {
         sender_id -> Int8,
         recipient_id -> Int8,
         message_body -> Bytea,
+        nonce -> Bytea,
+        created_at -> Timestamptz,
     }
 }
 

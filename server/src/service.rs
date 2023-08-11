@@ -1,9 +1,9 @@
-use crate::database::{get_user_by_id, DbPool};
-use crate::models::*;
+use crate::database::{get_user_by_id, get_user_by_nickname, DbPool};
+use crate::models::{Message as DbMessage, *};
+use crate::schema::chat_messages::dsl::{chat_messages, recipient_id, sender_id, created_at};
 use crate::schema::order_add_keys::dsl::*;
 use crate::schema::users::dsl::{nickname, users};
 use diesel::prelude::*;
-use diesel::OptionalExtension;
 use diesel_async::RunQueryDsl;
 use log::{error, info};
 use security_chat::security_chat_server::SecurityChat;
@@ -309,16 +309,82 @@ impl SecurityChat for SecurityChatService {
         self.producer
             .send(Notification {
                 nickname_from: request.get_ref().nickname_from.clone(),
-                by_nickname: user_for_check.nickname,
+                by_nickname: user_for_check.nickname.clone(),
                 notice: Some(notification::Notice::NewMessage(
                     request.get_ref().clone().message.unwrap(),
                 )),
             })
             .unwrap();
 
-        // TODO DB
+        let user_sender = &get_user_by_nickname(&mut db, &user_for_check.nickname).await[0];
+        let user_recipient =
+            &get_user_by_nickname(&mut db, &request.get_ref().nickname_from).await[0];
+
+        let new_message = AddMessage {
+            sender_id: user_sender.id,
+            recipient_id: user_recipient.id,
+            message_body: request.get_ref().message.clone().unwrap().body,
+            nonce: request.get_ref().message.clone().unwrap().nonce,
+        };
+
+        diesel::insert_into(chat_messages)
+            .values(new_message)
+            .execute(&mut db)
+            .await
+            .unwrap();
 
         Ok(Response::new(()))
+    }
+
+    async fn get_latest_messages(
+        &self,
+        request: Request<GetLatestMessagesRequest>,
+    ) -> Result<Response<GetLatestMessagesReply>, Status> {
+        info!(
+            "Got a request for `get_latest_messages`: {:?}",
+            request.get_ref()
+        );
+
+        let mut db = self.db_pool.get().await.unwrap();
+        let user_for_check = request.get_ref().clone().nickname.unwrap();
+
+        let user = users
+            .filter(nickname.eq(user_for_check.nickname.clone())) // filter(nickname.eq(user.nickname) and authkey.eq(user.authkey))
+            .select(User::as_select())
+            .load(&mut db)
+            .await
+            .unwrap();
+
+        if user.is_empty() {
+            return Err(tonic::Status::not_found("user not found"));
+        } else if user[0].authkey != user_for_check.authkey {
+            return Err(tonic::Status::not_found("authkey is invalid"));
+        }
+
+        let user_sender = &get_user_by_nickname(&mut db, &user_for_check.nickname).await[0];
+
+        let mut result = GetLatestMessagesReply::default();
+
+        for nickname_for_get in request.get_ref().nickname_for_get.iter() {
+            let user_recipient =
+                &get_user_by_nickname(&mut db, &nickname_for_get).await[0];
+
+            let messages = chat_messages
+                .filter(sender_id.eq(user_sender.id))
+                .filter(recipient_id.eq(user_recipient.id))
+                .limit(request.get_ref().get_limit)
+                .order(created_at.asc())
+                .select(DbMessage::as_select())
+                .load(&mut db)
+                .await
+                .unwrap();
+
+            for message in messages.iter() {
+                result.messages.push( MessageInfo { body: message.message_body, sender_nickname: (), recipient_nickname: () })
+            }
+        }
+        
+        Ok(Response::new(result))
     }
 
     async fn registration(

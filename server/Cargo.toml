@@ -6,8 +6,9 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.72"
 bb8 = "0.8.1"
+chrono = "0.4.26"
 color-eyre = "0.6.2"
-diesel = "2.1.0"
+diesel = { version = "2.1.0", features = ["chrono"] }
 diesel-async = { version = "0.3.1", features = ["postgres", "bb8"] }
 dotenv = "0.15.0"
 log = "0.4.19"

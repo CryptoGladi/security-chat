@@ -81,8 +81,20 @@ message SendMessageRequest {
   Message message = 3;
 }
 
+message MessageInfo {
+  Message body = 1;
+  string sender_nickname = 2;
+  string recipient_nickname = 3;
+}
+
 message GetLatestMessagesReply {
-  repeated Message messages = 1;
+  repeated MessageInfo messages = 1;
+}
+
+message GetLatestMessagesRequest {
+  Check nickname = 1;
+  int64 get_limit = 2;
+  repeated string nickname_for_get = 3;
 }
 
 service SecurityChat {
@@ -105,5 +117,5 @@ service SecurityChat {
 
   rpc SendMessage(SendMessageRequest) returns (google.protobuf.Empty);
 
-  //rpc GetLatestMessages(Check) returns (GetLatestMessagesReply);
+  rpc GetLatestMessages(GetLatestMessagesRequest) returns (GetLatestMessagesReply);
 }
