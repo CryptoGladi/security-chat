@@ -1,6 +1,6 @@
 use crate::database::{get_user_by_id, get_user_by_nickname, DbPool};
 use crate::models::{Message as DbMessage, *};
-use crate::schema::chat_messages::dsl::{chat_messages, recipient_id, sender_id, created_at};
+use crate::schema::chat_messages::dsl::{chat_messages, created_at, recipient_id, sender_id};
 use crate::schema::order_add_keys::dsl::*;
 use crate::schema::users::dsl::{nickname, users};
 use diesel::prelude::*;
@@ -366,24 +366,29 @@ impl SecurityChat for SecurityChatService {
         let mut result = GetLatestMessagesReply::default();
 
         for nickname_for_get in request.get_ref().nickname_for_get.iter() {
-            let user_recipient =
-                &get_user_by_nickname(&mut db, &nickname_for_get).await[0];
+            let user_recipient = &get_user_by_nickname(&mut db, &nickname_for_get).await[0];
 
             let messages = chat_messages
-                .filter(sender_id.eq(user_sender.id))
-                .filter(recipient_id.eq(user_recipient.id))
+                .or_filter(sender_id.eq(user_sender.id))
+                .or_filter(sender_id.eq(user_recipient.id))
+                .or_filter(recipient_id.eq(user_recipient.id))
+                .or_filter(recipient_id.eq(user_sender.id))
                 .limit(request.get_ref().get_limit)
-                .order(created_at.asc())
+                .order(created_at.desc())
                 .select(DbMessage::as_select())
                 .load(&mut db)
                 .await
                 .unwrap();
 
             for message in messages.iter() {
-                result.messages.push( MessageInfo { body: message.message_body, sender_nickname: (), recipient_nickname: () })
+                result.messages.push(MessageInfo {
+                    body: Some(security_chat::Message { body: message.message_body.clone(), nonce: message.nonce.clone() }),
+                    sender_nickname: get_user_by_id(&mut db, message.sender_id).await[0].nickname.clone(),
+                    recipient_nickname: get_user_by_id(&mut db, message.recipient_id).await[0].nickname.clone(),
+                })
             }
         }
-        
+
         Ok(Response::new(result))
     }
 

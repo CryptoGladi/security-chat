@@ -54,3 +54,47 @@ impl StorageCrypto {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test_log::test;
+
+    #[test]
+    fn add_and_get() {
+        let mut storage_crypto = StorageCrypto::default();
+        let aes = Aes::generate();
+        let nickname = Nickname::from("da".to_string());
+
+        storage_crypto.add(nickname.clone(), aes).unwrap();
+        assert_eq!(*storage_crypto.get(&nickname).unwrap(), aes);
+    }
+
+    #[test]
+    fn get_not_found() {
+        let storage_crypto = StorageCrypto::default();
+
+        assert_eq!(
+            storage_crypto
+                .get(&Nickname("ss".to_string()))
+                .err()
+                .unwrap(),
+            Error::NotFound
+        );
+    }
+
+    #[test]
+    fn add_already_exists() {
+        let mut storage_crypto = StorageCrypto::default();
+        let nickname = Nickname::from("irlik".to_string());
+
+        storage_crypto
+            .add(nickname.clone(), Aes::generate())
+            .unwrap();
+
+        assert_eq!(
+            storage_crypto.add(nickname, Aes::generate()).err().unwrap(),
+            Error::AlreadyExists
+        );
+    }
+}

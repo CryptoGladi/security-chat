@@ -17,4 +17,7 @@ pub enum Error {
 
     #[error("too big message")]
     TooBigMessage,
+
+    #[error("invalid argument: `{0}`")]
+    InvalidArgument(String),
 }

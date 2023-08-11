@@ -1,11 +1,11 @@
 use super::{aes, common::get_rand, CryptoError};
+pub use ephemeral_secret_def::EphemeralSecretDef;
 use log::info;
 pub use p384::ecdh::{EphemeralSecret, SharedSecret as RawSharedSecter};
 pub use p384::elliptic_curve::sec1::ToEncodedPoint;
 use p384::elliptic_curve::NonZeroScalar;
 use p384::NistP384;
 pub use p384::{EncodedPoint, PublicKey};
-pub use ephemeral_secret_def::EphemeralSecretDef;
 
 pub mod ephemeral_secret_def;
 

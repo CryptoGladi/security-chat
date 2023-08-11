@@ -1,8 +1,8 @@
-use std::fmt::Debug;
 use error::{CacheResult, Error};
+use log::*;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use log::*;
+use std::fmt::Debug;
 
 pub mod error;
 

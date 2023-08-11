@@ -45,3 +45,34 @@ pub fn load<T: Serialize + DeserializeOwned>(path: impl AsRef<Path>) -> Result<T
     let reader = BufReader::new(file);
     bincode::deserialize_from(reader).map_err(Error::Serde)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde::Deserialize;
+    use temp_dir::TempDir;
+    use test_log::test;
+
+    #[derive(Serialize, Deserialize, Debug, PartialEq)]
+    struct Data {
+        text: String,
+        h: bool,
+        num: i32,
+    }
+
+    #[test]
+    fn save_and_load() {
+        let data = Data {
+            text: "dd".to_string(),
+            h: true,
+            num: 532,
+        };
+        let temp_dir = TempDir::new().unwrap();
+        let file = temp_dir.child("config");
+
+        super::save(&data, file.clone()).unwrap();
+        let loaded_data = super::load(file).unwrap();
+
+        assert_eq!(data, loaded_data);
+    }
+}

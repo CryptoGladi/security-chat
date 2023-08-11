@@ -29,5 +29,8 @@ pub enum Error {
     Bincode(#[from] bincode::Error),
 
     #[error("problem in cache message: `{0}`")]
-    CacheMessage(#[from] cache::prelude::CacheStructError)
+    CacheMessage(#[from] cache::prelude::CacheStructError),
+
+    #[error("send a message to yourself")]
+    SendMessageToYourself,
 }

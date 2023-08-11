@@ -1,8 +1,8 @@
-use crate::client::EphemeralSecret;
 use crate::built_info::CrateInfo;
 use crate::client::crypto::ecdh::NistP384;
 use crate::client::crypto::ecdh::NonZeroScalar;
-use serde::{Serialize, Deserialize};
+use crate::client::EphemeralSecret;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct EphemeralSecretDef {
@@ -19,7 +19,7 @@ static_assertions::assert_eq_size!(EphemeralSecret, EphemeralSecretDef);
 
 const CRATE_FOR_MODULE: CrateInfo = CrateInfo {
     name: "p384",
-    version: "0.13.0"
+    version: "0.13.0",
 };
 
 impl EphemeralSecretDef {
@@ -45,7 +45,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn check_package()  {
+    fn check_package() {
         assert!(crate::built_info::check_package(CRATE_FOR_MODULE));
     }
 }

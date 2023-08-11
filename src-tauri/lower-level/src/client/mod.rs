@@ -1,8 +1,3 @@
-pub mod crypto;
-pub mod error;
-pub mod impl_aes;
-pub mod max_size;
-
 use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
 use crate::utils::MustBool;
 use crate_proto::*;
@@ -13,6 +8,12 @@ use serde::{Deserialize, Serialize};
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
 use tonic::{Response, Streaming};
+
+pub mod crypto;
+pub mod error;
+pub mod impl_aes;
+pub mod impl_message;
+pub mod max_size;
 
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct ClientData {
@@ -67,28 +68,6 @@ impl Client {
 
         let response = api.check_valid(request).await?;
         Ok(MustBool::new(response.get_ref().is_valid))
-    }
-
-    pub async fn send_message(
-        &mut self,
-        nickname_from: String,
-        message: Message,
-    ) -> Result<(), Error> {
-        if message.body.len() >= MAX_LEN_MESSAGE {
-            return Err(Error::TooBigMessage);
-        }
-
-        let request = tonic::Request::new(SendMessageRequest {
-            nickname: Some(Check {
-                nickname: self.data.nickname.clone(),
-                authkey: self.data.auth_key.clone(),
-            }),
-            nickname_from,
-            message: Some(message),
-        });
-
-        self.api.send_message(request).await?;
-        Ok(())
     }
 
     pub async fn subscribe(&mut self) -> Result<Response<Streaming<Notification>>, Error> {
@@ -261,6 +240,45 @@ mod tests {
             .unwrap();
 
         assert!(result);
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn get_latest_messages_to_big_limit() {
+        const LIMIT: i64 = max_size::MAX_LIMIT_GET_MESSAGES + 100;
+
+        let nickname = test_utils::get_rand_string(20);
+        let mut client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
+            .await
+            .unwrap();
+        
+        client.get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT).await.unwrap();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn get_latest_messages_to_zero_limit() {
+        const LIMIT: i64 = 0;
+
+        let nickname = test_utils::get_rand_string(20);
+        let mut client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
+            .await
+            .unwrap();
+
+        client.get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT).await.unwrap();
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn get_latest_messages_to_negative_limit() {
+        const LIMIT: i64 = -1;
+
+        let nickname = test_utils::get_rand_string(20);
+        let mut client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
+            .await
+            .unwrap();
+
+        client.get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT).await.unwrap();
     }
 
     #[tokio::test]
