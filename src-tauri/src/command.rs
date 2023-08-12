@@ -1,6 +1,7 @@
-//use crate::path;
 use log::*;
-//use high_level::prelude::*;
+use high_level::prelude::*;
+
+use crate::global;
 
 #[tauri::command]
 pub async fn open(path: String) {
@@ -9,20 +10,19 @@ pub async fn open(path: String) {
 }
 
 #[tauri::command]
+pub async fn have_account() -> bool {
+    let have_account = Client::have_account(&global::CLIENT_INIT_CONFIG).unwrap();
+    info!("run `have account`: {}", have_account);
+  have_account
+}
+
+#[tauri::command]
 pub async fn nickname_is_taken(nickname: String) -> bool {
     let nickname = nickname.trim();
-    info!(
-        "run `nickname_is_taken` command with nickname: {}",
-        nickname
-    );
+    let nickname_is_taken = Client::nickname_is_taken(&global::CLIENT_INIT_CONFIG, nickname).await.unwrap();
+    debug!("run `nickname_is_taken`: {}", nickname_is_taken);
 
-    //let nickname_is_taken = lower_level::client::nickname_is_taken(nickname)
-    //    .await
-    //    .kill_unwrap();
-    //debug!("nickname_is_taken: {}", nickname_is_taken);
-
-    //nickname_is_taken
-    false
+    nickname_is_taken
 }
 
 #[tauri::command]
@@ -30,6 +30,6 @@ pub async fn registration(nickname: String) {
     let nickname = nickname.trim().to_string();
     info!("run `registration` command with nickname: {}", nickname);
 
-    //let client = Client::registration(&nickname).await.kill_unwrap();
-    //client_save(&client.data, path::get_app_folder().join("config.json")).kill_unwrap();
+    let client = Client::registration(&nickname, global::CLIENT_INIT_CONFIG.clone()).await.unwrap();
+    client.save().unwrap();
 }

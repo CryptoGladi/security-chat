@@ -17,7 +17,6 @@ pub fn get_rand_string() -> String {
 pub struct PathsForTest {
     _temp_dir: TempDir, // for lifetime
     path_to_config_file: PathBuf,
-    path_to_cache_folder: PathBuf,
 }
 
 impl PathsForTest {
@@ -26,7 +25,6 @@ impl PathsForTest {
 
         Self {
             path_to_config_file: temp_dir.child("config.bin"),
-            path_to_cache_folder: temp_dir.child("cache-message"),
             _temp_dir: temp_dir,
         }
     }
@@ -36,7 +34,6 @@ pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
     let paths = PathsForTest::get();
     let client_config = ClientInitConfig::new(
         paths.path_to_config_file.clone(),
-        paths.path_to_cache_folder.clone(),
         ADDRESS_SERVER,
     );
     let client = Client::registration(&get_rand_string(), client_config.clone())

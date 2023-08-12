@@ -50,7 +50,7 @@ impl Client {
         })
     }
 
-    pub fn have_account(init_config: ClientInitConfig) -> Result<bool, Error> {
+    pub fn have_account(init_config: &ClientInitConfig) -> Result<bool, Error> {
         Ok(init_config.path_to_config_file.is_file())
     }
 
@@ -113,13 +113,27 @@ impl Client {
 
         Ok(recv)
     }
+
+    pub async fn nickname_is_taken(init_config: &ClientInitConfig, nickname: &str) -> Result<bool, Error> {
+        info!("run nickname_is_taken");
+
+        Ok(lower_level::client::nickname_is_taken(nickname, init_config.address_to_server.clone()).await?)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::get_client;
+    use crate::test_utils::{get_client, get_rand_string};
     use test_log::test;
+
+    #[test(tokio::test)]
+    async fn nickname_is_taken() {
+        let (_paths, client_config, client) = get_client().await;
+
+        assert!(Client::nickname_is_taken(&client_config, client.get_nickname().as_str()).await.unwrap());
+        assert!(!Client::nickname_is_taken(&client_config, &get_rand_string()).await.unwrap());
+    }
 
     #[test(tokio::test)]
     async fn save_and_load() {
@@ -140,7 +154,7 @@ mod tests {
         let (_paths, client_config, client) = get_client().await;
 
         client.save().unwrap();
-        assert!(Client::have_account(client_config).unwrap());
+        assert!(Client::have_account(&client_config).unwrap());
     }
 
     #[test(tokio::test)]

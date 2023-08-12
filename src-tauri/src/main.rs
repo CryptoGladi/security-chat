@@ -6,6 +6,7 @@ use log::warn;
 pub mod command;
 pub mod logger;
 pub mod path;
+pub mod global;
 
 fn main() {
     let panic_hook = std::panic::take_hook();
@@ -25,7 +26,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             command::open,
             command::nickname_is_taken,
-            command::registration
+            command::registration,
+            command::have_account
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

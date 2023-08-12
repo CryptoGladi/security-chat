@@ -10,14 +10,12 @@ use std::sync::{Arc, RwLock};
 #[derive(Debug, Clone)]
 pub struct ClientInitConfig {
     pub path_to_config_file: PathBuf,
-    pub path_to_cache_folder: PathBuf,
     pub address_to_server: http::Uri,
 }
 
 impl ClientInitConfig {
     pub fn new(
         path_to_config_file: impl AsRef<Path>,
-        path_to_cache_folder: impl AsRef<Path>,
         address_to_server: impl TryInto<http::Uri>,
     ) -> Self {
         let Ok(address_to_server) = address_to_server.try_into() else {
@@ -26,7 +24,6 @@ impl ClientInitConfig {
 
         Self {
             path_to_config_file: path_to_config_file.as_ref().to_path_buf(),
-            path_to_cache_folder: path_to_cache_folder.as_ref().to_path_buf(),
             address_to_server,
         }
     }
