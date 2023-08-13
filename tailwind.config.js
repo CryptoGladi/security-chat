@@ -1,5 +1,7 @@
+import daisyui_plugin from "daisyui";
+
 export default {
-  plugins: [],
+  plugins: [daisyui_plugin],
   theme: {
     extend: {
       colors: {
@@ -29,5 +31,19 @@ export default {
   ], // for unused CSS
   variants: {
     extend: {},
+  },
+  daisyui: {
+    themes: [
+      {
+        mytheme: {
+          "primary": "#3B4252",
+          "secondary": "#434C5E",
+          "accent": "#4C566A",
+          "neutral": "#4C566A",
+          "base-100": "#ffffff",
+        },
+      },
+    ],
+    base: false
   },
 };

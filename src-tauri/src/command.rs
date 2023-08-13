@@ -1,5 +1,6 @@
 use log::*;
 use high_level::prelude::*;
+use tauri::{Runtime, Manager};
 
 use crate::global;
 
@@ -26,10 +27,18 @@ pub async fn nickname_is_taken(nickname: String) -> bool {
 }
 
 #[tauri::command]
-pub async fn registration(nickname: String) {
+pub async fn registration<R: Runtime>(app: tauri::AppHandle<R>, nickname: String) {
     let nickname = nickname.trim().to_string();
     info!("run `registration` command with nickname: {}", nickname);
 
     let client = Client::registration(&nickname, global::CLIENT_INIT_CONFIG.clone()).await.unwrap();
     client.save().unwrap();
+    tauri::api::process::restart(&app.env());
+}
+
+#[tauri::command]
+async fn get_all_users() -> Vec<String> {
+    // TODO
+    let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone()).await.unwrap();
+    client.get_all_users().unwrap().into_iter().map(|x| x.0).collect()
 }

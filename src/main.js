@@ -12,10 +12,6 @@ async function get_form() {
     });
   }
   else {
-    await appWindow.setResizable(true);
-    await appWindow.setFullscreen(true);
-    await appWindow.setSize(new LogicalSize(1000, 1000));
-
     return new Main({
       target: document.getElementById("app"),
     });
