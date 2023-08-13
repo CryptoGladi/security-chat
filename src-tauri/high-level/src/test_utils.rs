@@ -32,10 +32,7 @@ impl PathsForTest {
 
 pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
     let paths = PathsForTest::get();
-    let client_config = ClientInitConfig::new(
-        paths.path_to_config_file.clone(),
-        ADDRESS_SERVER,
-    );
+    let client_config = ClientInitConfig::new(paths.path_to_config_file.clone(), ADDRESS_SERVER);
     let client = Client::registration(&get_rand_string(), client_config.clone())
         .await
         .unwrap();

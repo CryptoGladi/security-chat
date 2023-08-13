@@ -31,7 +31,7 @@ impl Client {
         if limit <= 0 {
             return Err(Error::InvalidArgument("limit <= 0".to_string()));
         }
-        if limit > MAX_LIMIT_GET_MESSAGES.try_into().unwrap() {
+        if limit > MAX_LIMIT_GET_MESSAGES {
             return Err(Error::InvalidArgument(
                 "limit > MAX_LIMIT_GET_MESSAGES".to_string(),
             ));

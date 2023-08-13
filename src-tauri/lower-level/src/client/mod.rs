@@ -251,8 +251,11 @@ mod tests {
         let mut client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
-        
-        client.get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT).await.unwrap();
+
+        client
+            .get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT)
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
@@ -265,7 +268,10 @@ mod tests {
             .await
             .unwrap();
 
-        client.get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT).await.unwrap();
+        client
+            .get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT)
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
@@ -278,7 +284,10 @@ mod tests {
             .await
             .unwrap();
 
-        client.get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT).await.unwrap();
+        client
+            .get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT)
+            .await
+            .unwrap();
     }
 
     #[tokio::test]

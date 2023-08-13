@@ -1,6 +1,11 @@
 <script>
     import "../TailwindCSS.css";
     import 'material-icons/iconfont/material-icons.css';
+    import { register } from '@tauri-apps/api/globalShortcut';
+
+  register('Ctrl+F', () => {
+    isSearchOpen = true;
+  });
 
     let isSearchOpen = false
 </script>
@@ -18,11 +23,9 @@
 
 <input type="checkbox" id="my-modal" class="modal-toggle" bind:checked={isSearchOpen}>
 
+<!-- svelte-ignore a11y-autofocus -->
 <div class="modal shadow-lg bg-transparent" on:click|self={()=>isSearchOpen = false}>
-  <div class="modal-box">
-    <label class="label">
-      <span class="label-text">What is your name?</span>
-    </label>
-    <input type="text" placeholder="Type here" class="input input-bordered w-full max-w-xs" />
+  <div>
+    <input type="text" placeholder="Ваша команда?" class="input input-bordered w-full text-slate-300"/>
   </div>
 </div>

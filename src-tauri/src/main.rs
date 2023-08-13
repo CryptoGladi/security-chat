@@ -4,9 +4,9 @@
 use log::warn;
 
 pub mod command;
+pub mod global;
 pub mod logger;
 pub mod path;
-pub mod global;
 
 fn main() {
     let panic_hook = std::panic::take_hook();

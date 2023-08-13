@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use self::notification::Notification;
 use crate::bincode_config;
 use client_config::{ClientConfig, ClientConfigData, ClientInitConfig};
@@ -81,7 +83,7 @@ impl Client {
                 data: config.client_data.clone(),
             },
             config: config.as_normal(),
-            init_config
+            init_config,
         })
     }
 
@@ -119,10 +121,16 @@ impl Client {
         Ok(recv)
     }
 
-    pub async fn nickname_is_taken(init_config: &ClientInitConfig, nickname: &str) -> Result<bool, Error> {
+    pub async fn nickname_is_taken(
+        init_config: &ClientInitConfig,
+        nickname: &str,
+    ) -> Result<bool, Error> {
         info!("run nickname_is_taken");
 
-        Ok(lower_level::client::nickname_is_taken(nickname, init_config.address_to_server.clone()).await?)
+        Ok(
+            lower_level::client::nickname_is_taken(nickname, init_config.address_to_server.clone())
+                .await?,
+        )
     }
 }
 
@@ -136,8 +144,16 @@ mod tests {
     async fn nickname_is_taken() {
         let (_paths, client_config, client) = get_client().await;
 
-        assert!(Client::nickname_is_taken(&client_config, client.get_nickname().as_str()).await.unwrap());
-        assert!(!Client::nickname_is_taken(&client_config, &get_rand_string()).await.unwrap());
+        assert!(
+            Client::nickname_is_taken(&client_config, client.get_nickname().as_str())
+                .await
+                .unwrap()
+        );
+        assert!(
+            !Client::nickname_is_taken(&client_config, &get_rand_string())
+                .await
+                .unwrap()
+        );
     }
 
     #[test(tokio::test)]

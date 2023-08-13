@@ -1,6 +1,6 @@
-use log::*;
 use high_level::prelude::*;
-use tauri::{Runtime, Manager};
+use log::*;
+use tauri::{Manager, Runtime};
 
 use crate::global;
 
@@ -14,13 +14,15 @@ pub async fn open(path: String) {
 pub async fn have_account() -> bool {
     let have_account = Client::have_account(&global::CLIENT_INIT_CONFIG).unwrap();
     info!("run `have account`: {}", have_account);
-  have_account
+    have_account
 }
 
 #[tauri::command]
 pub async fn nickname_is_taken(nickname: String) -> bool {
     let nickname = nickname.trim();
-    let nickname_is_taken = Client::nickname_is_taken(&global::CLIENT_INIT_CONFIG, nickname).await.unwrap();
+    let nickname_is_taken = Client::nickname_is_taken(&global::CLIENT_INIT_CONFIG, nickname)
+        .await
+        .unwrap();
     debug!("run `nickname_is_taken`: {}", nickname_is_taken);
 
     nickname_is_taken
@@ -31,14 +33,16 @@ pub async fn registration<R: Runtime>(app: tauri::AppHandle<R>, nickname: String
     let nickname = nickname.trim().to_string();
     info!("run `registration` command with nickname: {}", nickname);
 
-    let client = Client::registration(&nickname, global::CLIENT_INIT_CONFIG.clone()).await.unwrap();
+    let client = Client::registration(&nickname, global::CLIENT_INIT_CONFIG.clone())
+        .await
+        .unwrap();
     client.save().unwrap();
     tauri::api::process::restart(&app.env());
 }
 
-#[tauri::command]
-async fn get_all_users() -> Vec<String> {
-    // TODO
-    let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone()).await.unwrap();
-    client.get_all_users().unwrap().into_iter().map(|x| x.0).collect()
-}
+//#[tauri::command]
+//async fn get_all_users() -> Vec<String> {
+// TODO
+//    let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone()).await.unwrap();
+//    client.get_all_users().unwrap().into_iter().map(|x| x.0).collect()
+//}
