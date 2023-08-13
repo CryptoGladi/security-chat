@@ -4349,7 +4349,13 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 name = "vim-like-command"
 version = "0.0.0"
 dependencies = [
+ "env_logger",
  "high-level",
+ "log",
+ "temp-dir",
+ "test-log",
+ "thiserror",
+ "tokio",
 ]
 
 [[package]]

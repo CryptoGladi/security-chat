@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use self::notification::Notification;
 use crate::bincode_config;
 use client_config::{ClientConfig, ClientConfigData, ClientInitConfig};

@@ -1,5 +1,8 @@
 use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion};
-use high_level::{prelude::*, client::{storage_crypto::Nickname, impl_message::Message}};
+use high_level::{
+    client::{impl_message::Message, storage_crypto::Nickname},
+    prelude::*,
+};
 use rand::{distributions::Alphanumeric, Rng};
 use std::fmt::Display;
 use tokio::runtime::{Builder, Runtime};
@@ -40,14 +43,17 @@ fn criterion_benchmark(c: &mut Criterion) {
         ii.path_to_config_file = "config1.big".into();
 
         let nickname = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(20)
-        .map(char::from)
-        .collect::<String>();
+            .sample_iter(&Alphanumeric)
+            .take(20)
+            .map(char::from)
+            .collect::<String>();
 
         let mut client_from = Client::registration(&nickname, ii).await.unwrap();
 
-        client_to.send_crypto(client_from.get_nickname()).await.unwrap();
+        client_to
+            .send_crypto(client_from.get_nickname())
+            .await
+            .unwrap();
         client_from.accept_all_cryptos().await.unwrap();
         client_to.update_cryptos().await.unwrap();
         client_to.save().unwrap();
@@ -65,9 +71,15 @@ fn criterion_benchmark(c: &mut Criterion) {
             b.to_async(create_async_runtime()).iter(|| async {
                 let mut client = Client::load(test_account.init.clone()).await.unwrap();
 
-                client.send_message(Nickname::from(test_account.client_from.clone()), Message {
-                    text: "data".to_owned()
-                }).await.unwrap();
+                client
+                    .send_message(
+                        Nickname::from(test_account.client_from.clone()),
+                        Message {
+                            text: "data".to_owned(),
+                        },
+                    )
+                    .await
+                    .unwrap();
             });
         },
     );
