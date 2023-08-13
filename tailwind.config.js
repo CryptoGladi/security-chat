@@ -40,7 +40,7 @@ export default {
           "secondary": "#434C5E",
           "accent": "#4C566A",
           "neutral": "#4C566A",
-          "base-100": "#ffffff",
+          "base-100": "#4C566A",
         },
       },
     ],

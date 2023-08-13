@@ -11,6 +11,9 @@ dependencies:
   bootstrap-icons:
     specifier: ^1.10.5
     version: 1.10.5
+  material-icons:
+    specifier: ^1.13.9
+    version: 1.13.9
   svelte-tauri-filedrop:
     specifier: ^1.0.0
     version: 1.0.0
@@ -1770,6 +1773,10 @@ packages:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
+
+  /material-icons@1.13.9:
+    resolution: {integrity: sha512-dwuf2C8LR07FcrjRDx0vWnDEcHiDuamXOmtAck8bdONUv5Fi6wR/ubQwPfG1NbcqgPg+y0fHN8Unj5DO+5fV4w==}
+    dev: false
 
   /mdn-data@2.0.30:
     resolution: {integrity: sha512-GaqWWShW4kv/G9IEucWScBx9G1/vsFZZJUO+tD26M8J8z3Kw5RDQjaoZe03YAClgeS/SWPOcb4nkFBTEi5DUEA==}
