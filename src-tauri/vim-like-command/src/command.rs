@@ -1,15 +1,17 @@
-pub mod add_crypto;
+pub mod send_crypto;
 
 use high_level::prelude::*;
 use std::{error::Error, fmt::Debug};
+use async_trait::async_trait;
 
-pub trait Command<E>: Debug
+#[async_trait]
+pub trait Command<E> : Debug
 where
-    E: Error,
+    E: Error
 {
     fn get_id(&self) -> &'static str;
 
-    fn run(&mut self, client: &Client, command: &str) -> Result<(), E>;
+    async fn run(&self, client: &mut Client, args: &[&str]) -> Result<(), E>;
 }
 
 pub type HighLevelCommand = dyn Command<ClientError>;
