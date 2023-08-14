@@ -46,3 +46,8 @@ pub async fn registration<R: Runtime>(app: tauri::AppHandle<R>, nickname: String
 //    let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone()).await.unwrap();
 //    client.get_all_users().unwrap().into_iter().map(|x| x.0).collect()
 //}
+
+#[tauri::command]
+pub async fn fuzzy_search_vim_command(command: String) -> Vec<String> {
+    global::VIM_RUNNER.get_fuzzy_array(&command).into_iter().map(|x| x.text).collect()
+}

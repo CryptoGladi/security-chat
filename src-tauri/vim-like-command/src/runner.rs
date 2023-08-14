@@ -1,7 +1,7 @@
 use crate::command::send_crypto::SendCrypto;
 use crate::command::HighLevelCommand;
 use error::VimError;
-use hashbrown::HashMap;
+use std::collections::HashMap;
 use std::fmt::Debug;
 use log::*;
 
@@ -14,6 +14,8 @@ pub struct Runner<'a> {
     pub(crate) commands: HashMap<&'a str, &'a HighLevelCommand>,
     pub(crate) limit_fuzzy: usize,
 }
+
+unsafe impl<'a> Sync for Runner<'a> {}
 
 impl<'a> Runner<'a> {
     pub async fn run(&mut self, str: &str) -> VimError<()> {

@@ -5,7 +5,7 @@ use std::{error::Error, fmt::Debug};
 use async_trait::async_trait;
 
 #[async_trait]
-pub trait Command<E> : Debug
+pub trait Command<E>: Debug + Send + Sync
 where
     E: Error
 {
