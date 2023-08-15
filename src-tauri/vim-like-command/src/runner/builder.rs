@@ -1,6 +1,6 @@
 use super::*;
 
-pub const DEFAULT_COMMANDS: &[&HighLevelCommand] = &[&SendCrypto];
+pub const DEFAULT_COMMANDS: &[&HighLevelCommand] = crate::command::ALL_COMMANDS;
 
 #[derive(Debug)]
 pub struct RunnerBuilder<'a> {

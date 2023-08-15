@@ -1,4 +1,3 @@
-use crate::command::send_crypto::SendCrypto;
 use crate::command::HighLevelCommand;
 use error::VimError;
 use std::collections::HashMap;

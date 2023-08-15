@@ -36,14 +36,14 @@ export default {
     themes: [
       {
         mytheme: {
-          "primary": "#3B4252",
-          "secondary": "#434C5E",
-          "accent": "#4C566A",
-          "neutral": "#4C566A",
+          primary: "#3B4252",
+          secondary: "#434C5E",
+          accent: "#4C566A",
+          neutral: "#4C566A",
           "base-100": "#4C566A",
         },
       },
     ],
-    base: false
+    base: false,
   },
 };

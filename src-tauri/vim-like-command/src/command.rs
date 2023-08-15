@@ -1,5 +1,7 @@
 pub mod send_crypto;
 
+pub const ALL_COMMANDS: &[&HighLevelCommand] = &[&send_crypto::SendCrypto];
+
 use high_level::prelude::*;
 use std::{error::Error, fmt::Debug};
 use async_trait::async_trait;

@@ -28,7 +28,8 @@ fn main() {
             command::nickname_is_taken,
             command::registration,
             command::have_account,
-            command::fuzzy_search_vim_command
+            command::fuzzy_search_vim_command,
+            command::run_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
