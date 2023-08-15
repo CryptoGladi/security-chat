@@ -1,4 +1,5 @@
 use high_level::client::storage_crypto::Nickname;
+use log::error;
 use super::*;
 
 #[derive(Debug)]
@@ -11,7 +12,11 @@ impl Command<ClientError> for SendCrypto {
     }
 
     async fn run(&self, client: &mut Client, args: &[&str]) -> Result<(), ClientError> {
-        let nickname = args[1];
+        let Some(nickname) = args.get(1) else {
+            error!("invalid arg nickname");
+            return Ok(())
+        };
+
         client.send_crypto(Nickname(nickname.to_string())).await?;
         Ok(())
     }

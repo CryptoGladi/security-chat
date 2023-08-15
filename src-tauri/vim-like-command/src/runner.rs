@@ -2,6 +2,7 @@ use crate::command::HighLevelCommand;
 use error::VimError;
 use std::collections::HashMap;
 use std::fmt::Debug;
+use high_level::prelude::Client;
 use log::*;
 
 pub mod builder;
@@ -14,17 +15,15 @@ pub struct Runner<'a> {
     pub(crate) limit_fuzzy: usize,
 }
 
-unsafe impl<'a> Sync for Runner<'a> {}
-
 impl<'a> Runner<'a> {
-    pub async fn run(&mut self, str: &str) -> VimError<()> {
+    pub async fn run(&mut self, client: &mut Client, str: &str) -> VimError<()> {
         info!("run `command`: {}", str);
         let args: Vec<&str> = str.split_whitespace().collect();
 
         self.commands
             .get(&args[0])
             .ok_or(error::Error::NotFoundCommand)?
-            .get_id(); // TODO
+            .run(client, &args).await?;
 
         Ok(())
     }
@@ -38,22 +37,24 @@ mod tests {
 
     #[test(tokio::test)]
     async fn run() {
+        let (_path, _, mut client) = get_client().await;
         let mut runner = RunnerBuilder::new()
             .commands(vec![&TestCommand])
             .build()
             .unwrap();
-        runner.run("test_command").await.unwrap();
+        runner.run(&mut client, "test_command").await.unwrap();
     }
 
     #[test(tokio::test)]
     async fn not_found_command() {
+        let (_path, _, mut client) = get_client().await;
         let mut runner = RunnerBuilder::new()
             .commands(vec![&TestCommand])
             .build()
             .unwrap();
 
         assert!(matches!(
-            runner.run("not_command").await,
+            runner.run(&mut client, "not_command").await,
             Err(error::Error::NotFoundCommand)
         ));
     }

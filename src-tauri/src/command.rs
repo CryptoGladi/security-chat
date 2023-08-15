@@ -1,6 +1,5 @@
 use high_level::prelude::*;
 use log::*;
-use once_cell::sync::Lazy;
 use tauri::{Manager, Runtime};
 
 use crate::global;
@@ -50,7 +49,7 @@ pub async fn registration<R: Runtime>(app: tauri::AppHandle<R>, nickname: String
 
 #[tauri::command]
 pub async fn fuzzy_search_vim_command(command: String) -> Vec<String> {
-    let result = global::VIM_RUNNER.lock().unwrap().get_fuzzy_array(&command).into_iter().map(|x| x.text).collect();
+    let result = global::VIM_RUNNER.lock().await.get_fuzzy_array(&command).into_iter().map(|x| x.text).collect();
     info!("run `fuzzy_search_vim_command`: {:?}", result);
 
     result
@@ -58,10 +57,8 @@ pub async fn fuzzy_search_vim_command(command: String) -> Vec<String> {
 
 #[tauri::command]
 pub async fn run_command(command: String) {
-    let runner = Lazy::get_mut(&mut global::VIM_RUNNER).unwrap();
-    if let Err(e) = runner.lock().unwrap().run(&command).await {
-        error!("run_command {:?}; command: {}", e, command);
+    let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone()).await.unwrap();
+    if let Err(error) = global::VIM_RUNNER.lock().await.run(&mut client, &command).await {
+        error!("error in `run_command`: {:?}; with command: {}", error, command);
     }
-    // TODO
-    drop(runner)
 }
