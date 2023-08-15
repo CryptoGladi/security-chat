@@ -1,7 +1,7 @@
 pub use crate::command::Command;
 pub use crate::runner::builder::RunnerBuilder;
-pub use high_level::prelude::*;
 pub use async_trait::async_trait;
+pub use high_level::prelude::*;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 use std::path::PathBuf;
@@ -52,11 +52,7 @@ impl Command<ClientError> for TestCommand {
         "test_command"
     }
 
-    async fn run(
-        &self,
-        _client: &mut Client,
-        _command: &[&str],
-    ) -> Result<(), ClientError> {
+    async fn run(&self, _client: &mut Client, _command: &[&str]) -> Result<(), ClientError> {
         Ok(())
     }
 }
@@ -70,11 +66,7 @@ impl Command<ClientError> for SameTestCommand {
         "same_test_command"
     }
 
-    async fn run(
-        &self,
-        _client: &mut Client,
-        _command: &[&str],
-    ) -> Result<(), ClientError> {
+    async fn run(&self, _client: &mut Client, _command: &[&str]) -> Result<(), ClientError> {
         Ok(())
     }
 }

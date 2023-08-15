@@ -1,9 +1,9 @@
 use crate::command::HighLevelCommand;
 use error::VimError;
-use std::collections::HashMap;
-use std::fmt::Debug;
 use high_level::prelude::Client;
 use log::*;
+use std::collections::HashMap;
+use std::fmt::Debug;
 
 pub mod builder;
 pub mod error;
@@ -23,7 +23,8 @@ impl<'a> Runner<'a> {
         self.commands
             .get(&args[0])
             .ok_or(error::Error::NotFoundCommand)?
-            .run(client, &args).await?;
+            .run(client, &args)
+            .await?;
 
         Ok(())
     }

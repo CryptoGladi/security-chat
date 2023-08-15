@@ -15,3 +15,7 @@ export async function fuzzy_search_command(command) {
 export async function run_command(command) {
   await invoke("run_command", { command: command });
 }
+
+export async function get_all_users() {
+  return await invoke("get_all_users");
+}

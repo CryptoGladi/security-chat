@@ -52,7 +52,8 @@ impl Client {
 
     pub fn get_all_users(&self) -> Result<Vec<Nickname>, Error> {
         let storage_crypto = self.config.storage_crypto.read().unwrap();
-        Ok(storage_crypto.0.keys().cloned().collect())
+        //Ok(storage_crypto.0.keys().cloned().collect())
+        Ok(vec![Nickname("ss".to_string())]) // TODO
     }
 
     pub fn have_account(init_config: &ClientInitConfig) -> Result<bool, Error> {

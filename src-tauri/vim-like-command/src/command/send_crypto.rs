@@ -1,6 +1,6 @@
+use super::*;
 use high_level::client::storage_crypto::Nickname;
 use log::error;
-use super::*;
 
 #[derive(Debug)]
 pub struct SendCrypto;
@@ -24,9 +24,9 @@ impl Command<ClientError> for SendCrypto {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::test_utils::*;
     use test_log::test;
-    use super::*;
 
     #[test(tokio::test)]
     async fn run() {
@@ -36,6 +36,12 @@ mod tests {
         let command = format!("send_crypto {}", client_from.get_nickname());
 
         let send_crypto = SendCrypto;
-        send_crypto.run(&mut client_to, &command.split_whitespace().collect::<Vec<&str>>()).await.unwrap();
+        send_crypto
+            .run(
+                &mut client_to,
+                &command.split_whitespace().collect::<Vec<&str>>(),
+            )
+            .await
+            .unwrap();
     }
 }
