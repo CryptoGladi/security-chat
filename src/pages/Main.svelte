@@ -3,6 +3,9 @@
   import "material-icons/iconfont/material-icons.css";
   import { register } from "@tauri-apps/api/globalShortcut";
   import { fuzzy_search_command, run_command, get_all_users } from "../Api"
+  import { invoke } from "@tauri-apps/api/tauri";
+  import { appWindow, LogicalSize } from "@tauri-apps/api/window";
+  import { onMount } from 'svelte';
 
   let isSearchOpen = false;
 
@@ -19,6 +22,18 @@
   }
 
   let promise_users = get_all_users();
+
+  onMount(async () => {
+    await appWindow.setResizable(false);
+    await appWindow.setFullscreen(false);
+    await appWindow.setSize(new LogicalSize(1000, 1000));
+    // TODO не работает
+    //await invoke("change_window_for_main_page");
+  });
+
+  function ll() {
+    console.log("1111");
+  }
 </script>
 
 {#await promise_users}

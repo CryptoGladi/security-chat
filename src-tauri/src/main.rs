@@ -30,7 +30,8 @@ fn main() {
             command::have_account,
             command::fuzzy_search_vim_command,
             command::run_command,
-            command::get_all_users
+            command::get_all_users,
+            command::change_window_for_main_page,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

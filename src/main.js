@@ -1,7 +1,6 @@
 import Main from "./pages/Main.svelte";
 import Welcom from "./pages/Welcom.svelte";
 import { invoke } from "@tauri-apps/api/tauri";
-import { appWindow, LogicalSize } from "@tauri-apps/api/window";
 
 async function get_form() {
   let have_account = await invoke("have_account");
