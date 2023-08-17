@@ -24,7 +24,7 @@
   let promise_users = get_all_users();
 
   onMount(async () => {
-    await appWindow.setResizable(false);
+    await appWindow.setResizable(false); // BUG https://github.com/tauri-apps/tao/issues/302
     await appWindow.setFullscreen(false);
     await appWindow.setSize(new LogicalSize(1000, 1000));
     // TODO не работает
