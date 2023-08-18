@@ -21,6 +21,11 @@
     });
   }
 
+  function openChat(nickname) {
+    console.log(`openChat ${nickname}`);
+    // TODO
+  }
+
   let promise_users = get_all_users();
 
   onMount(async () => {
@@ -30,17 +35,13 @@
     // TODO не работает
     //await invoke("change_window_for_main_page");
   });
-
-  function ll() {
-    console.log("1111");
-  }
 </script>
 
 {#await promise_users}
 	<p>...waiting</p>
 {:then users}
 {#each users as user }
-<div class="avatar placeholder flex py-1 px-1">
+<div class="avatar placeholder flex py-1 px-1" on:click={() => { openChat(user); }}>
   <div class="bg-nord10 text-white rounded-full w-20">
     <span class="text-3xl">G</span>
   </div>

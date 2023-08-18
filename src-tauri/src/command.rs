@@ -116,6 +116,7 @@ pub async fn fuzzy_search_vim_command(command: String) -> Vec<String> {
 pub async fn change_window_for_main_page<R: Runtime>(window: tauri::Window<R>) {
     info!("run `change_window_for_main_page`");
   window.set_size(Size::Physical(tauri::PhysicalSize::new(1000, 1000))).unwrap();
+  // TODO
 }
 
 #[tauri::command]
