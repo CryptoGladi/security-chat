@@ -1,24 +1,14 @@
 module.exports = {
-  env: {
-    browser: true,
-    es2021: true,
-    node: true,
-  },
-  extends: ["plugin:svelte/recommended"],
-  overrides: [
-    {
-      env: {
-        node: true,
-      },
-      files: [".eslintrc.{js,cjs}", "*.svelte"],
-      parserOptions: {
-        sourceType: "script",
-      },
-    },
-  ],
-  parserOptions: {
-    ecmaVersion: "latest",
-    sourceType: "module",
-  },
-  rules: {},
+	root: true,
+	extends: ['eslint:recommended', 'plugin:svelte/recommended', 'prettier'],
+	parserOptions: {
+		sourceType: 'module',
+		ecmaVersion: 2020,
+		extraFileExtensions: ['.svelte']
+	},
+	env: {
+		browser: true,
+		es2017: true,
+		node: true
+	}
 };
