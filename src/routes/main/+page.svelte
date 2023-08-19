@@ -16,24 +16,36 @@
 	});
 
     async function getAllUsers() {
-        return await invoke("get_all_users");
+        return await invoke("get_all_users") as string[];
     }
+
+	function openChat(nickname: string) {
+		console.log(1111);
+	}
 </script>
 
 {#await getAllUsers()}
 <LoadingCenter></LoadingCenter>
 {:then users}
-
-<div class="px-1 py-1">
 {#each users as user}
-<div class="avatar placeholder">
-    <div class="bg-neutral-focus text-neutral-content rounded-full w-24">
-        <span class="text-3xl">{user[0]}</span>
+
+<div class="px-1 py-1 flex" on:click={() => openChat(user)}>
+<div class="placeholder avatar">
+    <div class="bg-primary rounded-full w-24 avatar">
+        <span class="text-6xl text">{user[0].toUpperCase()}</span>
     </div>
 </div> 
 
-{/each}
+<div class="px-5">
+	<strong>{user}</strong>
+
+	<div class="self-end my-3">
+		<p class="">Последнее сообщение</p>
+	</div>
 </div>
+</div>
+
+{/each}
 {/await}
 
 <dialog bind:this={runner_modal} class="modal">

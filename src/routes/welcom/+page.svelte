@@ -7,7 +7,7 @@
 	let registration_modal: HTMLDialogElement;
 </script>
 
-<div class="hero-content text-center hero min-h-screen">
+<div class="text-center hero min-h-screen">
 	<div class="max-w-md">
 		<h1 class="text-5xl font-bold">Добро пожаловать</h1>
 		<div class="py-6">
@@ -37,4 +37,8 @@
 	>
 		<Icon src={VscGithubInverted} className="w-full h-full" color="white" />
 	</div>
+</div>
+
+<div class="left-0 top-0 flex space-x-2 px-1 py-1" style="position: absolute;">
+	<div class="badge badge-secondary">Версия 0.1</div>
 </div>

@@ -87,10 +87,7 @@ pub async fn registration<R: Runtime>(app: tauri::AppHandle<R>, nickname: String
 
 #[tauri::command]
 pub async fn get_all_users() -> Vec<String> {
-    let client = Client::load(global::CLIENT_INIT_CONFIG.clone())
-        .await
-        .unwrap();
-    client
+    global::LOADED_CLIENT.read().await.as_ref().unwrap()
         .get_all_users()
         .unwrap()
         .into_iter()
