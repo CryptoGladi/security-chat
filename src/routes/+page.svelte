@@ -15,4 +15,4 @@
 	});
 </script>
 
-<LoadingCenter></LoadingCenter>
+<LoadingCenter />

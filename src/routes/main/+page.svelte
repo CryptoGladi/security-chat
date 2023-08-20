@@ -3,7 +3,8 @@
 	import Runner from './runner.svelte';
 	import { register, unregisterAll } from '@tauri-apps/api/globalShortcut';
 	import { invoke } from '@tauri-apps/api/tauri';
-    import LoadingCenter from '$lib/loading_center.svelte';
+	import LoadingCenter from '$lib/loading_center.svelte';
+	import { goto } from '$app/navigation';
 
 	let runner_modal: HTMLDialogElement;
 
@@ -15,37 +16,33 @@
 		});
 	});
 
-    async function getAllUsers() {
-        return await invoke("get_all_users") as string[];
-    }
+	async function getAllUsers() {
+		return (await invoke('get_all_users')) as string[];
+	}
 
 	function openChat(nickname: string) {
-		console.log(1111);
+		goto(`/chat/${nickname}`);
 	}
 </script>
 
 {#await getAllUsers()}
-<LoadingCenter></LoadingCenter>
+	<LoadingCenter />
 {:then users}
-{#each users as user}
+	{#each users as user}
+		<div class="px-1 py-1 flex w-full" on:click={() => openChat(user)}>
+			<div class="placeholder avatar">
+				<div class="bg-primary rounded-full w-24 avatar">
+					<span class="text-6xl text">{user[0].toUpperCase()}</span>
+				</div>
+			</div>
 
-<div class="px-1 py-1 flex" on:click={() => openChat(user)}>
-<div class="placeholder avatar">
-    <div class="bg-primary rounded-full w-24 avatar">
-        <span class="text-6xl text">{user[0].toUpperCase()}</span>
-    </div>
-</div> 
-
-<div class="px-5">
-	<strong>{user}</strong>
-
-	<div class="self-end my-3">
-		<p class="">Последнее сообщение</p>
-	</div>
-</div>
-</div>
-
-{/each}
+			<div class="mx-4 flex flex-col w-full h-full">
+				<div class=" items-start">
+					<strong>{user}</strong>
+				</div>
+			</div>
+		</div>
+	{/each}
 {/await}
 
 <dialog bind:this={runner_modal} class="modal">
