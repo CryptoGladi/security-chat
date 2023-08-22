@@ -1,5 +1,5 @@
 export const load = ({ fetch, params }) => {
-    return {
-        nickname: params.nickname
-    }
-}
+	return {
+		nickname: params.nickname
+	};
+};

@@ -3,9 +3,12 @@
 	import VscGithubInverted from 'svelte-icons-pack/vsc/VscGithubInverted';
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import { invoke } from '@tauri-apps/api/tauri';
+	import { NotificationDisplay } from '@beyonk/svelte-notifications';
 
 	let registration_modal: HTMLDialogElement;
 </script>
+
+<NotificationDisplay />
 
 <div class="text-center hero min-h-screen">
 	<div class="max-w-md">

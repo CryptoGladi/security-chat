@@ -1,8 +1,52 @@
 use high_level::prelude::*;
 use log::*;
-use tauri::{Manager, Runtime, Size};
+use tauri::{Runtime, Size};
 
 use crate::global;
+
+pub async fn load_client() {
+    let client = Client::load(global::CLIENT_INIT_CONFIG.clone())
+        .await
+        .unwrap();
+    *global::LOADED_CLIENT.write().await = Some(client);
+
+    let recv = global::LOADED_CLIENT
+        .write()
+        .await
+        .as_mut()
+        .unwrap()
+        .subscribe()
+        .await
+        .unwrap();
+
+    tauri::async_runtime::spawn(async move {
+        loop {
+            let nofity = recv.recv().await.unwrap();
+            info!("new nofity: {:?}", nofity);
+
+            use Event::*;
+            match nofity.event {
+                NewMessage(_message) => {
+                    // TODO
+                }
+                NewSentAcceptAesKey(mut key) => key
+                    .accept(global::LOADED_CLIENT.write().await.as_mut().unwrap())
+                    .await
+                    .unwrap(),
+                NewAcceptAesKey(_key) => {
+                    global::LOADED_CLIENT
+                        .write()
+                        .await
+                        .as_mut()
+                        .unwrap()
+                        .update_cryptos()
+                        .await
+                        .unwrap();
+                }
+            }
+        }
+    });
+}
 
 #[tauri::command]
 pub async fn open(path: String) {
@@ -16,46 +60,7 @@ pub async fn have_account() -> bool {
     info!("run `have account`: {}", have_account);
 
     if have_account {
-        let client = Client::load(global::CLIENT_INIT_CONFIG.clone())
-            .await
-            .unwrap();
-        *global::LOADED_CLIENT.write().await = Some(client);
-
-        let recv = global::LOADED_CLIENT
-            .write()
-            .await
-            .as_mut()
-            .unwrap()
-            .subscribe()
-            .await
-            .unwrap();
-
-        tauri::async_runtime::spawn(async move {
-            loop {
-                let nofity = recv.recv().await.unwrap();
-                info!("new nofity: {:?}", nofity);
-
-                use Event::*;
-                match nofity.event {
-                    NewMessage(_message) => {
-                        // TODO
-                    }
-                    NewSentAcceptAesKey(mut key) => {
-                        key.accept(global::LOADED_CLIENT.write().await.as_mut().unwrap()).await.unwrap()
-                    }
-                    NewAcceptAesKey(_key) => {
-                        global::LOADED_CLIENT
-                            .write()
-                            .await
-                            .as_mut()
-                            .unwrap()
-                            .update_cryptos()
-                            .await
-                            .unwrap();
-                    }
-                }
-            }
-        });
+        load_client().await;
     }
 
     have_account
@@ -73,7 +78,7 @@ pub async fn nickname_is_taken(nickname: String) -> bool {
 }
 
 #[tauri::command]
-pub async fn registration<R: Runtime>(app: tauri::AppHandle<R>, nickname: String) {
+pub async fn registration(nickname: String) {
     let nickname = nickname.trim().to_string();
     info!("run `registration` command with nickname: {}", nickname);
 
@@ -82,12 +87,17 @@ pub async fn registration<R: Runtime>(app: tauri::AppHandle<R>, nickname: String
         .unwrap();
     client.save().unwrap();
 
-    tauri::api::process::restart(&app.env());
+    drop(client);
+    load_client().await;
 }
 
 #[tauri::command]
 pub async fn get_all_users() -> Vec<String> {
-    global::LOADED_CLIENT.read().await.as_ref().unwrap()
+    global::LOADED_CLIENT
+        .read()
+        .await
+        .as_ref()
+        .unwrap()
         .get_all_users()
         .unwrap()
         .into_iter()
@@ -112,8 +122,10 @@ pub async fn fuzzy_search_vim_command(command: String) -> Vec<String> {
 #[tauri::command]
 pub async fn change_window_for_main_page<R: Runtime>(window: tauri::Window<R>) {
     info!("run `change_window_for_main_page`");
-  window.set_size(Size::Physical(tauri::PhysicalSize::new(1000, 1000))).unwrap();
-  // TODO
+    window
+        .set_size(Size::Physical(tauri::PhysicalSize::new(1000, 1000)))
+        .unwrap();
+    // TODO
 }
 
 #[tauri::command]

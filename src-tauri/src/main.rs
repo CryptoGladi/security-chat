@@ -22,7 +22,7 @@ fn main() {
         std::fs::create_dir_all(crate::path::get_app_folder()).unwrap();
     }
 
-        log::info!("22");
+    log::info!("22");
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             command::open,

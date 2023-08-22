@@ -12,6 +12,7 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"devDependencies": {
+		"@beyonk/svelte-notifications": "^4.2.0",
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/adapter-static": "^2.0.3",
 		"@sveltejs/kit": "^1.20.4",
@@ -34,6 +35,7 @@
 	"type": "module",
 	"dependencies": {
 		"@tauri-apps/api": "^1.4.0",
-		"svelte-icons-pack": "^2.1.0"
+		"svelte-icons-pack": "^2.1.0",
+		"validator": "^13.11.0"
 	}
 }

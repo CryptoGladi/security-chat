@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { invoke } from '@tauri-apps/api/tauri';
+	import isAlphanumeric from 'validator/lib/isAlphanumeric';
+	import { notifier } from '@beyonk/svelte-notifications';
+	import { goto } from '$app/navigation';
 
 	enum StateNickname {
 		Empty,
@@ -31,7 +34,10 @@
 	}
 
 	function createAccout() {
-		invoke('registration', { nickname: nickname });
+		if (isAlphanumeric(nickname)) {
+			invoke('registration', { nickname: nickname });
+			goto('/main');
+		} else notifier.danger('Ошибка! У вас в нике запрещенные символы', 10000);
 	}
 </script>
 
