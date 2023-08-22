@@ -48,6 +48,7 @@
 		<input
 			type="text"
 			on:input={(e) => {
+				// @ts-ignore
 				changeNickname(e.target?.value);
 			}}
 			bind:value={nickname}

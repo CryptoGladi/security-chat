@@ -34,6 +34,8 @@
 </div>
 
 <div class="bottom-0 right-0 flex space-x-2 px-1 py-1 w-10" style="position: absolute;">
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		class="w-full h-full"
 		on:click={() => invoke('open', { path: 'https://github.com/CryptoGladi/security-chat' })}

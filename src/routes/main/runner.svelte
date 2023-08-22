@@ -14,7 +14,9 @@
 	<input
 		type="text"
 		placeholder="Ваша команда"
-		on:input={(e) => getFuzzy(e.target.value)}
+		on:input={(e) => 
+		// @ts-ignore
+		getFuzzy(e.target.value)}
 		class="input input-bordered input-accent w-full"
 	/>
 

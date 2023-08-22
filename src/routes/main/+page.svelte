@@ -29,6 +29,8 @@
 	<LoadingCenter />
 {:then users}
 	{#each users as user}
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div class="px-1 py-1 flex w-full" on:click={() => openChat(user)}>
 			<div class="placeholder avatar">
 				<div class="bg-primary rounded-full w-24 avatar">

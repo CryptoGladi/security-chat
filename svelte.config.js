@@ -14,8 +14,11 @@ const config = {
 	},
 
 	onwarn: (warning, handler) => {
-		return;
-	}
+		if (warning.code.startsWith('a11y-')) {
+		  return;
+		}
+		handler(warning);
+	},
 };
 
 export default config;
