@@ -1,4 +1,4 @@
-use high_level::prelude::*;
+use high_level::{prelude::*, client::{storage_crypto::Nickname, impl_message::MessageInfo}};
 use log::*;
 use tauri::{Runtime, Size};
 
@@ -144,4 +144,10 @@ pub async fn run_command(command: String) {
             error, command
         );
     }
+}
+
+#[tauri::command]
+pub async fn get_messages_for_user(nickname_from: String) -> Vec<MessageInfo> {
+    // TODO переделать сообщение!
+    global::LOADED_CLIENT.write().await.as_mut().unwrap().get_messages_for_user(Nickname(nickname_from),  1_000).await.unwrap()
 }

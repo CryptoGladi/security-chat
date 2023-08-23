@@ -2,9 +2,16 @@ use super::{storage_crypto::StorageCrypto, *};
 use lower_level::client::crypto::EncryptedMessage;
 use serde::{Deserialize, Serialize};
 
+// BODY
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Message {
     pub text: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct MessageInfo {
+    pub body: Message,
+    pub sender: String
 }
 
 impl Client {
@@ -45,7 +52,7 @@ impl Client {
         &mut self,
         nickname: Nickname,
         limit: i64,
-    ) -> Result<Vec<Message>, Error> {
+    ) -> Result<Vec<MessageInfo>, Error> {
         self.raw_get_last_message(vec![nickname.0], limit).await
     }
 
@@ -69,7 +76,7 @@ impl Client {
         &mut self,
         nicknames: Vec<String>,
         limit: i64,
-    ) -> Result<Vec<Message>, Error> {
+    ) -> Result<Vec<MessageInfo>, Error> {
         let messages = self
             .raw_client
             .get_latest_messages(nicknames, limit)
@@ -80,19 +87,23 @@ impl Client {
             .into_iter()
             .map(|x| {
                 let nickname = Nickname::from(if x.sender_nickname == *self.get_nickname() {
-                    x.recipient_nickname
+                    x.recipient_nickname.clone()
                 } else {
-                    x.sender_nickname
+                    x.sender_nickname.clone()
                 });
 
-                Client::decrypt_message(
+                (Client::decrypt_message(
                     &self.config.storage_crypto.read().unwrap(),
-                    x.body.unwrap(),
+                    x.body.clone().unwrap(),
                     nickname,
                 )
-                .unwrap()
+                .unwrap(), x)
             })
-            .collect::<Vec<Message>>())
+            .map(|x| MessageInfo {
+                body: x.0,
+                sender: x.1.sender_nickname
+            })
+            .collect::<Vec<MessageInfo>>())
     }
 
     pub async fn get_all_last_message(&mut self) -> Result<Vec<Message>, Error> {
@@ -108,7 +119,8 @@ impl Client {
             .map(|x| x.0)
             .collect();
 
-        self.raw_get_last_message(nicknames, 1).await
+            // TODO
+        Ok(self.raw_get_last_message(nicknames, 1).await?.into_iter().map(|x| x.body).collect())
     }
 }
 
@@ -332,6 +344,6 @@ mod tests {
             .unwrap();
 
         assert_eq!(messages.len(), sent_messages.len());
-        assert_eq!(messages, sent_messages);
+        assert_eq!(messages.into_iter().map(|x| x.body).collect::<Vec<Message>>(), sent_messages);
     }
 }

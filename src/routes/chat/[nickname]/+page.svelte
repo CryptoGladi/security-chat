@@ -1,7 +1,14 @@
 <script lang="ts">
-	export let data;
-
 	import { goto } from '$app/navigation';
+	import IoSend from "svelte-icons-pack/io/IoSend";
+	import Icon from 'svelte-icons-pack/Icon.svelte';
+	import Message from './message.svelte';
+
+	async function get_messages() {
+		
+	}
+	
+	export let data;
 </script>
 
 <style lang="less">
@@ -43,6 +50,11 @@
 	</div>
 
 	<div class="overflow-y-scroll flex-auto">
+		<Message text="s" is_sender/>
+		<Message text="s" is_sender={false}/>
+		<Message text="ФЁДОР ПИДОР" is_sender/>
+		<Message text="s" is_sender/>
+
 		<div class="chat chat-start">
 			<div class="chat-bubble">It's over Anakin, <br />I have the high ground.</div>
 		</div>
@@ -113,8 +125,10 @@
 
 	<div class="flex-initial bg-neutral">
 		<div class="flex flex-row">
-			<textarea class="textarea" placeholder="BUI"></textarea>
-			<button class="btn">ss</button>
+			<textarea class="textarea !outline-none flex-auto" placeholder="BUI"></textarea>
+			<button class="btn btn-info flex-initial btn-circle">
+				<Icon src={IoSend} size="20" className="custom-icon"/>
+			</button>
 		</div>
 	</div>
 </div>
