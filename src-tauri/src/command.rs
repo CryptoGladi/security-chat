@@ -151,3 +151,8 @@ pub async fn get_messages_for_user(nickname_from: String) -> Vec<MessageInfo> {
     // TODO переделать сообщение!
     global::LOADED_CLIENT.write().await.as_mut().unwrap().get_messages_for_user(Nickname(nickname_from),  1_000).await.unwrap()
 }
+
+#[tauri::command]
+pub async fn get_nickname() -> String {
+    global::LOADED_CLIENT.read().await.as_ref().unwrap().get_nickname().0
+}

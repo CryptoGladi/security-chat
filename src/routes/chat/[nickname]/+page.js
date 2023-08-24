@@ -1,4 +1,4 @@
-export const load = ({ fetch: any, params }) => {
+export const load = ({ fetch, params }) => {
 	return {
 		nickname: params.nickname
 	};

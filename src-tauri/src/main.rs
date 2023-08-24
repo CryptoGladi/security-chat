@@ -22,7 +22,6 @@ fn main() {
         std::fs::create_dir_all(crate::path::get_app_folder()).unwrap();
     }
 
-    log::info!("22");
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             command::open,
@@ -33,7 +32,8 @@ fn main() {
             command::run_command,
             command::get_all_users,
             command::change_window_for_main_page,
-            command::get_messages_for_user
+            command::get_messages_for_user,
+            command::get_nickname
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

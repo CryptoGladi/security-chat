@@ -8,6 +8,10 @@
 			fuzyyCommands = commands as string[];
 		});
 	}
+
+	function runCommand(command: string) {
+		invoke('');
+	}
 </script>
 
 <form method="dialog" class="modal-box">
