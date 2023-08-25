@@ -10,7 +10,9 @@
 	}
 
 	function runCommand(command: string) {
-		invoke('');
+		invoke('run_command', { command: command }).then((command) => {
+			console.info("Command done");
+		});
 	}
 </script>
 

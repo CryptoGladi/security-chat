@@ -20,7 +20,7 @@ async fn main() {
     warn!("Starting simple client!");
     let opt = Opt::from_args();
 
-    let mut client = match Client::have_account(INIT_CONFIG.to_owned()).unwrap() {
+    let mut client = match Client::have_account(&INIT_CONFIG.to_owned()).unwrap() {
         true => Client::load(INIT_CONFIG.to_owned())
             .await
             .unwrap(),
@@ -37,7 +37,10 @@ async fn main() {
         loop {
             let notification = recv_event.recv().await.unwrap();
             match notification.event {
-                Event::NewMessage(message) => println!("new message {}; from user: {}", message.text, notification.by_nickname)
+                Event::NewMessage(message) => println!("new message {}; from user: {}", message.text, notification.by_nickname),
+                _ => {
+                    info!("new event: {:?}", notification.event);
+                }
             }
         }
     });
