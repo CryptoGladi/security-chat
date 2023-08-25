@@ -1,5 +1,6 @@
 use error::Error;
 use hashbrown::HashMap;
+use log::info;
 use lower_level::client::crypto::Aes;
 use serde::{Deserialize, Serialize};
 
@@ -39,6 +40,8 @@ pub struct StorageCrypto(pub HashMap<Nickname, Aes>);
 
 impl StorageCrypto {
     pub fn add(&mut self, nickname: Nickname, aes: Aes) -> Result<(), Error> {
+        info!("adding new key for {}", nickname);
+
         if self.0.contains_key(&nickname) {
             return Err(Error::AlreadyExists);
         }

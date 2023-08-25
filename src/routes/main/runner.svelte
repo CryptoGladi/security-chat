@@ -23,6 +23,12 @@
 		on:input={(e) =>
 			// @ts-ignore
 			getFuzzy(e.target.value)}
+		on:keydown={(e) => {
+			if (e.key === "Enter") {
+				// @ts-ignore
+				runCommand(e.target.value)
+			}
+		}}
 		class="input input-bordered input-accent w-full"
 	/>
 

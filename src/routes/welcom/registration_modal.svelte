@@ -20,13 +20,16 @@
 			registration_button.disabled = true;
 		} else {
 			invoke('nickname_is_taken', { nickname: input_nickname }).then((nickname_is_taken) => {
+				console.log(`nicname_is_taken: ${nickname_is_taken}`);
 				switch (nickname_is_taken) {
 					case true:
 						state_nickname = StateNickname.IsTaken;
 						registration_button.disabled = true;
+						break;
 					case false: {
 						state_nickname = StateNickname.IsFree;
 						registration_button.disabled = false;
+						break;
 					}
 				}
 			});

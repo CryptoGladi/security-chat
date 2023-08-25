@@ -44,6 +44,8 @@ pub async fn load_client() {
                         .unwrap();
                 }
             }
+
+            global::LOADED_CLIENT.read().await.as_ref().unwrap().save().unwrap();
         }
     });
 }
@@ -93,7 +95,7 @@ pub async fn registration(nickname: String) {
 
 #[tauri::command]
 pub async fn get_all_users() -> Vec<String> {
-    global::LOADED_CLIENT
+    let users = global::LOADED_CLIENT
         .read()
         .await
         .as_ref()
@@ -102,7 +104,10 @@ pub async fn get_all_users() -> Vec<String> {
         .unwrap()
         .into_iter()
         .map(|x| x.0)
-        .collect()
+        .collect();
+
+    debug!("get_all_users: {:?}", global::LOADED_CLIENT.read().await.as_ref());
+    users
 }
 
 #[tauri::command]
