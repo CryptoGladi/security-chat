@@ -8,6 +8,7 @@
 	import LoadingCenter from '$lib/loading_center.svelte';
 
 	export let data;
+	let text_message: string;
 
 	class MessageInfo {
 		constructor(text: string, is_sender: boolean) {
@@ -21,13 +22,15 @@
 
 	async function get_messages() {
 		let my_nickname = (await invoke('get_nickname')) as string;
-		let messages = (await invoke('get_messages_for_user')) as any[];
+		let messages = (await invoke('get_messages_for_user', { nicknameFrom: data.nickname }) ) as any[];
 
-		_.map(messages, (n) => {
-			n = new MessageInfo(n.body.text, n.sender != my_nickname);
-		});
+		return _.reverse(_.map(messages, (n) => {
+			return new MessageInfo(n.body.text, n.sender != my_nickname);
+		}));
+	}
 
-		return messages as MessageInfo[];
+	async function send_message() {
+		invoke("send_message", { nickname: data.nickname, message: text_message });
 	}
 </script>
 
@@ -65,8 +68,14 @@
 
 	<div class="flex-initial bg-neutral">
 		<div class="flex flex-row">
-			<textarea class="textarea !outline-none flex-auto" placeholder="BUI" />
-			<button class="btn btn-info flex-initial btn-circle">
+			<textarea class="textarea textarea-bordered !outline-none flex-auto" bind:value={text_message} placeholder="BUI"
+			on:keydown={(e) => {
+				if (e.key === "Enter") {
+					// @ts-ignore
+					send_message();
+				}
+			}}/>
+			<button class="btn btn-info flex-initial btn-circle self-center" on:click={send_message}>
 				<Icon src={IoSend} size="20" className="custom-icon" />
 			</button>
 		</div>

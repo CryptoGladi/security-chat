@@ -11,7 +11,7 @@ pub struct Message {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct MessageInfo {
     pub body: Message,
-    pub sender: String
+    pub sender: String,
 }
 
 impl Client {
@@ -92,16 +92,19 @@ impl Client {
                     x.sender_nickname.clone()
                 });
 
-                (Client::decrypt_message(
-                    &self.config.storage_crypto.read().unwrap(),
-                    x.body.clone().unwrap(),
-                    nickname,
+                (
+                    Client::decrypt_message(
+                        &self.config.storage_crypto.read().unwrap(),
+                        x.body.clone().unwrap(),
+                        nickname,
+                    )
+                    .unwrap(),
+                    x,
                 )
-                .unwrap(), x)
             })
             .map(|x| MessageInfo {
                 body: x.0,
-                sender: x.1.sender_nickname
+                sender: x.1.sender_nickname,
             })
             .collect::<Vec<MessageInfo>>())
     }
@@ -119,8 +122,13 @@ impl Client {
             .map(|x| x.0)
             .collect();
 
-            // TODO
-        Ok(self.raw_get_last_message(nicknames, 1).await?.into_iter().map(|x| x.body).collect())
+        // TODO
+        Ok(self
+            .raw_get_last_message(nicknames, 1)
+            .await?
+            .into_iter()
+            .map(|x| x.body)
+            .collect())
     }
 }
 
@@ -344,6 +352,12 @@ mod tests {
             .unwrap();
 
         assert_eq!(messages.len(), sent_messages.len());
-        assert_eq!(messages.into_iter().map(|x| x.body).collect::<Vec<Message>>(), sent_messages);
+        assert_eq!(
+            messages
+                .into_iter()
+                .map(|x| x.body)
+                .collect::<Vec<Message>>(),
+            sent_messages
+        );
     }
 }

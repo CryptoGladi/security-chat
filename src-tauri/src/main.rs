@@ -33,7 +33,8 @@ fn main() {
             command::get_all_users,
             command::change_window_for_main_page,
             command::get_messages_for_user,
-            command::get_nickname
+            command::get_nickname,
+            command::send_message
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

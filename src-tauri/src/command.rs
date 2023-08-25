@@ -1,13 +1,19 @@
-use high_level::{prelude::*, client::{storage_crypto::Nickname, impl_message::MessageInfo}};
+use high_level::{
+    client::{impl_message::{MessageInfo, Message}, storage_crypto::Nickname},
+    prelude::*,
+};
 use log::*;
 use tauri::{Runtime, Size};
 
 use crate::global;
 
 pub async fn load_client() {
-    let client = Client::load(global::CLIENT_INIT_CONFIG.clone())
+    let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone())
         .await
         .unwrap();
+    // TODO сделать потом специальное меню для этого
+    client.accept_all_cryptos().await.unwrap();
+    client.update_cryptos().await.unwrap();
     *global::LOADED_CLIENT.write().await = Some(client);
 
     let recv = global::LOADED_CLIENT
@@ -42,10 +48,20 @@ pub async fn load_client() {
                         .update_cryptos()
                         .await
                         .unwrap();
+                    debug!("after NewAcceptAesKey: {:?}", global::LOADED_CLIENT
+                    .write()
+                    .await
+                    .as_mut());
                 }
             }
 
-            global::LOADED_CLIENT.read().await.as_ref().unwrap().save().unwrap();
+            global::LOADED_CLIENT
+                .read()
+                .await
+                .as_ref()
+                .unwrap()
+                .save()
+                .unwrap();
         }
     });
 }
@@ -106,7 +122,10 @@ pub async fn get_all_users() -> Vec<String> {
         .map(|x| x.0)
         .collect();
 
-    debug!("get_all_users: {:?}", global::LOADED_CLIENT.read().await.as_ref());
+    debug!(
+        "get_all_users: {:?}",
+        global::LOADED_CLIENT.read().await.as_ref()
+    );
     users
 }
 
@@ -119,7 +138,7 @@ pub async fn fuzzy_search_vim_command(command: String) -> Vec<String> {
         .into_iter()
         .map(|x| x.text)
         .collect();
-    info!("run `fuzzy_search_vim_command`: {:?}", result);
+    trace!("run `fuzzy_search_vim_command`: {:?}", result);
 
     result
 }
@@ -135,13 +154,12 @@ pub async fn change_window_for_main_page<R: Runtime>(window: tauri::Window<R>) {
 
 #[tauri::command]
 pub async fn run_command(command: String) {
-    let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone())
-        .await
-        .unwrap();
+    let mut client = global::LOADED_CLIENT.write().await;
+
     if let Err(error) = global::VIM_RUNNER
         .lock()
         .await
-        .run(&mut client, &command)
+        .run(&mut client.as_mut().unwrap(), &command)
         .await
     {
         error!(
@@ -154,10 +172,30 @@ pub async fn run_command(command: String) {
 #[tauri::command]
 pub async fn get_messages_for_user(nickname_from: String) -> Vec<MessageInfo> {
     // TODO переделать сообщение!
-    global::LOADED_CLIENT.write().await.as_mut().unwrap().get_messages_for_user(Nickname(nickname_from),  1_000).await.unwrap()
+    global::LOADED_CLIENT
+        .write()
+        .await
+        .as_mut()
+        .unwrap()
+        .get_messages_for_user(Nickname(nickname_from), 1_000)
+        .await
+        .unwrap()
 }
 
 #[tauri::command]
 pub async fn get_nickname() -> String {
-    global::LOADED_CLIENT.read().await.as_ref().unwrap().get_nickname().0
+    global::LOADED_CLIENT
+        .read()
+        .await
+        .as_ref()
+        .unwrap()
+        .get_nickname()
+        .0
+}
+
+#[tauri::command]
+pub async fn send_message(nickname: String, message: String) {
+  global::LOADED_CLIENT.write().await.as_mut().unwrap().send_message(Nickname(nickname), Message {
+    text: message
+  }).await.unwrap()
 }

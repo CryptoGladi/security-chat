@@ -26,10 +26,11 @@ impl Command<ClientError> for SendCrypto {
 mod tests {
     use super::*;
     use crate::test_utils::*;
+    use high_level::client::impl_message::Message;
     use test_log::test;
 
     #[test(tokio::test)]
-    async fn run() {
+    async fn raw_run() {
         let (_temp_dir, _, mut client_to) = get_client().await;
         let (_temp_dir, _, client_from) = get_client().await;
 
@@ -43,5 +44,24 @@ mod tests {
             )
             .await
             .unwrap();
+    }
+
+    #[test(tokio::test)] 
+    async fn run_via_runner() {
+        let (_temp_dir, _, mut client_to) = get_client().await;
+        let (_temp_dir, _, mut client_from) = get_client().await;
+        const TEST_MESSAGE: &str = "testing message";
+
+        let mut runner = RunnerBuilder::new()
+        .commands(vec![&SendCrypto])
+        .build()
+        .unwrap();
+
+        runner.run(&mut client_to, &format!("send_crypto {}", client_from.get_nickname())).await.unwrap();
+        client_from.accept_all_cryptos().await.unwrap();
+        client_to.update_cryptos().await.unwrap();
+
+        client_to.send_message(client_from.get_nickname(), Message { text: TEST_MESSAGE.to_string() }).await.unwrap();
+        assert_eq!(client_from.get_messages_for_user(client_to.get_nickname(), 1).await.unwrap()[0].body.text, TEST_MESSAGE);
     }
 }
