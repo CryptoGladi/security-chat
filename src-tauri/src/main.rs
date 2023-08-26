@@ -9,6 +9,7 @@ pub mod logger;
 pub mod path;
 
 fn main() {
+    // TODO add lock
     let panic_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         panic_hook(info);

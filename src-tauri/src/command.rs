@@ -7,9 +7,10 @@ use high_level::{
     prelude::*,
 };
 use log::*;
+use serde::{Deserialize, Serialize};
 use tauri::{Manager, Runtime, Size};
 
-pub async fn load_client<R: Runtime>(app: tauri::AppHandle<R>) {
+pub async fn load_client(app: tauri::AppHandle) {
     let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone())
         .await
         .unwrap();
@@ -35,7 +36,6 @@ pub async fn load_client<R: Runtime>(app: tauri::AppHandle<R>) {
             use Event::*;
             match nofity.event {
                 NewMessage(message) => {
-                    // TODO
                     app.emit_all("new-message", message).unwrap();
                 }
                 NewSentAcceptAesKey(mut key) => key
@@ -76,7 +76,7 @@ pub async fn open(path: String) {
 }
 
 #[tauri::command]
-pub async fn have_account<R: Runtime>(app: tauri::AppHandle<R>) -> bool {
+pub async fn have_account(app: tauri::AppHandle) -> bool {
     let have_account = Client::have_account(&global::CLIENT_INIT_CONFIG).unwrap();
     info!("run `have account`: {}", have_account);
 
@@ -99,7 +99,7 @@ pub async fn nickname_is_taken(nickname: String) -> bool {
 }
 
 #[tauri::command]
-pub async fn registration<R: Runtime>(app: tauri::AppHandle<R>, nickname: String) {
+pub async fn registration(app: tauri::AppHandle, nickname: String) {
     let nickname = nickname.trim().to_string();
     info!("run `registration` command with nickname: {}", nickname);
 
@@ -197,7 +197,7 @@ pub async fn get_nickname() -> String {
 }
 
 #[tauri::command]
-pub async fn send_message(nickname: String, message: String) {
+pub async fn send_message(app: tauri::AppHandle, nickname: String, message: String) {
     global::LOADED_CLIENT
         .write()
         .await

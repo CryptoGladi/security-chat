@@ -7,17 +7,23 @@
 	import _ from 'lodash';
 	import LoadingCenter from '$lib/loading_center.svelte';
 	import { listen } from '@tauri-apps/api/event';
-	import { afterUpdate } from 'svelte';
+	import { afterUpdate, onMount } from 'svelte';
 	import Str from '@supercharge/strings';
 
 	export let data;
 	let text_message: string;
 	let messages: MessageInfo[] = [];
 	let messages_div: HTMLDivElement;
+	let is_limit = false;
 
-	listen("new-message", (event) => {
-		messages.push(new MessageInfo(event.body.text, false));
+	onMount(async () => {
+		await listen("new-message", (event: any) => {
+		if (event.payload.sender == data.nickname) {
+			messages.push(new MessageInfo(event.payload.body.text, true));
+			messages = messages;
+		}
 	});
+	})
 
 	const scrollToBottom = (node: any) => {
 		const scroll = () =>
@@ -30,9 +36,14 @@
 		return { update: scroll };
 	};
 
+	function text_message_is_limit() {
+		// TODO via api
+		return text_message.length >= 900;
+	}
+
 	afterUpdate(() => {
-		console.log('afterUpdate');
 		if (messages) scrollToBottom(messages_div);
+		is_limit = text_message_is_limit();
 	});
 
 	class MessageInfo {
@@ -59,7 +70,7 @@
 	}
 
 	function send_message() {
-		if (Str(text_message).trim().isEmpty()) {
+		if (Str(text_message).trim().isEmpty() || text_message_is_limit()) {
 			text_message = '';
 			return;
 		}
@@ -97,7 +108,7 @@
 	{#await get_messages()}
 		<LoadingCenter />
 	{:then _}
-		<div class="overflow-auto flex-auto" use:scrollToBottom={messages} bind:this={messages_div}>
+		<div class="overflow-y-auto flex-auto" use:scrollToBottom={messages} bind:this={messages_div}>
 			{#each messages as message}
 				<Message text={message.text} is_sender={message.is_sender} />
 			{/each}
@@ -110,6 +121,7 @@
 				class="textarea textarea-bordered flex-auto"
 				bind:value={text_message}
 				placeholder="Ваше сообщение"
+				class:textarea-error={is_limit}
 				on:keydown={(e) => {
 					if (e.key === 'Enter') {
 						// @ts-ignore
