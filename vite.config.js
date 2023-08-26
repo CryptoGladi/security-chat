@@ -4,11 +4,7 @@ import adapter from '@sveltejs/adapter-static';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 export default defineConfig({
-	plugins: [
-		sveltekit(),
-		ViteImageOptimizer({
-		  })
-	],
+	plugins: [sveltekit(), ViteImageOptimizer({})],
 
 	kit: {
 		adapter: adapter()

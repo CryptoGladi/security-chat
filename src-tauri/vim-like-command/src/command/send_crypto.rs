@@ -46,22 +46,44 @@ mod tests {
             .unwrap();
     }
 
-    #[test(tokio::test)] 
+    #[test(tokio::test)]
     async fn run_via_runner() {
         let (_temp_dir, _, mut client_to) = get_client().await;
         let (_temp_dir, _, mut client_from) = get_client().await;
         const TEST_MESSAGE: &str = "testing message";
 
         let mut runner = RunnerBuilder::new()
-        .commands(vec![&SendCrypto])
-        .build()
-        .unwrap();
+            .commands(vec![&SendCrypto])
+            .build()
+            .unwrap();
 
-        runner.run(&mut client_to, &format!("send_crypto {}", client_from.get_nickname())).await.unwrap();
+        runner
+            .run(
+                &mut client_to,
+                &format!("send_crypto {}", client_from.get_nickname()),
+            )
+            .await
+            .unwrap();
         client_from.accept_all_cryptos().await.unwrap();
         client_to.update_cryptos().await.unwrap();
 
-        client_to.send_message(client_from.get_nickname(), Message { text: TEST_MESSAGE.to_string() }).await.unwrap();
-        assert_eq!(client_from.get_messages_for_user(client_to.get_nickname(), 1).await.unwrap()[0].body.text, TEST_MESSAGE);
+        client_to
+            .send_message(
+                client_from.get_nickname(),
+                Message {
+                    text: TEST_MESSAGE.to_string(),
+                },
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            client_from
+                .get_messages_for_user(client_to.get_nickname(), 1)
+                .await
+                .unwrap()[0]
+                .body
+                .text,
+            TEST_MESSAGE
+        );
     }
 }

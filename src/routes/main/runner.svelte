@@ -11,7 +11,7 @@
 
 	function runCommand(command: string) {
 		invoke('run_command', { command: command }).then((command) => {
-			console.info("Command done");
+			console.info('Command done');
 		});
 	}
 </script>
@@ -24,9 +24,9 @@
 			// @ts-ignore
 			getFuzzy(e.target.value)}
 		on:keydown={(e) => {
-			if (e.key === "Enter") {
+			if (e.key === 'Enter') {
 				// @ts-ignore
-				runCommand(e.target.value)
+				runCommand(e.target.value);
 			}
 		}}
 		class="input input-bordered input-accent w-full"

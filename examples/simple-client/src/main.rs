@@ -12,7 +12,7 @@ struct Opt {
 }
 
 static INIT_CONFIG: Lazy<ClientInitConfig> =
-    Lazy::new(|| ClientInitConfig::new("config.bin", "http://[::1]:2052"));
+    Lazy::new(|| ClientInitConfig::new("config.log", "http://[::1]:2052"));
 
 #[tokio::main]
 async fn main() {
@@ -37,7 +37,7 @@ async fn main() {
         loop {
             let notification = recv_event.recv().await.unwrap();
             match notification.event {
-                Event::NewMessage(message) => println!("new message {}; from user: {}", message.text, notification.by_nickname),
+                Event::NewMessage(message) => println!("new message {}; from user: {}", message.body.text, notification.by_nickname),
                 _ => {
                     info!("new event: {:?}", notification.event);
                 }

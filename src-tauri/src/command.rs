@@ -1,13 +1,15 @@
+use crate::global;
 use high_level::{
-    client::{impl_message::{MessageInfo, Message}, storage_crypto::Nickname},
+    client::{
+        impl_message::{Message, MessageInfo},
+        storage_crypto::Nickname,
+    },
     prelude::*,
 };
 use log::*;
-use tauri::{Runtime, Size};
+use tauri::{Manager, Runtime, Size};
 
-use crate::global;
-
-pub async fn load_client() {
+pub async fn load_client<R: Runtime>(app: tauri::AppHandle<R>) {
     let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone())
         .await
         .unwrap();
@@ -32,8 +34,9 @@ pub async fn load_client() {
 
             use Event::*;
             match nofity.event {
-                NewMessage(_message) => {
+                NewMessage(message) => {
                     // TODO
+                    app.emit_all("new-message", message).unwrap();
                 }
                 NewSentAcceptAesKey(mut key) => key
                     .accept(global::LOADED_CLIENT.write().await.as_mut().unwrap())
@@ -48,10 +51,10 @@ pub async fn load_client() {
                         .update_cryptos()
                         .await
                         .unwrap();
-                    debug!("after NewAcceptAesKey: {:?}", global::LOADED_CLIENT
-                    .write()
-                    .await
-                    .as_mut());
+                    debug!(
+                        "after NewAcceptAesKey: {:?}",
+                        global::LOADED_CLIENT.write().await.as_mut()
+                    );
                 }
             }
 
@@ -73,12 +76,12 @@ pub async fn open(path: String) {
 }
 
 #[tauri::command]
-pub async fn have_account() -> bool {
+pub async fn have_account<R: Runtime>(app: tauri::AppHandle<R>) -> bool {
     let have_account = Client::have_account(&global::CLIENT_INIT_CONFIG).unwrap();
     info!("run `have account`: {}", have_account);
 
     if have_account {
-        load_client().await;
+        load_client(app).await;
     }
 
     have_account
@@ -96,7 +99,7 @@ pub async fn nickname_is_taken(nickname: String) -> bool {
 }
 
 #[tauri::command]
-pub async fn registration(nickname: String) {
+pub async fn registration<R: Runtime>(app: tauri::AppHandle<R>, nickname: String) {
     let nickname = nickname.trim().to_string();
     info!("run `registration` command with nickname: {}", nickname);
 
@@ -106,7 +109,7 @@ pub async fn registration(nickname: String) {
     client.save().unwrap();
 
     drop(client);
-    load_client().await;
+    load_client(app).await;
 }
 
 #[tauri::command]
@@ -195,7 +198,12 @@ pub async fn get_nickname() -> String {
 
 #[tauri::command]
 pub async fn send_message(nickname: String, message: String) {
-  global::LOADED_CLIENT.write().await.as_mut().unwrap().send_message(Nickname(nickname), Message {
-    text: message
-  }).await.unwrap()
+    global::LOADED_CLIENT
+        .write()
+        .await
+        .as_mut()
+        .unwrap()
+        .send_message(Nickname(nickname), Message { text: message })
+        .await
+        .unwrap()
 }

@@ -47,6 +47,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@supercharge/strings": "^2.0.0",
 		"@tauri-apps/api": "^1.4.0",
 		"@types/lodash": "^4.14.197",
 		"lodash": "^4.17.21",

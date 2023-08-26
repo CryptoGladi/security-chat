@@ -68,7 +68,7 @@ impl Client {
         let keys_info = self.raw_client.get_aes_keys().await?;
 
         for i in keys_info {
-            debug!("iter key_info: {:?}", i);
+            trace!("iter key_info: {:?}", i);
             let nickname_from = Nickname(i.nickname_from.clone());
             let (Some(nickname_from_public_key), Some(ephemeral_secret_def)) = (&i.nickname_from_public_key, self.config.order_adding_crypto.get(&nickname_from)) else {
                 error!("break update_cryptos! iter: {:?}, order_adding_crypto: {:?}", i, self.config.order_adding_crypto);
@@ -83,13 +83,11 @@ impl Client {
             );
             let aes = Aes::with_shared_key(shared_secret);
 
-            warn!("dead lock?");
             self.config
                 .storage_crypto
                 .write()
                 .unwrap()
                 .add(nickname_from.clone(), aes)?;
-            warn!("changen storage_crypto: {:?}", self.config.storage_crypto.read().unwrap());
 
             self.config
                 .order_adding_crypto
