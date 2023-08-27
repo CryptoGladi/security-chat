@@ -4,7 +4,8 @@
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import Message from './message.svelte';
 	import { invoke } from '@tauri-apps/api/tauri';
-	import _ from 'lodash';
+	import reverse from 'lodash/reverse';
+	import map from 'lodash/map';
 	import LoadingCenter from '$lib/loading_center.svelte';
 	import { listen } from '@tauri-apps/api/event';
 	import { afterUpdate, onMount } from 'svelte';
@@ -62,8 +63,8 @@
 			nicknameFrom: data.nickname
 		})) as any[];
 
-		messages = _.reverse(
-			_.map(raw_messages, (n) => {
+		messages = reverse(
+			map(raw_messages, (n) => {
 				return new MessageInfo(n.body.text, n.sender != my_nickname);
 			})
 		);
