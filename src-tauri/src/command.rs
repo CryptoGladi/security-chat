@@ -51,10 +51,7 @@ pub async fn load_client(app: tauri::AppHandle) {
                         .update_cryptos()
                         .await
                         .unwrap();
-                    debug!(
-                        "after NewAcceptAesKey: {:?}",
-                        global::LOADED_CLIENT.write().await.as_mut()
-                    );
+                    app.emit_all("new-accept-aes-key", {}).unwrap();
                 }
             }
 
@@ -127,7 +124,7 @@ pub async fn get_all_users() -> Vec<String> {
 
     debug!(
         "get_all_users: {:?}",
-        global::LOADED_CLIENT.read().await.as_ref()
+        users
     );
     users
 }

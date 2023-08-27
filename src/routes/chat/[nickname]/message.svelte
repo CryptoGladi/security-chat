@@ -4,7 +4,7 @@
 </script>
 
 <div class="chat" class:chat-start={is_sender} class:chat-end={!is_sender}>
-	<div class="chat-bubble" style="inline-size: 400px; overflow-wrap: break-word;">
+	<div class="chat-bubble break-words max-w-sm">
 		{text}
 	</div>
 </div>

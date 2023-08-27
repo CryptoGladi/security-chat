@@ -5,12 +5,17 @@
 	import { invoke } from '@tauri-apps/api/tauri';
 	import LoadingCenter from '$lib/loading_center.svelte';
 	import { goto } from '$app/navigation';
+	import { listen } from '@tauri-apps/api/event';
 
 	let runner_modal: HTMLDialogElement;
 
+	listen('new-accept-aes-key', (_event) => {
+		goto('/main');
+	});
+
 	onMount(async () => {
 		await unregisterAll();
-
+		// TODO not global!
 		await register('Ctrl+F', () => {
 			runner_modal.showModal();
 		});
@@ -24,6 +29,25 @@
 		goto(`/chat/${nickname}`);
 	}
 </script>
+
+<div class="navbar bg-neutral text-neutral-content flex-initial">
+	<div class="flex-1">
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<a
+			class="btn btn-ghost normal-case text-xl"
+			on:click={() => {
+				runner_modal.showModal();
+			}}>Выполнить...</a
+		>
+	</div>
+
+	<div class="flex-none gap-2">
+		{#await invoke("get_nickname") then nickname}
+			<span class="text-3xl text">{nickname}</span>
+		{/await}
+	</div>
+</div>
 
 {#await getAllUsers()}
 	<LoadingCenter />
