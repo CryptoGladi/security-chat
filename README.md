@@ -4,7 +4,7 @@
 
 **This project is not ready yet!** Please see [roadmap](doc/roadmap.md)
 
-![license](https://img.shields.io/github/license/CryptoGladi/security-chat?style=for-the-badge) ![GitHub repo size](https://img.shields.io/github/repo-size/CryptoGladi/security-chat?style=for-the-badge) ![GitHub release (with filter)](https://img.shields.io/github/v/release/CryptoGladi/security-chat?style=for-the-badge)
+![license](https://img.shields.io/github/license/CryptoGladi/security-chat?style=for-the-badge) ![GitHub repo size](https://img.shields.io/github/repo-size/CryptoGladi/security-chat?style=for-the-badge) ![GitHub package.json version (subfolder of monorepo)](https://img.shields.io/github/package-json/v/CryptoGladi/security-chat?style=for-the-badge)
 
 # Motivation :boom:
 
