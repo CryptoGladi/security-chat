@@ -7,7 +7,6 @@ use high_level::{
     prelude::*,
 };
 use log::*;
-use serde::{Deserialize, Serialize};
 use tauri::{Manager, Runtime, Size};
 
 pub async fn load_client(app: tauri::AppHandle) {
@@ -51,7 +50,8 @@ pub async fn load_client(app: tauri::AppHandle) {
                         .update_cryptos()
                         .await
                         .unwrap();
-                    app.emit_all("new-accept-aes-key", {}).unwrap();
+                    // TODO
+                    app.emit_all("new-accept-aes-key", ()).unwrap();
                 }
             }
 
@@ -159,7 +159,7 @@ pub async fn run_command(command: String) {
     if let Err(error) = global::VIM_RUNNER
         .lock()
         .await
-        .run(&mut client.as_mut().unwrap(), &command)
+        .run(client.as_mut().unwrap(), &command)
         .await
     {
         error!(
@@ -194,7 +194,7 @@ pub async fn get_nickname() -> String {
 }
 
 #[tauri::command]
-pub async fn send_message(app: tauri::AppHandle, nickname: String, message: String) {
+pub async fn send_message(nickname: String, message: String) {
     global::LOADED_CLIENT
         .write()
         .await

@@ -2,7 +2,9 @@
 
 > Messenger for anonymous and private communication
 
-![license](https://img.shields.io/github/license/CryptoGladi/security-chat?style=for-the-badge)
+**This project is not ready yet!** Please see [roadmap](doc/roadmap.md)
+
+![license](https://img.shields.io/github/license/CryptoGladi/security-chat?style=for-the-badge) ![GitHub repo size](https://img.shields.io/github/repo-size/CryptoGladi/security-chat?style=for-the-badge) ![GitHub release (with filter)](https://img.shields.io/github/v/release/CryptoGladi/security-chat?style=for-the-badge)
 
 # Motivation :boom:
 
@@ -27,3 +29,5 @@ Official Telegram clients are open source, while the server is **closed-sourced*
 C++ is a highly unsafe programming language. The abundance of strange syntactic constructions, a lot of undefined behaviors makes it extremely unsafe for creating cryptographic programs // TODO
 
 5. Telegram is [vulnerable](https://www.gamingdeputy.com/the-fsb-learned-to-track-the-traffic-of-telegram-whatsapp-and-signal/) and has ties to the [government](https://restoreprivacy.com/telegram-sharing-user-data/) and [corporation](https://caliber.az/en/post/89269/)
+
+

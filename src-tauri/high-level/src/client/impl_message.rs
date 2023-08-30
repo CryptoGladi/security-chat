@@ -206,7 +206,7 @@ mod tests {
         println!("new event: {:?}", new_event);
 
         match new_event.event {
-            notification::Event::NewMessage(message) => assert_eq!(message.text, TEST_MESSAGE),
+            notification::Event::NewMessage(message) => assert_eq!(message.body.text, TEST_MESSAGE),
             _ => panic!("event is invalid"),
         }
     }

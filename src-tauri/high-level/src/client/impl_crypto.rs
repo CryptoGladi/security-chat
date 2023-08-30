@@ -160,7 +160,7 @@ mod tests {
 
         let notification = recv_from.recv().await.unwrap();
         if let notification::Event::NewMessage(message) = notification.event {
-            assert_eq!(message.text, TEXT_MESSAGE);
+            assert_eq!(message.body.text, TEXT_MESSAGE);
         } else {
             panic!()
         }
