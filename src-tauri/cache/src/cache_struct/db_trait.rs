@@ -1,9 +1,12 @@
+//! Trait for database engine key - value with desc
+
 pub mod sqlite_impl;
 
 use super::error::{CacheResult, Error};
 use async_trait::async_trait;
 use std::path::{Path, PathBuf};
 
+#[derive(Debug)]
 pub struct DBOptions {
     path: PathBuf,
 }
@@ -16,16 +19,22 @@ impl DBOptions {
     }
 }
 
+/// Database engine
+/// 
+/// For error handling use [crate::cache_struct::error::Error::Db]
 #[async_trait]
 pub trait DB
 where
     Self: Sized,
 {
+    /// Create a new database
     async fn new(options: DBOptions) -> CacheResult<Self>;
 
-    async fn put(&mut self, chat_name: &str, data: Vec<u8>) -> CacheResult<()>;
+    /// Put a new element
+    async fn put(&mut self, key: &str, data: Vec<u8>) -> CacheResult<()>;
 
-    async fn get(&self, chat_name: &str, limit_desc: usize) -> CacheResult<Vec<u8>>;
+    /// Get element
+    async fn get(&self, key: &str, limit_desc: usize) -> CacheResult<Vec<u8>>;
 }
 
 pub use sqlite_impl::SQLite;
