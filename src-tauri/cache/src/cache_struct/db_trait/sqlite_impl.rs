@@ -1,10 +1,11 @@
 //! [SQLite](https://www.sqlite.org/index.html) database engine
 
 use super::*;
-use sqlx::sqlite::{SqliteAutoVacuum, SqliteConnectOptions};
-use sqlx::{Pool, Sqlite, SqlitePool};
 use log::{trace, warn};
+use sqlx::sqlite::{SqliteAutoVacuum, SqliteConnectOptions};
+use sqlx::{Pool, Row, Sqlite, SqlitePool};
 
+/// All SQL commands
 mod sql_command {
     use const_format::formatcp;
 
@@ -14,25 +15,14 @@ mod sql_command {
         "CREATE TABLE IF NOT EXISTS {} (
         id BIGSERIAL,
         key TEXT NOT NULL,
-        by_nickname TEXT NOT NULL,
         body BYTEA NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+        PRIMARY KEY (id)
     );",
         TABLE_NAME
     );
 
-    pub const INSERT_INTO: &str = formatcp!(
-        "INSERT INTO {} (key, by_nickname, body) VALUES ($1, $2, $3)",
-        TABLE_NAME
-    );
-
-    #[derive(sqlx::FromRow)]
-    pub struct Message {
-        id: i64,
-        key: String,
-        by_nickname: String,
-        body: Vec<u8>,
-    }
+    pub const INSERT_INTO: &str =
+        formatcp!("INSERT INTO {} (key, body) VALUES ($1, $2)", TABLE_NAME);
 }
 
 pub struct SQLite {
@@ -67,13 +57,12 @@ impl DB for SQLite {
         Ok(SQLite { db: db_connection })
     }
 
-    async fn put(&mut self, key: &str, data: Vec<u8>) -> CacheResult<()> {
-        trace!("put with key: {}; data: IS BINARY!", key);
+    async fn put(&mut self, key: &str, value: Vec<u8>) -> CacheResult<()> {
+        trace!("put with key: {}; value: IS BINARY!", key);
 
         sqlx::query(sql_command::INSERT_INTO)
-            .bind(key)
-            .bind("csa") // TODO
-            .bind(data)
+            .bind(key) // TODO
+            .bind(value)
             .execute(&self.db)
             .await
             .map_err(|x| Error::Db(x.into()))?;
@@ -81,17 +70,28 @@ impl DB for SQLite {
         Ok(())
     }
 
-    async fn get(&self, key: &str, limit_desc: usize) -> CacheResult<Vec<u8>> {
+    async fn get(&self, key: &str, limit_desc: usize) -> CacheResult<Vec<Vec<u8>>> {
         trace!("get with key: {}; limit_desc: {}", key, limit_desc);
 
         let sql = format!(
-            "SELECT * FROM {} WHERE key = {} ORDER BY created_at DESC LIMIT {};",
+            "SELECT * FROM {} WHERE key = '{}' ORDER BY id DESC LIMIT {};",
             sql_command::TABLE_NAME,
             key,
             limit_desc
         );
 
-        todo!()
+        let stream = sqlx::query(&sql)
+            .fetch_all(&self.db)
+            .await
+            .map_err(|x| Error::Db(x.into()))?;
+
+        Ok(stream
+            .into_iter()
+            .map(|x| {
+                let y: Vec<u8> = x.get("body");
+                y
+            })
+            .collect())
     }
 }
 
@@ -118,7 +118,7 @@ mod tests {
     #[test(tokio::test)]
     async fn new() {
         let temp_dir = TempDir::new().unwrap();
-        let sqlite = SQLite::new(DBOptions::new(temp_dir.child("database.sqlite")))
+        let _sqlite = SQLite::new(DBOptions::new(temp_dir.child("database.sqlite")))
             .await
             .unwrap();
     }
@@ -127,5 +127,55 @@ mod tests {
     async fn put() {
         let (_temp_dir, mut sqlite) = create_database().await;
         sqlite.put("cs", b"cs".to_vec()).await.unwrap();
+    }
+
+    #[test(tokio::test)]
+    async fn get() {
+        let (_temp_dir, mut sqlite) = create_database().await;
+        sqlite.put("ke", b"value".to_vec()).await.unwrap();
+
+        let data = sqlite.get("ke", 100).await.unwrap();
+
+        assert_eq!(data[0], b"value");
+        assert_eq!(data.len(), 1);
+    }
+
+    #[test(tokio::test)]
+    async fn get_check_desc() {
+        let (_temp_dir, mut sqlite) = create_database().await;
+
+        for _ in 0..100 {
+            sqlite.put("ke", b"many_values".to_vec()).await.unwrap();
+        }
+
+        sqlite.put("ke", b"one_value".to_vec()).await.unwrap();
+        let data = sqlite.get("ke", 1000).await.unwrap();
+
+        assert_eq!(data[0], b"one_value".to_vec());
+    }
+
+    #[test(tokio::test)]
+    async fn get_check_limit() {
+        let (_temp_dir, mut sqlite) = create_database().await;
+        const LIMIT_DESC: usize = 10;
+
+        for _ in 0..100 {
+            sqlite.put("ke", b"many_values".to_vec()).await.unwrap();
+        }
+
+        let data = sqlite.get("ke", LIMIT_DESC).await.unwrap();
+        assert_eq!(data.len(), LIMIT_DESC);
+    }
+
+    #[test(tokio::test)]
+    async fn check_zero_limit() {
+        let (_temp_dir, mut sqlite) = create_database().await;
+
+        for _ in 0..100 {
+            sqlite.put("ke", b"many_values".to_vec()).await.unwrap();
+        }
+
+        let data = sqlite.get("ke", 0).await.unwrap();
+        assert!(data.is_empty());
     }
 }
