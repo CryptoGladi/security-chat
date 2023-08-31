@@ -122,10 +122,7 @@ pub async fn get_all_users() -> Vec<String> {
         .map(|x| x.0)
         .collect();
 
-    debug!(
-        "get_all_users: {:?}",
-        users
-    );
+    debug!("get_all_users: {:?}", users);
     users
 }
 

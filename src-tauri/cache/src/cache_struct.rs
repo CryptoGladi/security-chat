@@ -1,3 +1,15 @@
+//! # Main struct
+//! 
+//! ## Example
+//! 
+//! ```no_run
+//! # use cache::cache_struct::Cache;
+//! # use cache::cache_struct::db_trait::sqlite_impl::SQLite;
+//! # use cache::cache_struct::db_trait::DBOptions;
+//! #
+//! let cache = Cache::<SQLite>::new(DBOptions::new("path"));
+//! ```
+
 pub mod db_trait;
 pub mod error;
 
