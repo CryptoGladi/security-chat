@@ -35,6 +35,7 @@ impl Client {
         let bincode = bincode::serialize(&message)?;
         let encryptred_data = aes.encrypt(&bincode[..])?;
 
+        // self.cache.put(&nickname_from, &encryptred_data).await?; TODO
         self.raw_client
             .send_message(
                 nickname_from.0,

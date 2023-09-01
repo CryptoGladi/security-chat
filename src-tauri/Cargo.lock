@@ -1797,6 +1797,7 @@ name = "high-level"
 version = "0.0.0"
 dependencies = [
  "bincode",
+ "cache",
  "crate-proto",
  "criterion",
  "env_logger",
@@ -3338,7 +3339,6 @@ dependencies = [
 name = "security-chat"
 version = "0.0.0"
 dependencies = [
- "cache",
  "dirs",
  "high-level",
  "log",

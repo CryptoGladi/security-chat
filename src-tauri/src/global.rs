@@ -12,7 +12,7 @@ pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
 fn get_client_init_config() -> ClientInitConfig {
     let dir = crate::path::get_app_folder();
 
-    ClientInitConfig::new(dir.join("config.bin"), ADDRESS_SERVER)
+    ClientInitConfig::new(dir.join("config.bin"), dir.join("cache.db"), ADDRESS_SERVER)
 }
 
 fn get_runner<'a>() -> Runner<'a> {

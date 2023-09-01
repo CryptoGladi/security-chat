@@ -13,10 +13,9 @@ mod sql_command {
 
     pub const CREATE_TABLE: &str = formatcp!(
         "CREATE TABLE IF NOT EXISTS {} (
-        id BIGSERIAL,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         key TEXT NOT NULL,
-        body BYTEA NOT NULL,
-        PRIMARY KEY (id)
+        body BYTEA NOT NULL
     );",
         TABLE_NAME
     );
@@ -25,6 +24,7 @@ mod sql_command {
         formatcp!("INSERT INTO {} (key, body) VALUES ($1, $2)", TABLE_NAME);
 }
 
+#[derive(Debug)]
 pub struct SQLite {
     db: Pool<Sqlite>,
 }
@@ -61,7 +61,7 @@ impl DB for SQLite {
         trace!("put with key: {}; value: IS BINARY!", key);
 
         sqlx::query(sql_command::INSERT_INTO)
-            .bind(key) // TODO
+            .bind(key)
             .bind(value)
             .execute(&self.db)
             .await
@@ -177,5 +177,14 @@ mod tests {
 
         let data = sqlite.get("ke", 0).await.unwrap();
         assert!(data.is_empty());
+    }
+
+    #[test(tokio::test)]
+    async fn check_one_limit() {
+        let (_temp_dir, mut sqlite) = create_database().await;
+        sqlite.put("ke", b"1".to_vec()).await.unwrap();
+        sqlite.put("ke", b"2".to_vec()).await.unwrap();
+
+        assert_eq!(sqlite.get("ke", 1).await.unwrap().first().unwrap(), b"2");
     }
 }

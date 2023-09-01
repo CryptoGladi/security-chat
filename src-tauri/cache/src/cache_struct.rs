@@ -46,9 +46,14 @@ impl<T: db_trait::DB> Cache<T> {
         Ok(())
     }
 
+    pub async fn last<D: DeserializeOwned + Clone + Debug>(&self, key: &str) -> CacheResult<Option<D>> {
+        debug!("last with key: {}", key);
+        Ok(self.get(key, 1).await?.last().cloned())
+    }
+
     /// Get element from cache
     pub async fn get<D: DeserializeOwned>(
-        &mut self,
+        &self,
         key: &str,
         limit_desc: usize,
     ) -> CacheResult<Vec<D>> {
@@ -145,7 +150,16 @@ mod tests {
         if let crate::cache_struct::error::Error::Bincode(_) = error {
             warn!("Done!");
         } else {
-            assert!(false);
+            panic!("crate::cache_struct::error::Error::Bincode != error");
         }
+    }
+
+    #[test(tokio::test)]
+    async fn last() {
+        let (_temp_dir, mut db) = create_cache().await;
+        db.put("nickname", &1).await.unwrap();
+        db.put("nickname", &2).await.unwrap();
+
+        assert_eq!(db.last("nickname").await.unwrap(), Some(2));
     }
 }

@@ -146,7 +146,7 @@ pub async fn change_window_for_main_page<R: Runtime>(window: tauri::Window<R>) {
     window
         .set_size(Size::Physical(tauri::PhysicalSize::new(1000, 1000)))
         .unwrap();
-    // TODO
+    // TODO BUG
 }
 
 #[tauri::command]
