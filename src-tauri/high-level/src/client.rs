@@ -25,7 +25,7 @@ pub mod storage_crypto;
 pub struct Client {
     raw_client: RawClient,
     config: ClientConfig,
-    cache: CacheSQLite,
+    _cache: CacheSQLite, // TODO
     init_config: ClientInitConfig,
 }
 
@@ -48,7 +48,7 @@ impl Client {
                 ..Default::default()
             }
             .as_normal(),
-            cache,
+            _cache: cache,
             init_config,
             raw_client,
         })
@@ -87,7 +87,7 @@ impl Client {
                 api,
                 data: config.client_data.clone(),
             },
-            cache,
+            _cache: cache,
             config: config.as_normal(),
             init_config,
         })
