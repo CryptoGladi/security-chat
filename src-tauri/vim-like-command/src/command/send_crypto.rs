@@ -14,7 +14,7 @@ impl Command<ClientError> for SendCrypto {
     async fn run(&self, client: &mut Client, args: &[&str]) -> Result<(), ClientError> {
         let Some(nickname) = args.get(1) else {
             error!("invalid arg nickname");
-            return Ok(())
+            return Ok(());
         };
 
         client.send_crypto(Nickname(nickname.to_string())).await?;

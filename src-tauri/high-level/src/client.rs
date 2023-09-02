@@ -12,6 +12,7 @@ use lower_level::client::{
     Client as RawClient,
 };
 use storage_crypto::Nickname;
+use cache::prelude::*;
 
 pub mod client_config;
 pub mod error;
@@ -24,6 +25,7 @@ pub mod storage_crypto;
 pub struct Client {
     raw_client: RawClient,
     config: ClientConfig,
+    _cache: CacheSQLite, // TODO
     init_config: ClientInitConfig,
 }
 
@@ -36,8 +38,9 @@ impl Client {
 
         let raw_client =
             RawClient::registration(nickname, init_config.address_to_server.clone()).await?;
+        let cache = Cache::new(init_config.path_to_cache.clone()).await?;
 
-        info!("new registration: {}", raw_client.data.nickname);
+        warn!("new registration: {}", raw_client.data.nickname);
 
         Ok(Self {
             config: ClientConfigData {
@@ -45,6 +48,7 @@ impl Client {
                 ..Default::default()
             }
             .as_normal(),
+            _cache: cache,
             init_config,
             raw_client,
         })
@@ -76,11 +80,14 @@ impl Client {
             return Err(Error::AccoutIsInvalid);
         }
 
+        let cache = Cache::new(init_config.path_to_cache.clone()).await?;
+
         Ok(Self {
             raw_client: RawClient {
                 api,
                 data: config.client_data.clone(),
             },
+            _cache: cache,
             config: config.as_normal(),
             init_config,
         })

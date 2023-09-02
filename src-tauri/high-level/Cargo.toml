@@ -13,6 +13,7 @@ bincode.workspace = true
 crate-proto = { path = "../crate-proto"}
 kanal = "0.1.0-pre8"
 tokio = "1.29.1"
+cache = { path = "../cache" }
 log.workspace = true
 
 [dev-dependencies]

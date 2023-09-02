@@ -30,4 +30,7 @@ pub enum Error {
 
     #[error("send a message to yourself")]
     SendMessageToYourself,
+
+    #[error("problem in cache: `{0}`")]
+    Cache(#[from] cache::cache_struct::error::Error)
 }

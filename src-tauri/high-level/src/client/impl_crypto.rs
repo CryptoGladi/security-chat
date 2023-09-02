@@ -70,8 +70,14 @@ impl Client {
         for i in keys_info {
             trace!("iter key_info: {:?}", i);
             let nickname_from = Nickname(i.nickname_from.clone());
-            let (Some(nickname_from_public_key), Some(ephemeral_secret_def)) = (&i.nickname_from_public_key, self.config.order_adding_crypto.get(&nickname_from)) else {
-                error!("break update_cryptos! iter: {:?}, order_adding_crypto: {:?}", i, self.config.order_adding_crypto);
+            let (Some(nickname_from_public_key), Some(ephemeral_secret_def)) = (
+                &i.nickname_from_public_key,
+                self.config.order_adding_crypto.get(&nickname_from),
+            ) else {
+                error!(
+                    "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}",
+                    i, self.config.order_adding_crypto
+                );
                 continue;
             };
 
@@ -123,7 +129,8 @@ mod tests {
 
         let notification = recv_from.recv().await.unwrap();
 
-        let notification::Event::NewSentAcceptAesKey(mut key_for_accept) = notification.event else {
+        let notification::Event::NewSentAcceptAesKey(mut key_for_accept) = notification.event
+        else {
             panic!();
         };
         key_for_accept.accept(&mut client_from).await.unwrap();

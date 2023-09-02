@@ -122,10 +122,7 @@ pub async fn get_all_users() -> Vec<String> {
         .map(|x| x.0)
         .collect();
 
-    debug!(
-        "get_all_users: {:?}",
-        users
-    );
+    debug!("get_all_users: {:?}", users);
     users
 }
 
@@ -149,7 +146,7 @@ pub async fn change_window_for_main_page<R: Runtime>(window: tauri::Window<R>) {
     window
         .set_size(Size::Physical(tauri::PhysicalSize::new(1000, 1000)))
         .unwrap();
-    // TODO
+    // TODO BUG
 }
 
 #[tauri::command]
