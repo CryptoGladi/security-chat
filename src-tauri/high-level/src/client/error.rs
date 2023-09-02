@@ -32,5 +32,5 @@ pub enum Error {
     SendMessageToYourself,
 
     #[error("problem in cache: `{0}`")]
-    Cache(#[from] cache::cache_struct::error::Error)
+    Cache(#[from] cache::cache_struct::error::Error),
 }

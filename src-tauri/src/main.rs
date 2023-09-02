@@ -1,27 +1,30 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use lock::Lock;
 use log::warn;
 
 pub mod command;
 pub mod global;
+pub mod lock;
 pub mod logger;
 pub mod path;
 
 fn main() {
-    // TODO add lock
-    let panic_hook = std::panic::take_hook();
-    std::panic::set_hook(Box::new(move |info| {
-        panic_hook(info);
-        std::process::exit(1);
-    }));
-
     logger::init_logger();
     warn!("running chat...");
 
     if !crate::path::get_app_folder().is_dir() {
         std::fs::create_dir_all(crate::path::get_app_folder()).unwrap();
     }
+
+    let _lock = Lock::new(crate::path::get_app_folder().join("lockfile"));
+
+    let panic_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        panic_hook(info);
+        std::process::exit(1);
+    }));
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
