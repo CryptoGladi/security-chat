@@ -1,5 +1,6 @@
 use self::notification::Notification;
 use crate::bincode_config;
+use cache::prelude::*;
 use client_config::{ClientConfig, ClientConfigData, ClientInitConfig};
 use error::Error;
 use kanal::AsyncReceiver;
@@ -12,7 +13,6 @@ use lower_level::client::{
     Client as RawClient,
 };
 use storage_crypto::Nickname;
-use cache::prelude::*;
 
 pub mod client_config;
 pub mod error;

@@ -46,7 +46,10 @@ impl<T: db_trait::DB> Cache<T> {
         Ok(())
     }
 
-    pub async fn last<D: DeserializeOwned + Clone + Debug>(&self, key: &str) -> CacheResult<Option<D>> {
+    pub async fn last<D: DeserializeOwned + Clone + Debug>(
+        &self,
+        key: &str,
+    ) -> CacheResult<Option<D>> {
         debug!("last with key: {}", key);
         Ok(self.get(key, 1).await?.last().cloned())
     }
@@ -65,7 +68,7 @@ impl<T: db_trait::DB> Cache<T> {
         for x in raw_bincode.into_iter() {
             let y = bincode::deserialize::<D>(&x)?;
             bincode.push(y);
-        };
+        }
 
         Ok(bincode)
     }
@@ -74,24 +77,22 @@ impl<T: db_trait::DB> Cache<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::prelude::CacheSQLite;
     use log::warn;
+    use serde::Deserialize;
     use temp_dir::TempDir;
     use test_log::test;
-    use crate::prelude::CacheSQLite;
-    use serde::Deserialize;
 
     type CacheForTest = CacheSQLite;
 
     #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
     struct MessageBody {
-        pub text: String
+        pub text: String,
     }
 
     async fn create_cache() -> (TempDir, CacheForTest) {
         let temp_dir = TempDir::new().unwrap();
-        let db = CacheForTest::new(temp_dir.child("cache.db"))
-            .await
-            .unwrap();
+        let db = CacheForTest::new(temp_dir.child("cache.db")).await.unwrap();
 
         (temp_dir, db)
     }
@@ -104,28 +105,29 @@ mod tests {
     #[test(tokio::test)]
     async fn new() {
         let temp_dir = TempDir::new().unwrap();
-        let _sqlite = CacheForTest::new(temp_dir.child("cache.db"))
-            .await
-            .unwrap();
+        let _sqlite = CacheForTest::new(temp_dir.child("cache.db")).await.unwrap();
     }
 
     #[test(tokio::test)]
     async fn put_and_get() {
         let (_temp_dir, mut db) = create_cache().await;
         let message = MessageBody {
-            text: "text_message".to_string()
+            text: "text_message".to_string(),
         };
 
         db.put("nickname", &message).await.unwrap();
 
-        assert_eq!(db.get::<MessageBody>("nickname", 1).await.unwrap()[0], message);
+        assert_eq!(
+            db.get::<MessageBody>("nickname", 1).await.unwrap()[0],
+            message
+        );
     }
 
     #[test(tokio::test)]
     async fn put_and_get_with_desc() {
         let (_temp_dir, mut db) = create_cache().await;
         let many_message = MessageBody {
-            text: "SUPER SECRET DATA".to_string()
+            text: "SUPER SECRET DATA".to_string(),
         };
 
         for _ in 0..100 {
@@ -133,11 +135,14 @@ mod tests {
         }
 
         let one_message = MessageBody {
-            text: "many secret data".to_string()
+            text: "many secret data".to_string(),
         };
         db.put("nickname", &one_message).await.unwrap();
 
-        assert_eq!(db.get::<MessageBody>("nickname", 100).await.unwrap()[0], one_message);
+        assert_eq!(
+            db.get::<MessageBody>("nickname", 100).await.unwrap()[0],
+            one_message
+        );
     }
 
     #[test(tokio::test)]
