@@ -11,6 +11,12 @@ pub mod logger;
 pub mod path;
 
 fn main() {
+    let panic_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        panic_hook(info);
+        std::process::exit(1);
+    }));
+
     logger::init_logger();
     warn!("running chat...");
 
@@ -19,12 +25,6 @@ fn main() {
     }
 
     let _lock = Lock::new(crate::path::get_app_folder().join("lockfile"));
-
-    let panic_hook = std::panic::take_hook();
-    std::panic::set_hook(Box::new(move |info| {
-        panic_hook(info);
-        std::process::exit(1);
-    }));
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
