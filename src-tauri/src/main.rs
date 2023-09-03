@@ -14,6 +14,8 @@ fn main() {
     let panic_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         panic_hook(info);
+
+        #[allow(clippy::exit)]
         std::process::exit(1);
     }));
 

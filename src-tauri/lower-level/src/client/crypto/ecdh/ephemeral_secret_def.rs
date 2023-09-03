@@ -17,7 +17,7 @@ impl std::fmt::Debug for EphemeralSecretDef {
 
 static_assertions::assert_eq_size!(EphemeralSecret, EphemeralSecretDef);
 
-const CRATE_FOR_MODULE: CrateInfo = CrateInfo {
+const CRATE_FOR_MODULE: CrateInfo<'_> = CrateInfo {
     name: "p384",
     version: "0.13.0",
 };

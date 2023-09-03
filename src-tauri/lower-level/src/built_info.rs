@@ -17,7 +17,7 @@ impl<'a> CrateInfo<'a> {
     }
 }
 
-pub(crate) fn check_package(crate_for_check: CrateInfo) -> bool {
+pub(crate) fn check_package(crate_for_check: CrateInfo<'_>) -> bool {
     for i in raw::DEPENDENCIES.iter() {
         let crate_info = CrateInfo::new(*i);
 

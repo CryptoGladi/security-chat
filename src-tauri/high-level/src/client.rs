@@ -173,7 +173,7 @@ mod tests {
         let loaded_client = Client::load(client_config).await.unwrap();
         println!("loaded_client data: {:#?}", loaded_client.raw_client.data);
         println!("client data: {:#?}", client_data);
-        assert_eq!(loaded_client.raw_client.data.nickname, client_data.nickname)
+        assert_eq!(loaded_client.raw_client.data.nickname, client_data.nickname);
     }
 
     #[test(tokio::test)]
@@ -191,6 +191,6 @@ mod tests {
         assert_eq!(
             client.get_nickname(),
             Nickname::from(client.raw_client.data.nickname)
-        )
+        );
     }
 }

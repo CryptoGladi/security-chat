@@ -143,7 +143,7 @@ mod tests {
         )
         .await
         .unwrap();
-        const TEST_MESSAGE: &[u8] = "What hath God wrought!".as_bytes();
+        const TEST_MESSAGE: &[u8] = b"What hath God wrought!";
 
         let mut notification = client_from.subscribe().await.unwrap();
         client_to

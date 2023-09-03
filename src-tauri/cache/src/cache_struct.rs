@@ -65,7 +65,7 @@ impl<T: db_trait::DB> Cache<T> {
         let raw_bincode = self.db.get(key, limit_desc).await?;
 
         let mut bincode = Vec::with_capacity(raw_bincode.len());
-        for x in raw_bincode.into_iter() {
+        for x in raw_bincode {
             let y = bincode::deserialize::<D>(&x)?;
             bincode.push(y);
         }

@@ -69,7 +69,7 @@ pub async fn load_client(app: tauri::AppHandle) {
 #[tauri::command]
 pub async fn open(path: String) {
     info!("run `open` command with path: {}", path);
-    open::that(path).unwrap()
+    open::that(path).unwrap();
 }
 
 #[tauri::command]
@@ -199,5 +199,5 @@ pub async fn send_message(nickname: String, message: String) {
         .unwrap()
         .send_message(Nickname(nickname), Message { text: message })
         .await
-        .unwrap()
+        .unwrap();
 }

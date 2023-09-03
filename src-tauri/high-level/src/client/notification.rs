@@ -2,7 +2,7 @@ use super::impl_crypto::AesKeyForAccept;
 use super::impl_message::MessageInfo;
 use super::{storage_crypto::StorageCrypto, *};
 use crate_proto::AesKeyInfo;
-use crate_proto::Notice::*;
+use crate_proto::Notice::{NewAcceptAesKey, NewMessage, NewSendAesKey};
 use crate_proto::Notification as RawNotification;
 
 #[derive(Debug, Clone)]
