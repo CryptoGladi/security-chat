@@ -37,3 +37,9 @@ pub async fn get_user_by_nickname<'a>(db: &mut PoolledDb<'a>, user_nickname: &st
         .await
         .unwrap()
 }
+
+pub async fn check_user<'a>(db: &mut PoolledDb<'a>) -> bool {
+    
+
+    true
+}

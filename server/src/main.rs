@@ -6,6 +6,7 @@ use log::warn;
 use tokio::sync::broadcast;
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Server;
+use schema::database;
 
 #[cfg(not(debug_assertions))]
 use mimalloc::MiMalloc;
@@ -14,11 +15,7 @@ use mimalloc::MiMalloc;
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
 
-pub mod database;
 pub mod logger;
-pub mod models;
-pub mod schema;
-pub mod service;
 
 #[tokio::main]
 async fn main() -> color_eyre::eyre::Result<()> {

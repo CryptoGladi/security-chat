@@ -1,14 +1,6 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    chat (id) {
-        id -> Int8,
-        #[max_length = 40]
-        title -> Varchar,
-    }
-}
-
-diesel::table! {
     chat_messages (id) {
         id -> Int8,
         sender_id -> Int8,
@@ -40,7 +32,6 @@ diesel::table! {
 }
 
 diesel::allow_tables_to_appear_in_same_query!(
-    chat,
     chat_messages,
     order_add_keys,
     users,

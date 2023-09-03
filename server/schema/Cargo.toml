@@ -1,0 +1,21 @@
+[package]
+name = "schema"
+version = "0.0.0"
+edition = "2021"
+build = "build.rs"
+
+[dependencies]
+diesel = { version = "2.1.0", features = ["chrono"] }
+diesel-async = { version = "0.3.1", features = ["postgres", "bb8"] }
+bb8 = "0.8.1"
+chrono = "0.4.26"
+prost = "0.11.9"
+prost-types = "0.11.9"
+tokio.workspace = true
+tokio-stream = "0.1.14"
+tonic.workspace = true
+uuid = { version = "1.4.1", features = ["v4"] }
+log.workspace = true
+
+[build-dependencies]
+tonic-build = "0.9.2"
