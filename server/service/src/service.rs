@@ -3,22 +3,17 @@ use crate::models::{Message as DbMessage, *};
 use crate::schema::chat_messages::dsl::{chat_messages, created_at, recipient_id, sender_id};
 use crate::schema::order_add_keys::dsl::*;
 use crate::schema::users::dsl::{nickname, users};
+use crate_proto::security_chat::*;
+use crate_proto::SecurityChat;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use log::{error, info};
-use security_chat::security_chat_server::SecurityChat;
-use security_chat::*;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Request, Response, Status};
 
 type MessageProducer = tokio::sync::broadcast::Sender<Notification>;
 type MessageConsumer = tokio::sync::broadcast::Receiver<Notification>;
-
-#[allow(non_snake_case)]
-pub mod security_chat {
-    tonic::include_proto!("security_chat");
-}
 
 pub struct SecurityChatService {
     pub db_pool: DbPool,
@@ -380,9 +375,16 @@ impl SecurityChat for SecurityChatService {
 
             for message in messages.iter() {
                 result.messages.push(MessageInfo {
-                    body: Some(security_chat::Message { body: message.message_body.clone(), nonce: message.nonce.clone() }),
-                    sender_nickname: get_user_by_id(&mut db, message.sender_id).await[0].nickname.clone(),
-                    recipient_nickname: get_user_by_id(&mut db, message.recipient_id).await[0].nickname.clone(),
+                    body: Some(crate_proto::security_chat::Message {
+                        body: message.message_body.clone(),
+                        nonce: message.nonce.clone(),
+                    }),
+                    sender_nickname: get_user_by_id(&mut db, message.sender_id).await[0]
+                        .nickname
+                        .clone(),
+                    recipient_nickname: get_user_by_id(&mut db, message.recipient_id).await[0]
+                        .nickname
+                        .clone(),
                 })
             }
         }

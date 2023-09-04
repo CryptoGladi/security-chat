@@ -1,4 +1,5 @@
-pub mod schema;
 pub mod database;
-pub mod service;
 pub mod models;
+pub mod prelude;
+pub mod schema;
+pub mod service;

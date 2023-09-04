@@ -1,6 +1,10 @@
 [package]
 name = "server"
-version = "0.1.0"
+version = "0.1.0-alpha.1"
+description = "Client for anonymous and private communication"
+authors = ["CryptoGladi"]
+license = "GPL-3.0-or-later"
+repository = "https://github.com/CryptoGladi/security-chat"
 edition = "2021"
 
 [workspace]
