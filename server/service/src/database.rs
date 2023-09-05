@@ -37,3 +37,23 @@ pub async fn get_user_by_nickname<'a>(db: &mut PoolledDb<'a>, user_nickname: &st
         .await
         .unwrap()
 }
+
+pub async fn check_user<'a>(
+    db: &mut PoolledDb<'a>,
+    user_nickname: &str,
+    user_authkey: &str,
+) -> Result<User, tonic::Status> {
+    let user = users
+        .filter(nickname.eq(user_nickname))
+        .filter(authkey.eq(user_authkey))
+        .select(User::as_select())
+        .first(db)
+        .await;
+
+    match user {
+        Ok(user_info) => Ok(user_info),
+        Err(_) => Err(tonic::Status::not_found(
+            "user not found or authkey is invalid",
+        )),
+    }
+}

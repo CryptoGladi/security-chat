@@ -1,28 +1,30 @@
 [package]
 name = "server"
-version = "0.1.0"
+version = "0.1.0-alpha.1"
+description = "Client for anonymous and private communication"
+authors = ["CryptoGladi"]
+license = "GPL-3.0-or-later"
+repository = "https://github.com/CryptoGladi/security-chat"
 edition = "2021"
+
+[workspace]
+members = ["service", "crate-proto"]
+
+[workspace.dependencies]
+log = "0.4.19"
+tokio = { version = "1.29.1", features = ["rt-multi-thread", "macros", "sync"] }
+tonic = { version = "0.9.2", features = ["gzip"] }
 
 [dependencies]
 anyhow = "1.0.72"
-bb8 = "0.8.1"
-chrono = "0.4.26"
 color-eyre = "0.6.2"
-diesel = { version = "2.1.0", features = ["chrono"] }
-diesel-async = { version = "0.3.1", features = ["postgres", "bb8"] }
 dotenv = "0.15.0"
-log = "0.4.19"
+log.workspace = true
 log4rs = { version = "1.2.0", default-features = false, features = ["file_appender", "threshold_filter", "console_appender"] }
 mimalloc = { version = "0.1.37", default-features = false }
-prost = "0.11.9"
-prost-types = "0.11.9"
-tokio = { version = "1.29.1", features = ["rt-multi-thread", "macros", "sync"] }
-tokio-stream = "0.1.14"
-tonic = { version = "0.9.2", features = ["gzip"] }
-uuid = { version = "1.4.1", features = ["v4"] }
+tokio.workspace = true
+service = { path = "service" }
+tonic.workspace = true
 
 [profile.release]
 incremental = true
-
-[build-dependencies]
-tonic-build = "0.9.2"
