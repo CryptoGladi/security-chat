@@ -7,7 +7,7 @@
 - :white_large_square: Add cache
 # 0.1.0-alpha.2
 
-- :white_large_square: Server code refactoring
+- :white_check_mark: Server code refactoring
 - :white_large_square: Make it possible to reply to messages
 - :white_large_square: Make a menu to add friends/crypto
 - :white_check_mark: Make cache for message without to add client (Block: ability to view ALL messages!)
