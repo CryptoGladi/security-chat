@@ -124,7 +124,7 @@ impl SecurityChat for SecurityChatService {
             .await?;
 
         let key: Key = diesel::update(order_add_keys)
-            .filter(id.eq(request.get_ref().id.clone()))
+            .filter(id.eq(request.get_ref().id))
             .set(user_from_public_key.eq(request.get_ref().public_key.clone()))
             .get_result(&mut db)
             .await
@@ -205,10 +205,8 @@ impl SecurityChat for SecurityChatService {
             loop {
                 let n = notification.recv().await.unwrap();
 
-                if n.nickname_from == user_for_check.nickname {
-                    if tx.send(Ok(n)).await.is_err() {
-                        break;
-                    }
+                if n.nickname_from == user_for_check.nickname && tx.send(Ok(n)).await.is_err() {
+                    break;
                 }
             }
         });
@@ -275,7 +273,7 @@ impl SecurityChat for SecurityChatService {
         let mut result = GetLatestMessagesReply::default();
 
         for nickname_for_get in request.get_ref().nickname_for_get.iter() {
-            let user_recipient = &get_user_by_nickname(&mut db, &nickname_for_get).await[0];
+            let user_recipient = &get_user_by_nickname(&mut db, nickname_for_get).await[0];
 
             let messages = chat_messages
                 .or_filter(sender_id.eq(user_sender.id))
@@ -301,7 +299,7 @@ impl SecurityChat for SecurityChatService {
                     recipient_nickname: get_user_by_id(&mut db, message.recipient_id).await[0]
                         .nickname
                         .clone(),
-                })
+                });
             }
         }
 

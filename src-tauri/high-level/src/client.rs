@@ -1,7 +1,7 @@
 use self::notification::Notification;
 use crate::bincode_config;
 use cache::prelude::*;
-use client_config::{ClientConfig, ClientConfigData, ClientInitConfig};
+use config::{ClientConfig, ClientConfigData, ClientInitConfig};
 use error::Error;
 use kanal::AsyncReceiver;
 use log::*;
@@ -14,12 +14,13 @@ use lower_level::client::{
 };
 use storage_crypto::Nickname;
 
-pub mod client_config;
+pub mod config;
 pub mod error;
 pub mod impl_crypto;
 pub mod impl_message;
 pub mod notification;
 pub mod storage_crypto;
+pub mod builder;
 
 #[derive(Debug)]
 pub struct Client {
