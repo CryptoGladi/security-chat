@@ -12,7 +12,7 @@ struct Opt {
 }
 
 static INIT_CONFIG: Lazy<ClientInitConfig> =
-    Lazy::new(|| ClientInitConfig::new("config.log", "http://[::1]:2052"));
+    Lazy::new(|| ClientInitConfig::new("config.log", "cache.log", "http://[::1]:2052"));
 
 #[tokio::main]
 async fn main() {

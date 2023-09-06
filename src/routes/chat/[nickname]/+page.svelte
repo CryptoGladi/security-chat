@@ -18,13 +18,13 @@
 	let is_limit = false;
 
 	onMount(async () => {
-		await listen("new-message", (event: any) => {
-		if (event.payload.sender == data.nickname) {
-			messages.push(new MessageInfo(event.payload.body.text, true));
-			messages = messages;
-		}
+		await listen('new-message', (event: any) => {
+			if (event.payload.sender == data.nickname) {
+				messages.push(new MessageInfo(event.payload.body.text, true));
+				messages = messages;
+			}
+		});
 	});
-	})
 
 	const scrollToBottom = (node: any) => {
 		const scroll = () =>

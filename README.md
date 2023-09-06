@@ -29,5 +29,3 @@ Official Telegram clients are open source, while the server is **closed-sourced*
 C++ is a highly unsafe programming language. The abundance of strange syntactic constructions, a lot of undefined behaviors makes it extremely unsafe for creating cryptographic programs // TODO
 
 5. Telegram is [vulnerable](https://www.gamingdeputy.com/the-fsb-learned-to-track-the-traffic-of-telegram-whatsapp-and-signal/) and has ties to the [government](https://restoreprivacy.com/telegram-sharing-user-data/) and [corporation](https://caliber.az/en/post/89269/)
-
-

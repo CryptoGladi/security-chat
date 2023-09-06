@@ -13,8 +13,6 @@ pub async fn load_client(app: tauri::AppHandle) {
     let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone())
         .await
         .unwrap();
-    // TODO сделать потом специальное меню для этого
-    client.accept_all_cryptos().await.unwrap();
     client.update_cryptos().await.unwrap();
     *global::LOADED_CLIENT.write().await = Some(client);
 
@@ -200,4 +198,20 @@ pub async fn send_message(nickname: String, message: String) {
         .send_message(Nickname(nickname), Message { text: message })
         .await
         .unwrap();
+}
+
+#[tauri::command]
+pub async fn get_cryptos_for_accept() -> Vec<String> {
+    debug!("run get_cryptos_for_accept");
+    global::LOADED_CLIENT
+        .write()
+        .await
+        .as_mut()
+        .unwrap()
+        .get_cryptos_for_accept()
+        .await
+        .unwrap()
+        .into_iter()
+        .map(|x| x.0.nickname_to)
+        .collect()
 }

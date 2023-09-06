@@ -7,7 +7,7 @@ pub struct AesKeyForAccept(pub AesKeyInfo);
 impl AesKeyForAccept {
     pub async fn accept(&mut self, client: &mut Client) -> Result<(), Error> {
         info!("run accept for AesKeyForAccept");
-        debug_assert!(self.0.nickname_from_public_key.is_none());
+        assert!(self.0.nickname_from_public_key.is_none(), "key from invalid or empty");
 
         let secret = client.raw_client.set_aes_key(&self.0).await?;
         let public_key =
