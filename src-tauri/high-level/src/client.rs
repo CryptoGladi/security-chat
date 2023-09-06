@@ -20,7 +20,6 @@ pub mod impl_crypto;
 pub mod impl_message;
 pub mod notification;
 pub mod storage_crypto;
-pub mod builder;
 
 #[derive(Debug)]
 pub struct Client {
