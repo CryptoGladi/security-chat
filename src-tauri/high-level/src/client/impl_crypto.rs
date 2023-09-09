@@ -1,5 +1,6 @@
 use super::*;
 use crate_proto::AesKeyInfo;
+use lower_level::client::crypto::CryptoError;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct AesKeyForAccept(pub AesKeyInfo);
@@ -7,7 +8,14 @@ pub struct AesKeyForAccept(pub AesKeyInfo);
 impl AesKeyForAccept {
     pub async fn accept(&mut self, client: &mut Client) -> Result<(), Error> {
         info!("run accept for AesKeyForAccept");
-        assert!(self.0.nickname_from_public_key.is_none(), "key from invalid or empty");
+        assert!(
+            self.0.nickname_from_public_key.is_none(),
+            "key from invalid or empty"
+        );
+
+        if self.0.nickname_from_public_key.is_none() {
+            return Err(Error::Crypto(CryptoError::KeyInvalid(self.0.nickname_from.clone())));
+        }
 
         let secret = client.raw_client.set_aes_key(&self.0).await?;
         let public_key =
@@ -207,5 +215,22 @@ mod tests {
                 .get(&client_to.get_nickname())
                 .unwrap()
         );
+    }
+
+    #[test(tokio::test)]
+    async fn clear_keys_for_accept_after_adding() {
+        let (_paths, _, mut client_to) = get_client().await;
+        let (_paths, _, mut client_from) = get_client().await;
+
+        client_to
+            .send_crypto(client_from.get_nickname())
+            .await
+            .unwrap();
+
+        client_from.accept_all_cryptos().await.unwrap();
+        client_to.update_cryptos().await.unwrap();
+
+        assert_eq!(client_from.get_cryptos_for_accept().await.unwrap().len(), 0);
+        assert_eq!(client_to.get_cryptos_for_accept().await.unwrap().len(), 0);
     }
 }

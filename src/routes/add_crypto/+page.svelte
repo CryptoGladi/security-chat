@@ -2,6 +2,9 @@
 	import { goto } from '$app/navigation';
 	import LoadingCenter from '$lib/loading_center.svelte';
 	import { invoke } from '@tauri-apps/api/tauri';
+	import Icon from 'svelte-icons-pack';
+	import IoAddCircle from "svelte-icons-pack/io/IoAddCircle";
+	import IoRemoveCircle from "svelte-icons-pack/io/IoRemoveCircle";
 
 	async function get_cryptos_for_accept() {
 		return (await invoke('get_cryptos_for_accept')) as string[];
@@ -43,8 +46,22 @@
 					</div>
 				</div>
 
-				<div class="flex-none gap-2">
-					<span class="text-3xl text">{nickname}</span>
+				<div class="flex-none gap-2 flex-row">
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<!-- svelte-ignore a11y-no-static-element-interactions -->
+					<div on:click={() => {
+
+					}}>
+						<Icon src={IoAddCircle} color="green" size="50px"></Icon>
+					</div>
+
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<!-- svelte-ignore a11y-no-static-element-interactions -->
+					<div on:click={() => {
+						
+					}}>
+						<Icon src={IoRemoveCircle} color="red" size="50px"></Icon>
+					</div>
 				</div>
 			</div>
 		</div>

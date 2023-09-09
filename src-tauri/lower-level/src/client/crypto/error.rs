@@ -7,4 +7,7 @@ pub enum CryptoError {
 
     #[error("ECDH problem: {0}")]
     Ecdh(p384::elliptic_curve::Error),
+
+    #[error("key invalid from user: {0}")]
+    KeyInvalid(String),
 }

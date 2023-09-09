@@ -215,3 +215,28 @@ pub async fn get_cryptos_for_accept() -> Vec<String> {
         .map(|x| x.0.nickname_to)
         .collect()
 }
+
+#[tauri::command]
+pub async fn add_crypto(nickname: String) {
+    for key in global::LOADED_CLIENT
+        .write()
+        .await
+        .as_mut()
+        .unwrap()
+        .get_cryptos_for_accept()
+        .await
+        .unwrap()
+        .iter_mut()
+        .filter(|x| x.0.nickname_to == nickname)
+    {
+        key.accept(global::LOADED_CLIENT.write().await.as_mut().unwrap())
+            .await
+            .unwrap();
+    }
+    // ! BUG DEAD LOCK?
+}
+
+#[tauri::command]
+async fn delete_crypto(nickname: String) {
+  todo!()
+}

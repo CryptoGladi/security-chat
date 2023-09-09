@@ -5,6 +5,7 @@
 - :white_large_square: Refactoring and documentation client
 - :white_large_square: Crate high-level to [tauri_command](https://tauri.app/v1/guides/features/command)
 - :white_large_square: Add cache
+- :white_large_square: Add check version after connection
 
 # 0.1.0-alpha.2
 
