@@ -50,7 +50,9 @@
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					<div on:click={() => {
-
+						invoke('add_crypto', { nickname: {nickname}.toString() }).then(() => {
+							goto("/main");
+						})
 					}}>
 						<Icon src={IoAddCircle} color="green" size="50px"></Icon>
 					</div>
@@ -58,7 +60,9 @@
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					<div on:click={() => {
-						
+						invoke('delete_crypto', { nickname: {nickname}.toString() }).then(() => {
+							goto("/add_crypto");
+						})
 					}}>
 						<Icon src={IoRemoveCircle} color="red" size="50px"></Icon>
 					</div>

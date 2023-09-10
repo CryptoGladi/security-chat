@@ -49,7 +49,7 @@ impl Client {
         Ok(())
     }
 
-    pub async fn get_messages_for_user(
+    pub async fn ggget_messages_for_user(
         &mut self,
         nickname: Nickname,
         limit: i64,
