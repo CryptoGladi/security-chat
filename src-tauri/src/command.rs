@@ -218,9 +218,9 @@ pub async fn get_cryptos_for_accept() -> Vec<String> {
 
 #[tauri::command]
 pub async fn add_crypto(nickname: String) {
-    for key in global::LOADED_CLIENT
-        .write()
-        .await
+    let mut locked_client = global::LOADED_CLIENT.write().await;
+
+    for key in locked_client
         .as_mut()
         .unwrap()
         .get_cryptos_for_accept()
@@ -229,14 +229,23 @@ pub async fn add_crypto(nickname: String) {
         .iter_mut()
         .filter(|x| x.0.nickname_to == nickname)
     {
-        key.accept(global::LOADED_CLIENT.write().await.as_mut().unwrap())
-            .await
-            .unwrap();
+        key.accept(locked_client.as_mut().unwrap()).await.unwrap();
     }
-    // ! BUG DEAD LOCK?
 }
 
 #[tauri::command]
-async fn delete_crypto(nickname: String) {
-  todo!()
+pub async fn delete_crypto(nickname: String) {
+    let mut locked_client = global::LOADED_CLIENT.write().await;
+
+    for key in locked_client
+        .as_mut()
+        .unwrap()
+        .get_cryptos_for_accept()
+        .await
+        .unwrap()
+        .iter_mut()
+        .filter(|x| x.0.nickname_from == nickname)
+    {
+        key.delete(locked_client.as_mut().unwrap()).await.unwrap();
+    }
 }

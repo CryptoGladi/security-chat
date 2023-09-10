@@ -1,38 +1,7 @@
+pub mod aes_key_for_accept;
+
 use super::*;
-use crate_proto::AesKeyInfo;
-use lower_level::client::crypto::CryptoError;
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct AesKeyForAccept(pub AesKeyInfo);
-
-impl AesKeyForAccept {
-    pub async fn accept(&mut self, client: &mut Client) -> Result<(), Error> {
-        info!("run accept for AesKeyForAccept");
-        assert!(
-            self.0.nickname_from_public_key.is_none(),
-            "key from invalid or empty"
-        );
-
-        if self.0.nickname_from_public_key.is_none() {
-            return Err(Error::Crypto(CryptoError::KeyInvalid(self.0.nickname_from.clone())));
-        }
-
-        let secret = client.raw_client.set_aes_key(&self.0).await?;
-        let public_key =
-            PublicKey::from_sec1_bytes(&self.0.nickname_to_public_key.clone()[..]).unwrap();
-        let shared = get_shared_secret(&secret, &public_key);
-        let aes = Aes::with_shared_key(shared);
-
-        client
-            .config
-            .storage_crypto
-            .write()
-            .unwrap()
-            .add(Nickname(self.0.nickname_to.clone()), aes)?;
-        client.save()?;
-        Ok(())
-    }
-}
+pub use aes_key_for_accept::AesKeyForAccept;
 
 impl Client {
     pub async fn send_crypto(&mut self, nickname_from: Nickname) -> Result<(), Error> {
