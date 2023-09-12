@@ -57,7 +57,7 @@ impl AesKeyForAccept {
 
 #[cfg(test)]
 mod tests {
-    use crate::{test_utils::get_client, client::error::Error};
+    use crate::{client::error::Error, test_utils::get_client};
     use lower_level::client::crypto::CryptoError;
     use test_log::test;
 
@@ -106,7 +106,10 @@ mod tests {
 
         for key in iter.iter_mut() {
             let _nickname = client_to.get_nickname();
-            assert!(matches!(key.delete(&mut client_from).await, Err(Error::Crypto(CryptoError::KeyAlreadyAccepted(_nickname)))));
+            assert!(matches!(
+                key.delete(&mut client_from).await,
+                Err(Error::Crypto(CryptoError::KeyAlreadyAccepted(_nickname)))
+            ));
         }
     }
 

@@ -35,10 +35,7 @@ pub async fn load_client(app: tauri::AppHandle) {
                 NewMessage(message) => {
                     app.emit_all("new-message", message).unwrap();
                 }
-                NewSentAcceptAesKey(mut key) => key
-                    .accept(global::LOADED_CLIENT.write().await.as_mut().unwrap())
-                    .await
-                    .unwrap(),
+                NewSentAcceptAesKey(_) => {}
                 NewAcceptAesKey(_key) => {
                     global::LOADED_CLIENT
                         .write()
@@ -49,7 +46,7 @@ pub async fn load_client(app: tauri::AppHandle) {
                         .await
                         .unwrap();
                     // TODO
-                    app.emit_all("new-accept-aes-key", ()).unwrap();
+                    // app.emit_all("new-accept-aes-key", ()).unwrap();
                 }
             }
 
@@ -218,6 +215,7 @@ pub async fn get_cryptos_for_accept() -> Vec<String> {
 
 #[tauri::command]
 pub async fn add_crypto(nickname: String) {
+    error!("run `add_crypto` with nickname: {}", nickname);
     let mut locked_client = global::LOADED_CLIENT.write().await;
 
     for key in locked_client
@@ -235,6 +233,7 @@ pub async fn add_crypto(nickname: String) {
 
 #[tauri::command]
 pub async fn delete_crypto(nickname: String) {
+    info!("run `delete_crypto` with nickname: {}", nickname);
     let mut locked_client = global::LOADED_CLIENT.write().await;
 
     for key in locked_client

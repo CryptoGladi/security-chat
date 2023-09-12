@@ -38,8 +38,9 @@
 
 	function createAccout() {
 		if (isAlphanumeric(nickname)) {
-			invoke('registration', { nickname: nickname });
-			goto('/main');
+			invoke('registration', { nickname: nickname }).then(() => {
+				goto('/main');
+			});
 		} else notifier.danger('Ошибка! У вас в нике запрещенные символы', 10000);
 	}
 </script>

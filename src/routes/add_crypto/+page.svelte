@@ -50,7 +50,7 @@
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					<div on:click={() => {
-						invoke('add_crypto', { nickname: {nickname}.toString() }).then(() => {
+						invoke('add_crypto', { nickname: nickname }).then(() => {
 							goto("/main");
 						})
 					}}>
@@ -60,7 +60,7 @@
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					<div on:click={() => {
-						invoke('delete_crypto', { nickname: {nickname}.toString() }).then(() => {
+						invoke('delete_crypto', { nickname: {nickname} }).then(() => {
 							goto("/add_crypto");
 						})
 					}}>

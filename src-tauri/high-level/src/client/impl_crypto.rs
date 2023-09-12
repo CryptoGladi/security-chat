@@ -51,10 +51,18 @@ impl Client {
                 &i.nickname_from_public_key,
                 self.config.order_adding_crypto.get(&nickname_from),
             ) else {
-                error!(
-                    "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}",
-                    i, self.config.order_adding_crypto
-                );
+                if cfg!(debug_assertions) {
+                    //panic!(
+                    //    "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
+                    //    i, self.config.order_adding_crypto, nickname_from
+                    //);
+                } else {
+                    error!(
+                        "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
+                        i, self.config.order_adding_crypto, nickname_from
+                    );
+                }
+                
                 continue;
             };
 
