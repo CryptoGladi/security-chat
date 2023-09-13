@@ -6,6 +6,8 @@
 	import LoadingCenter from '$lib/loading_center.svelte';
 	import { goto } from '$app/navigation';
 	import { listen } from '@tauri-apps/api/event';
+	import Icon from 'svelte-icons-pack';
+	import FaSolidUserFriends from 'svelte-icons-pack/fa/FaSolidUserFriends';
 
 	let runner_modal: HTMLDialogElement;
 
@@ -31,7 +33,7 @@
 </script>
 
 <div class="navbar bg-neutral text-neutral-content flex-initial">
-	<div class="flex-1">
+	<div class="flex-1 space-x-2">
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<a
@@ -40,10 +42,16 @@
 				runner_modal.showModal();
 			}}>Выполнить...</a
 		>
+
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<div on:click={() => goto('/add_crypto')}>
+			<Icon src={FaSolidUserFriends} size="40px" />
+		</div>
 	</div>
 
 	<div class="flex-none gap-2">
-		{#await invoke("get_nickname") then nickname}
+		{#await invoke('get_nickname') then nickname}
 			<span class="text-3xl text">{nickname}</span>
 		{/await}
 	</div>

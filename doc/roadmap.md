@@ -6,6 +6,9 @@
 - :white_large_square: Beautiful UI for client
 - :white_large_square: Crate high-level to [tauri_command](https://tauri.app/v1/guides/features/command)
 - :white_large_square: Add cache
+- :white_large_square: Add check version after connection
+- :white_large_square: Add env config
+- :white_large_square: SvelteKit to SolidJS
 
 # 0.1.0-alpha.2
 

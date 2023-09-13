@@ -1,30 +1,7 @@
+pub mod aes_key_for_accept;
+
 use super::*;
-use crate_proto::AesKeyInfo;
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct AesKeyForAccept(pub AesKeyInfo);
-
-impl AesKeyForAccept {
-    pub async fn accept(&mut self, client: &mut Client) -> Result<(), Error> {
-        info!("run accept for AesKeyForAccept");
-        debug_assert!(self.0.nickname_from_public_key.is_none());
-
-        let secret = client.raw_client.set_aes_key(&self.0).await?;
-        let public_key =
-            PublicKey::from_sec1_bytes(&self.0.nickname_to_public_key.clone()[..]).unwrap();
-        let shared = get_shared_secret(&secret, &public_key);
-        let aes = Aes::with_shared_key(shared);
-
-        client
-            .config
-            .storage_crypto
-            .write()
-            .unwrap()
-            .add(Nickname(self.0.nickname_to.clone()), aes)?;
-        client.save()?;
-        Ok(())
-    }
-}
+pub use aes_key_for_accept::AesKeyForAccept;
 
 impl Client {
     pub async fn send_crypto(&mut self, nickname_from: Nickname) -> Result<(), Error> {
@@ -74,10 +51,18 @@ impl Client {
                 &i.nickname_from_public_key,
                 self.config.order_adding_crypto.get(&nickname_from),
             ) else {
-                error!(
-                    "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}",
-                    i, self.config.order_adding_crypto
-                );
+                if cfg!(debug_assertions) {
+                    //panic!(
+                    //    "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
+                    //    i, self.config.order_adding_crypto, nickname_from
+                    //);
+                } else {
+                    error!(
+                        "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
+                        i, self.config.order_adding_crypto, nickname_from
+                    );
+                }
+                
                 continue;
             };
 
@@ -207,5 +192,22 @@ mod tests {
                 .get(&client_to.get_nickname())
                 .unwrap()
         );
+    }
+
+    #[test(tokio::test)]
+    async fn clear_keys_for_accept_after_adding() {
+        let (_paths, _, mut client_to) = get_client().await;
+        let (_paths, _, mut client_from) = get_client().await;
+
+        client_to
+            .send_crypto(client_from.get_nickname())
+            .await
+            .unwrap();
+
+        client_from.accept_all_cryptos().await.unwrap();
+        client_to.update_cryptos().await.unwrap();
+
+        assert_eq!(client_from.get_cryptos_for_accept().await.unwrap().len(), 0);
+        assert_eq!(client_to.get_cryptos_for_accept().await.unwrap().len(), 0);
     }
 }

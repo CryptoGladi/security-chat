@@ -17,7 +17,9 @@ impl Command<ClientError> for SendCrypto {
             return Ok(());
         };
 
-        client.send_crypto(Nickname((*nickname).to_string())).await?;
+        client
+            .send_crypto(Nickname((*nickname).to_string()))
+            .await?;
         Ok(())
     }
 }

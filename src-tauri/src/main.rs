@@ -40,7 +40,10 @@ fn main() {
             command::change_window_for_main_page,
             command::get_messages_for_user,
             command::get_nickname,
-            command::send_message
+            command::send_message,
+            command::get_cryptos_for_accept,
+            command::add_crypto,
+            command::delete_crypto
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

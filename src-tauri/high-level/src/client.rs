@@ -56,7 +56,6 @@ impl Client {
 
     pub fn get_all_users(&self) -> Result<Vec<Nickname>, Error> {
         let storage_crypto = self.config.storage_crypto.read().unwrap();
-        debug!("sfdssd: {:?}", storage_crypto);
         Ok(storage_crypto.0.keys().cloned().collect())
     }
 
