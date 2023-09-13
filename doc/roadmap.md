@@ -14,6 +14,6 @@
 
 - :white_check_mark: Server code refactoring
 - :white_large_square: Make it possible to reply to messages
-- :white_large_square: Make a menu to add friends/crypto
+- :white_check_mark: Make a menu to add friends/crypto
 - :white_check_mark: Make cache for message without to add client (Block: ability to view ALL messages!)
 - :white_check_mark: Add lock file. Simultaneous Start Prohibition
