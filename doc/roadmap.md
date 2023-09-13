@@ -3,6 +3,7 @@
 - :white_large_square: Add crate only for testing
 - :white_large_square: Ability to view ALL messages
 - :white_large_square: Refactoring and documentation client
+- :white_large_square: Beautiful UI for client
 - :white_large_square: Crate high-level to [tauri_command](https://tauri.app/v1/guides/features/command)
 - :white_large_square: Add cache
 - :white_large_square: Add check version after connection
