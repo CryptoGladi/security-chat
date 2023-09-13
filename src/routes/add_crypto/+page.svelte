@@ -9,6 +9,16 @@
 	async function get_cryptos_for_accept() {
 		return (await invoke('get_cryptos_for_accept')) as string[];
 	}
+
+	function reloadPage() {
+        const thisPage = window.location.pathname;
+
+        console.log('goto ' + thisPage);
+
+        goto('/').then(
+            () => goto(thisPage)
+        );
+    }
 </script>
 
 <div class="navbar bg-neutral text-neutral-content flex-initial">
@@ -51,7 +61,7 @@
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					<div on:click={() => {
 						invoke('add_crypto', { nickname: nickname }).then(() => {
-							goto("/main");
+							reloadPage();
 						})
 					}}>
 						<Icon src={IoAddCircle} color="green" size="50px"></Icon>
@@ -60,8 +70,8 @@
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					<div on:click={() => {
-						invoke('delete_crypto', { nickname: {nickname} }).then(() => {
-							goto("/add_crypto");
+						invoke('delete_crypto', { nickname: nickname }).then(() => {
+							reloadPage();
 						})
 					}}>
 						<Icon src={IoRemoveCircle} color="red" size="50px"></Icon>
