@@ -6,12 +6,20 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Message {
     pub text: String,
+    pub reply: Option<i64>,
+}
+
+impl Message {
+    pub fn new(text: String) -> Self {
+        Message { text, reply: None }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct MessageInfo {
     pub body: Message,
     pub sender: String,
+    pub id: i64,
 }
 
 impl Client {
@@ -106,6 +114,7 @@ impl Client {
             .map(|x| MessageInfo {
                 body: x.0,
                 sender: x.1.sender_nickname,
+                id: x.1.id,
             })
             .collect::<Vec<MessageInfo>>())
     }
@@ -161,9 +170,7 @@ mod tests {
             client_to
                 .send_message(
                     client_from.get_nickname(),
-                    Message {
-                        text: TEXT_MESSAGE.to_string(),
-                    },
+                    Message::new(TEXT_MESSAGE.to_string()),
                 )
                 .await
                 .unwrap();
@@ -196,9 +203,7 @@ mod tests {
         client_to
             .send_message(
                 client_from.get_nickname(),
-                Message {
-                    text: TEST_MESSAGE.to_string(),
-                },
+                Message::new(TEST_MESSAGE.to_string()),
             )
             .await
             .unwrap();
@@ -226,12 +231,7 @@ mod tests {
         client_to.update_cryptos().await.unwrap();
 
         client_to
-            .send_message(
-                client_from.get_nickname(),
-                Message {
-                    text: "ss".to_owned(),
-                },
-            )
+            .send_message(client_from.get_nickname(), Message::new("ss".to_string()))
             .await
             .unwrap();
         let last_messages = client_from.get_all_last_message().await.unwrap();
@@ -256,7 +256,7 @@ mod tests {
         for (i, _) in (0..100).enumerate() {
             let text = format!("x: {}", i);
             client_to
-                .send_message(client_from.get_nickname(), Message { text })
+                .send_message(client_from.get_nickname(), Message::new(text))
                 .await
                 .unwrap();
         }
@@ -281,21 +281,11 @@ mod tests {
         client_to.update_cryptos().await.unwrap();
 
         client_to
-            .send_message(
-                client_from.get_nickname(),
-                Message {
-                    text: "ss".to_owned(),
-                },
-            )
+            .send_message(client_from.get_nickname(), Message::new("ss".to_string()))
             .await
             .unwrap();
         client_from
-            .send_message(
-                client_to.get_nickname(),
-                Message {
-                    text: "tttt".to_owned(),
-                },
-            )
+            .send_message(client_to.get_nickname(), Message::new("tttt".to_string()))
             .await
             .unwrap();
         let last_messages = client_from.get_all_last_message().await.unwrap();
@@ -308,12 +298,7 @@ mod tests {
     async fn send_message_to_yourself() {
         let (_paths, _, mut client_to) = get_client().await;
         let error = client_to
-            .send_message(
-                client_to.get_nickname(),
-                Message {
-                    text: "test".to_string(),
-                },
-            )
+            .send_message(client_to.get_nickname(), Message::new("test".to_string()))
             .await
             .err()
             .unwrap();
@@ -336,9 +321,7 @@ mod tests {
 
         let mut sent_messages = vec![];
         for _ in 0..100 {
-            let new_message = Message {
-                text: "manyyy".to_owned(),
-            };
+            let new_message = Message::new("manyyy".to_string());
             sent_messages.push(new_message.clone());
 
             client_to
@@ -360,5 +343,49 @@ mod tests {
                 .collect::<Vec<Message>>(),
             sent_messages
         );
+    }
+
+    #[test(tokio::test)]
+    async fn send_message_with_reply() {
+        let (_paths, _, mut client_to) = get_client().await;
+        let (_paths, _, mut client_from) = get_client().await;
+
+        client_to
+            .send_crypto(client_from.get_nickname())
+            .await
+            .unwrap();
+
+        client_from.accept_all_cryptos().await.unwrap();
+        client_to.update_cryptos().await.unwrap();
+
+        client_to
+            .send_message(
+                client_from.get_nickname(),
+                Message::new("test message".to_string()),
+            )
+            .await
+            .unwrap();
+        let id = client_to
+            .get_messages_for_user(client_from.get_nickname(), 1)
+            .await
+            .unwrap()[0]
+            .id;
+
+        client_to
+            .send_message(
+                client_from.get_nickname(),
+                Message {
+                    text: "test message with reply".to_string(),
+                    reply: Some(id),
+                },
+            )
+            .await
+            .unwrap();
+
+        let messages = client_from
+            .get_messages_for_user(client_to.get_nickname(), 3)
+            .await
+            .unwrap();
+        assert_eq!(messages[0].body.reply, Some(id));
     }
 }

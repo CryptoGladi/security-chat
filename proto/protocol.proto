@@ -64,10 +64,15 @@ message Notification {
   string by_nickname = 2; // Кто это создал
 
   oneof notice {
-    Message new_message = 3;
+    MessageWithId new_message = 3;
     AESKeyInfo new_send_aes_key = 4;
     AESKeyInfo new_accept_aes_key = 5;
   }
+}
+
+message MessageWithId {
+  Message message = 1;
+  int64 id = 2;
 }
 
 message Message {
@@ -85,6 +90,7 @@ message MessageInfo {
   Message body = 1;
   string sender_nickname = 2;
   string recipient_nickname = 3;
+  int64 id = 4;
 }
 
 message GetLatestMessagesReply {

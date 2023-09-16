@@ -27,10 +27,11 @@ impl Client {
             NewMessage(message) => Event::NewMessage(MessageInfo {
                 body: Client::decrypt_message(
                     storage_crypto,
-                    message,
+                    message.message.unwrap(),
                     Nickname(raw.by_nickname.clone()),
                 )?,
                 sender: raw.by_nickname.clone(),
+                id: message.id,
             }),
             NewSendAesKey(info) => Event::NewSentAcceptAesKey(AesKeyForAccept(info)),
             NewAcceptAesKey(info) => Event::NewAcceptAesKey(info),
