@@ -15,12 +15,11 @@ kanal = "0.1.0-pre8"
 tokio = "1.29.1"
 cache = { path = "../cache" }
 log.workspace = true
+fcore = { path = "../fcore" }
 
 [dev-dependencies]
 test-log = "0.2.12"
 env_logger = "0.10.0"
-rand = "0.8.5"
-temp-dir = "0.1.11"
 tokio = { version = "1.29.1", features = ["full"] }
 criterion = { version = "0.4", features = ["html_reports", "async_tokio"] }
 

@@ -1,9 +1,9 @@
-use crate::prelude::*;
+use high_level::prelude::*;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 use std::path::PathBuf;
-use temp_dir::TempDir;
 
+pub use temp_dir::TempDir;
 pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
 
 pub fn get_rand_string() -> String {

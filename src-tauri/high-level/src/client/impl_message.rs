@@ -146,7 +146,7 @@ impl Client {
 mod tests {
     use super::*;
     use crate::client::impl_message::Message;
-    use crate::test_utils::get_client;
+    use fcore::test_utils::get_client;
     use test_log::test;
 
     #[test(tokio::test)]

@@ -50,7 +50,7 @@ pub fn load<T: Serialize + DeserializeOwned>(path: impl AsRef<Path>) -> Result<T
 mod tests {
     use super::*;
     use serde::Deserialize;
-    use temp_dir::TempDir;
+    use fcore::test_utils::TempDir;
     use test_log::test;
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]

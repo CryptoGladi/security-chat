@@ -57,7 +57,8 @@ impl AesKeyForAccept {
 
 #[cfg(test)]
 mod tests {
-    use crate::{client::error::Error, test_utils::get_client};
+    use crate::client::error::Error;
+    use fcore::test_utils::get_client;
     use lower_level::client::crypto::CryptoError;
     use test_log::test;
 

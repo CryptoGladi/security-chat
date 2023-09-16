@@ -17,7 +17,7 @@ incremental = true
 debug = true
 
 [workspace]
-members = ["lower-level", "high-level", "crate-proto", "vim-like-command", "cache"]
+members = ["lower-level", "high-level", "crate-proto", "vim-like-command", "cache", "fcore"]
 
 [workspace.dependencies]
 log = "0.4.19"

@@ -1174,6 +1174,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6999dc1837253364c2ebb0704ba97994bd874e8f195d665c50b7548f6ea92764"
 
 [[package]]
+name = "fcore"
+version = "0.0.0"
+dependencies = [
+ "high-level",
+ "rand 0.8.5",
+ "temp-dir",
+]
+
+[[package]]
 name = "fdeflate"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1817,14 +1826,13 @@ dependencies = [
  "crate-proto",
  "criterion",
  "env_logger",
+ "fcore",
  "hashbrown 0.14.0",
  "http",
  "kanal",
  "log",
  "lower-level",
- "rand 0.8.5",
  "serde",
- "temp-dir",
  "test-log",
  "thiserror",
  "tokio",
