@@ -5,6 +5,7 @@ use lock::Lock;
 use log::warn;
 
 pub mod command;
+pub mod env_config;
 pub mod global;
 pub mod lock;
 pub mod logger;
@@ -19,8 +20,13 @@ fn main() {
         std::process::exit(1);
     }));
 
+    dotenv::dotenv().ok();
     logger::init_logger();
     warn!("running chat...");
+    warn!(
+        "env server address: {}",
+        std::env::var("ADDRESS_SERVER").expect("ADDRESS_SERVER must be set.")
+    );
 
     if !crate::path::get_app_folder().is_dir() {
         std::fs::create_dir_all(crate::path::get_app_folder()).unwrap();
