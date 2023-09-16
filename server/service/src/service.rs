@@ -1,5 +1,6 @@
 use crate::database::{self, get_user_by_id, get_user_by_nickname, DbPool};
 use crate::models::{Message as DbMessage, *};
+use crate::schema;
 use crate::schema::chat_messages::dsl::{chat_messages, created_at, recipient_id, sender_id};
 use crate::schema::order_add_keys::dsl::*;
 use crate::schema::users::dsl::{nickname, users};
@@ -178,8 +179,12 @@ impl SecurityChat for SecurityChatService {
         info!("Got a request for `check_valid`: {:?}", request.get_ref());
         let mut db = self.db_pool.get().await.unwrap();
 
-        let user = database::check_user(&mut db, &request.get_ref().nickname, &request.get_ref().authkey)
-            .await;
+        let user = database::check_user(
+            &mut db,
+            &request.get_ref().nickname,
+            &request.get_ref().authkey,
+        )
+        .await;
 
         Ok(Response::new(CheckValidReply {
             is_valid: user.is_ok(),
@@ -222,17 +227,7 @@ impl SecurityChat for SecurityChatService {
         let mut db = self.db_pool.get().await.unwrap();
         let user_for_check = request.get_ref().clone().nickname.unwrap();
         let _ = database::check_user(&mut db, &user_for_check.nickname, &user_for_check.authkey)
-        .await?;
-
-        self.producer
-            .send(Notification {
-                nickname_from: request.get_ref().nickname_from.clone(),
-                by_nickname: user_for_check.nickname.clone(),
-                notice: Some(notification::Notice::NewMessage(
-                    request.get_ref().clone().message.unwrap(),
-                )),
-            })
-            .unwrap();
+            .await?;
 
         let user_sender = &get_user_by_nickname(&mut db, &user_for_check.nickname).await[0];
         let user_recipient =
@@ -245,10 +240,24 @@ impl SecurityChat for SecurityChatService {
             nonce: request.get_ref().message.clone().unwrap().nonce,
         };
 
-        diesel::insert_into(chat_messages)
+        let ids: Vec<i64> = diesel::insert_into(chat_messages)
             .values(new_message)
-            .execute(&mut db)
+            .returning(schema::chat_messages::id)
+            .get_results(&mut db)
             .await
+            .unwrap();
+
+        self.producer
+            .send(Notification {
+                nickname_from: request.get_ref().nickname_from.clone(),
+                by_nickname: user_for_check.nickname.clone(),
+                notice: Some(notification::Notice::NewMessage(
+                    MessageWithId {
+                        message: request.get_ref().clone().message,
+                        id: ids[0]
+                    }
+                )),
+            })
             .unwrap();
 
         Ok(Response::new(()))
@@ -266,7 +275,7 @@ impl SecurityChat for SecurityChatService {
         let mut db = self.db_pool.get().await.unwrap();
         let user_for_check = request.get_ref().clone().nickname.unwrap();
         let _ = database::check_user(&mut db, &user_for_check.nickname, &user_for_check.authkey)
-        .await?;
+            .await?;
 
         let user_sender = &get_user_by_nickname(&mut db, &user_for_check.nickname).await[0];
 
@@ -299,6 +308,7 @@ impl SecurityChat for SecurityChatService {
                     recipient_nickname: get_user_by_id(&mut db, message.recipient_id).await[0]
                         .nickname
                         .clone(),
+                    id: message.id,
                 });
             }
         }

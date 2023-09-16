@@ -192,7 +192,13 @@ pub async fn send_message(nickname: String, message: String) {
         .await
         .as_mut()
         .unwrap()
-        .send_message(Nickname(nickname), Message { text: message })
+        .send_message(
+            Nickname(nickname),
+            Message {
+                text: message,
+                reply: None,
+            },
+        )
         .await
         .unwrap();
 }

@@ -72,9 +72,7 @@ mod tests {
         client_to
             .send_message(
                 client_from.get_nickname(),
-                Message {
-                    text: TEST_MESSAGE.to_string(),
-                },
+                Message::new(TEST_MESSAGE.to_string()),
             )
             .await
             .unwrap();

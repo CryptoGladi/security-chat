@@ -169,7 +169,7 @@ mod tests {
         println!("nickname_from: {}", notify.nickname_from);
         println!("client_from: {}", client_from.data.nickname);
         println!("client_to: {}", client_to.data.nickname);
-        assert_eq!(new_message.body, TEST_MESSAGE);
+        assert_eq!(new_message.message.unwrap().body, TEST_MESSAGE);
         assert_eq!(client_from.data.nickname, notify.nickname_from);
     }
 

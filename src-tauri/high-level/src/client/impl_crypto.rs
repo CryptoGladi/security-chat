@@ -62,7 +62,7 @@ impl Client {
                         i, self.config.order_adding_crypto, nickname_from
                     );
                 }
-                
+
                 continue;
             };
 
@@ -143,9 +143,7 @@ mod tests {
         client_to
             .send_message(
                 client_from.get_nickname(),
-                Message {
-                    text: TEXT_MESSAGE.to_string(),
-                },
+                Message::new(TEXT_MESSAGE.to_string()),
             )
             .await
             .unwrap();
