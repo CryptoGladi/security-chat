@@ -1,3 +1,4 @@
+use crate::check_version::smart_check_version;
 use crate::global;
 use high_level::{
     client::{
@@ -7,7 +8,6 @@ use high_level::{
     prelude::*,
 };
 use log::*;
-use crate::check_version::smart_check_version;
 use tauri::{Manager, Runtime, Size};
 
 pub async fn load_client(app: tauri::AppHandle) {

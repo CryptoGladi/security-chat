@@ -1,14 +1,14 @@
 //! Module for checking version
 
+use const_format::formatcp;
 use log::debug;
 use version_compare::Cmp;
-use const_format::formatcp;
 
 const GITHUB_URL: &str = formatcp!("{}/tags", env!("CARGO_PKG_REPOSITORY"));
 const VERSION_APP: &str = env!("CARGO_PKG_VERSION");
 
 /// Raw function check version
-/// 
+///
 /// Use only [`smart_check_version`]
 pub async fn raw_check_version(github_url: &str, app_version: &str) -> bool {
     debug!(
