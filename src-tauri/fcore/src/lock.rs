@@ -11,7 +11,7 @@ pub struct Lock {
 }
 
 impl Lock {
-    /// Locking
+    /// Locking app
     pub fn new(path: impl AsRef<Path> + Clone) -> Self {
         debug!("new with path: {}", path.as_ref().display());
 

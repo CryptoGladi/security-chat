@@ -23,7 +23,7 @@ fn main() {
     dotenv::dotenv().ok();
     logger::init_logger();
     warn!("running chat...");
-    warn!("env server address: {}", env_var("ADDRESS_SERVER"));
+    warn!("env server address: {}", get_env_var("ADDRESS_SERVER"));
 
     if !crate::path::get_app_folder().is_dir() {
         std::fs::create_dir_all(crate::path::get_app_folder()).unwrap();

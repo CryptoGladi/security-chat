@@ -1,3 +1,5 @@
+//! Module for only testing!
+
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 use std::path::PathBuf;
@@ -31,7 +33,7 @@ impl PathsForTest {
     }
 }
 
-/*
+/* EXAMPLE IMPL get_client()
 pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
     let paths = PathsForTest::get();
     let client_config = ClientInitConfig::new(

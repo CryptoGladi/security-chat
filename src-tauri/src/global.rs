@@ -14,7 +14,7 @@ fn get_client_init_config() -> ClientInitConfig {
     ClientInitConfig::new(
         dir.join("config.bin"),
         dir.join("cache.db"),
-        env_var("ADDRESS_SERVER"),
+        get_env_var("ADDRESS_SERVER"),
     )
 }
 
