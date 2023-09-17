@@ -11,7 +11,7 @@ serde.workspace = true
 anyhow.workspace = true
 async-trait.workspace = true
 sqlx = { version = "0.7.1", default-features = false, features = ["sqlite", "runtime-tokio"] }
-const_format = "0.2.31"
+const_format.workspace = true
 
 [dev-dependencies]
 test-log = "0.2.12"

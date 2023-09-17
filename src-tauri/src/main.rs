@@ -4,19 +4,12 @@
 use fcore::prelude::*;
 use log::warn;
 
+pub mod check_version;
 pub mod command;
 pub mod env_config;
 pub mod global;
 pub mod logger;
 pub mod path;
-
-async fn check_version() -> bool {
-    const URL: &str = "https://github.com/CryptoGladi/security-chat/tags";
-    let body = reqwest::get(URL).await.unwrap().text().await.unwrap();
-    let objects = tl::parse(&body, tl::ParserOptions::default()).unwrap();
-
-    todo!()
-}
 
 fn main() {
     color_backtrace::install();
@@ -54,7 +47,8 @@ fn main() {
             command::send_message,
             command::get_cryptos_for_accept,
             command::add_crypto,
-            command::delete_crypto
+            command::delete_crypto,
+            command::check_version
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

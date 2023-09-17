@@ -1,5 +1,5 @@
-use log::warn;
 use fcore::prelude::*;
+use log::warn;
 
 pub fn init() {
     dotenv::dotenv().ok();

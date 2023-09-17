@@ -7,6 +7,7 @@ use high_level::{
     prelude::*,
 };
 use log::*;
+use crate::check_version::smart_check_version;
 use tauri::{Manager, Runtime, Size};
 
 pub async fn load_client(app: tauri::AppHandle) {
@@ -252,5 +253,12 @@ pub async fn delete_crypto(nickname: String) {
         .filter(|x| x.0.nickname_from == nickname)
     {
         key.delete(locked_client.as_mut().unwrap()).await.unwrap();
+    }
+}
+
+#[tauri::command]
+pub async fn check_version() {
+    if !smart_check_version().await {
+        panic!("you have old version app. Please, update your app");
     }
 }
