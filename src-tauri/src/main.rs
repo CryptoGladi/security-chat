@@ -4,6 +4,7 @@
 use fcore::prelude::*;
 use log::warn;
 
+pub mod check_version;
 pub mod command;
 pub mod env_config;
 pub mod global;
@@ -46,7 +47,8 @@ fn main() {
             command::send_message,
             command::get_cryptos_for_accept,
             command::add_crypto,
-            command::delete_crypto
+            command::delete_crypto,
+            command::check_version
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
