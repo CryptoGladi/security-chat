@@ -242,36 +242,30 @@ mod tests {
         assert!(result);
     }
 
-    #[tokio::test]
-    #[should_panic]
-    async fn get_latest_messages_to_big_limit() {
-        const LIMIT: i64 = max_size::MAX_LIMIT_GET_MESSAGES + 100;
-
+    async fn check_limit(size: i64) {
         let nickname = test_utils::get_rand_string(20);
         let mut client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
 
         client
-            .get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT)
+            .get_latest_messages(vec![test_utils::get_rand_string(20)], size)
             .await
             .unwrap();
     }
 
     #[tokio::test]
     #[should_panic]
+    async fn get_latest_messages_to_big_limit() {
+        const LIMIT: i64 = max_size::MAX_LIMIT_GET_MESSAGES + 100;
+        check_limit(LIMIT).await;
+    }
+
+    #[tokio::test]
+    #[should_panic]
     async fn get_latest_messages_to_zero_limit() {
         const LIMIT: i64 = 0;
-
-        let nickname = test_utils::get_rand_string(20);
-        let mut client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
-            .await
-            .unwrap();
-
-        client
-            .get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT)
-            .await
-            .unwrap();
+        check_limit(LIMIT).await;
     }
 
     #[tokio::test]

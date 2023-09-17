@@ -1,17 +1,17 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use lock::Lock;
+use fcore::prelude::*;
 use log::warn;
 
 pub mod command;
 pub mod env_config;
 pub mod global;
-pub mod lock;
 pub mod logger;
 pub mod path;
 
 fn main() {
+    color_backtrace::install();
     let panic_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
         panic_hook(info);
@@ -23,10 +23,7 @@ fn main() {
     dotenv::dotenv().ok();
     logger::init_logger();
     warn!("running chat...");
-    warn!(
-        "env server address: {}",
-        std::env::var("ADDRESS_SERVER").expect("ADDRESS_SERVER must be set.")
-    );
+    warn!("env server address: {}", get_env_var("ADDRESS_SERVER"));
 
     if !crate::path::get_app_folder().is_dir() {
         std::fs::create_dir_all(crate::path::get_app_folder()).unwrap();

@@ -591,6 +591,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "color-backtrace"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6fcd4d200ae702628e8d54bafff5f7e7397b031a5849656a6f5bfe2c5fb780d"
+dependencies = [
+ "backtrace",
+ "termcolor",
+]
+
+[[package]]
 name = "color_quant"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1172,6 +1182,18 @@ name = "fastrand"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6999dc1837253364c2ebb0704ba97994bd874e8f195d665c50b7548f6ea92764"
+
+[[package]]
+name = "fcore"
+version = "0.0.0"
+dependencies = [
+ "env_logger",
+ "fslock",
+ "log",
+ "rand 0.8.5",
+ "temp-dir",
+ "test-log",
+]
 
 [[package]]
 name = "fdeflate"
@@ -1817,14 +1839,13 @@ dependencies = [
  "crate-proto",
  "criterion",
  "env_logger",
+ "fcore",
  "hashbrown 0.14.0",
  "http",
  "kanal",
  "log",
  "lower-level",
- "rand 0.8.5",
  "serde",
- "temp-dir",
  "test-log",
  "thiserror",
  "tokio",
@@ -3355,10 +3376,11 @@ dependencies = [
 name = "security-chat"
 version = "0.1.0-alpha.2"
 dependencies = [
+ "color-backtrace",
  "dirs",
  "dotenv",
  "env_logger",
- "fslock",
+ "fcore",
  "high-level",
  "log",
  "once_cell",
