@@ -1,8 +1,5 @@
 use log::warn;
-
-pub fn env_var(name: &str) -> String {
-    std::env::var(name).unwrap_or_else(|_| panic!("{} must be set", name))
-}
+use fcore::prelude::*;
 
 pub fn init() {
     dotenv::dotenv().ok();

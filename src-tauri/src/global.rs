@@ -2,8 +2,7 @@ use high_level::prelude::*;
 use once_cell::sync::Lazy;
 use tauri::async_runtime::{Mutex, RwLock};
 use vim_like_command::prelude::*;
-
-use crate::env_config::env_var;
+use fcore::prelude::*;
 
 pub static CLIENT_INIT_CONFIG: Lazy<ClientInitConfig> = Lazy::new(get_client_init_config);
 pub static VIM_RUNNER: Lazy<Mutex<Runner<'_>>> = Lazy::new(|| Mutex::new(get_runner()));

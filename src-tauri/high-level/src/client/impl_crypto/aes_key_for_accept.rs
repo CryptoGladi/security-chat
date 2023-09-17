@@ -57,23 +57,23 @@ impl AesKeyForAccept {
 
 #[cfg(test)]
 mod tests {
-    use crate::client::Client;
+    use super::AesKeyForAccept;
     use crate::client::error::Error;
+    use crate::client::Client;
     use crate::test_utils::get_client;
     use lower_level::client::crypto::CryptoError;
     use test_log::test;
-    use super::AesKeyForAccept;
 
-    async fn iter_function(client_to: &mut Client, client_from: &mut Client) -> Vec<AesKeyForAccept> {
+    async fn iter_function(
+        client_to: &mut Client,
+        client_from: &mut Client,
+    ) -> Vec<AesKeyForAccept> {
         client_to
             .send_crypto(client_from.get_nickname())
             .await
             .unwrap();
 
-        client_from
-            .get_cryptos_for_accept()
-            .await
-            .unwrap()
+        client_from.get_cryptos_for_accept().await.unwrap()
     }
 
     #[test(tokio::test)]
