@@ -1,4 +1,3 @@
-use high_level::prelude::*;
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 use std::path::PathBuf;
@@ -16,12 +15,12 @@ pub fn get_rand_string() -> String {
 
 pub struct PathsForTest {
     _temp_dir: TempDir, // for lifetime
-    path_to_config_file: PathBuf,
-    path_to_cache: PathBuf,
+    pub path_to_config_file: PathBuf,
+    pub path_to_cache: PathBuf,
 }
 
 impl PathsForTest {
-    fn get() -> Self {
+    pub fn get() -> Self {
         let temp_dir = TempDir::new().unwrap();
 
         Self {
@@ -32,6 +31,7 @@ impl PathsForTest {
     }
 }
 
+/* 
 pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
     let paths = PathsForTest::get();
     let client_config = ClientInitConfig::new(
@@ -44,4 +44,20 @@ pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
         .unwrap();
 
     (paths, client_config, client)
+}
+*/
+
+#[cfg(test)]
+mod tests {
+    use std::ffi::OsStr;
+    use super::*;
+
+    #[test]
+    fn paths_for_test() {
+        let paths = PathsForTest::get();
+        
+        assert_ne!(paths.path_to_cache, paths.path_to_config_file);
+        assert_eq!(paths.path_to_cache.file_name(), Some(OsStr::new("cache.db")));
+        assert_eq!(paths.path_to_config_file.file_name(), Some(OsStr::new("config.bin")));
+    }
 }

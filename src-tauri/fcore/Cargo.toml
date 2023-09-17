@@ -5,9 +5,8 @@ edition = "2021"
 
 [features]
 default = ["testing"]
-testing = ["dep:high-level", "dep:rand", "dep:temp-dir"]
+testing = ["dep:rand", "dep:temp-dir"]
 
 [dependencies]
-high-level = { path = "../high-level", optional = true }
 rand = { version = "0.8.5", optional = true }
 temp-dir = { version = "0.1.11", optional = true }

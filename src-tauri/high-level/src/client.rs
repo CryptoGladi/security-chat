@@ -142,7 +142,8 @@ impl Client {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use fcore::test_utils::{get_client, get_rand_string};
+    use crate::test_utils::get_client;
+    use fcore::test_utils::get_rand_string;
     use test_log::test;
 
     #[test(tokio::test)]
