@@ -10,6 +10,14 @@ pub mod global;
 pub mod logger;
 pub mod path;
 
+async fn check_version() -> bool {
+    const URL: &str = "https://github.com/CryptoGladi/security-chat/tags";
+    let body = reqwest::get(URL).await.unwrap().text().await.unwrap();
+    let objects = tl::parse(&body, tl::ParserOptions::default()).unwrap();
+
+    todo!()
+}
+
 fn main() {
     color_backtrace::install();
     let panic_hook = std::panic::take_hook();
