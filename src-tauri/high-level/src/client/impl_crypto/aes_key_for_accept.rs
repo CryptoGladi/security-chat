@@ -57,27 +57,32 @@ impl AesKeyForAccept {
 
 #[cfg(test)]
 mod tests {
+    use crate::client::Client;
     use crate::client::error::Error;
     use crate::test_utils::get_client;
     use lower_level::client::crypto::CryptoError;
     use test_log::test;
+    use super::AesKeyForAccept;
+
+    async fn iter_function(client_to: &mut Client, client_from: &mut Client) -> Vec<AesKeyForAccept> {
+        client_to
+            .send_crypto(client_from.get_nickname())
+            .await
+            .unwrap();
+
+        client_from
+            .get_cryptos_for_accept()
+            .await
+            .unwrap()
+    }
 
     #[test(tokio::test)]
     async fn delete() {
         let (_paths, _, mut client_to) = get_client().await;
         let (_paths, _, mut client_from) = get_client().await;
 
-        client_to
-            .send_crypto(client_from.get_nickname())
-            .await
-            .unwrap();
-        for x in client_from
-            .get_cryptos_for_accept()
-            .await
-            .unwrap()
-            .iter_mut()
-        {
-            x.delete(&mut client_from).await.unwrap();
+        for mut key in iter_function(&mut client_to, &mut client_from).await {
+            key.delete(&mut client_from).await.unwrap();
         }
 
         assert!(client_from
@@ -92,13 +97,7 @@ mod tests {
         let (_paths, _, mut client_to) = get_client().await;
         let (_paths, _, mut client_from) = get_client().await;
 
-        client_to
-            .send_crypto(client_from.get_nickname())
-            .await
-            .unwrap();
-
-        let mut iter = client_from.get_cryptos_for_accept().await.unwrap();
-        for key in iter.iter_mut() {
+        for mut key in iter_function(&mut client_to, &mut client_from).await {
             key.accept(&mut client_from).await.unwrap();
         }
 

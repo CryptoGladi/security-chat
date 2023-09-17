@@ -49,8 +49,8 @@ pub fn load<T: Serialize + DeserializeOwned>(path: impl AsRef<Path>) -> Result<T
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde::Deserialize;
     use fcore::test_utils::TempDir;
+    use serde::Deserialize;
     use test_log::test;
 
     #[derive(Serialize, Deserialize, Debug, PartialEq)]

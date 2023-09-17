@@ -31,7 +31,7 @@ impl PathsForTest {
     }
 }
 
-/* 
+/*
 pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
     let paths = PathsForTest::get();
     let client_config = ClientInitConfig::new(
@@ -49,15 +49,21 @@ pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::OsStr;
     use super::*;
+    use std::ffi::OsStr;
 
     #[test]
     fn paths_for_test() {
         let paths = PathsForTest::get();
-        
+
         assert_ne!(paths.path_to_cache, paths.path_to_config_file);
-        assert_eq!(paths.path_to_cache.file_name(), Some(OsStr::new("cache.db")));
-        assert_eq!(paths.path_to_config_file.file_name(), Some(OsStr::new("config.bin")));
+        assert_eq!(
+            paths.path_to_cache.file_name(),
+            Some(OsStr::new("cache.db"))
+        );
+        assert_eq!(
+            paths.path_to_config_file.file_name(),
+            Some(OsStr::new("config.bin"))
+        );
     }
 }

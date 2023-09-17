@@ -69,22 +69,29 @@ mod tests {
     use super::*;
     use crate::client::crypto::ecdh::{get_public_info, get_shared_secret};
 
-    #[test]
-    fn with_generate() {
-        const MESSAGE_FOR_CRYPTO: &[u8] = b"test message";
-
-        let crypto = Aes::generate();
-        let encrypted_message = crypto.encrypt(MESSAGE_FOR_CRYPTO).unwrap();
+    fn decrypt(crypto: &Aes, message_for_crypto: &[u8]) -> Vec<u8> {
+        let encrypted_message = crypto.encrypt(message_for_crypto).unwrap();
         let decrypted_message = crypto.decrypt(&encrypted_message).unwrap();
 
         println!(
             "MESSAGE_FOR_CRYPTO: {}",
-            String::from_utf8(MESSAGE_FOR_CRYPTO.to_vec()).unwrap()
+            String::from_utf8(message_for_crypto.to_vec()).unwrap()
         );
         println!(
             "decrypted_message: {}",
             String::from_utf8(decrypted_message.clone()).unwrap()
         );
+
+        decrypted_message
+    }
+
+    #[test]
+    fn with_generate() {
+        const MESSAGE_FOR_CRYPTO: &[u8] = b"test message";
+
+        let crypto = Aes::generate();
+        let decrypted_message = decrypt(&crypto, MESSAGE_FOR_CRYPTO);
+
         assert_eq!(MESSAGE_FOR_CRYPTO, decrypted_message);
     }
 
@@ -97,17 +104,8 @@ mod tests {
         let shared_secret = get_shared_secret(&alice_secret, &bob_public_key);
 
         let crypto = Aes::with_shared_key(shared_secret);
-        let encrypted_message = crypto.encrypt(MESSAGE_FOR_CRYPTO).unwrap();
-        let decrypted_message = crypto.decrypt(&encrypted_message).unwrap();
+        let decrypted_message = decrypt(&crypto, MESSAGE_FOR_CRYPTO);
 
-        println!(
-            "MESSAGE_FOR_CRYPTO: {}",
-            String::from_utf8(MESSAGE_FOR_CRYPTO.to_vec()).unwrap()
-        );
-        println!(
-            "decrypted_message: {}",
-            String::from_utf8(decrypted_message.clone()).unwrap()
-        );
         assert_eq!(MESSAGE_FOR_CRYPTO, decrypted_message);
     }
 }
