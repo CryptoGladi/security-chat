@@ -1,21 +1,23 @@
-import { Title } from "solid-start";
+import { Title, useNavigate } from "solid-start";
 
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
     <main>
-      <Title>Hello World</Title>
-      <h1>Hello world!</h1>
-      <p>
-        Visit{" "}
-        <a href="https://start.solidjs.com" target="_blank">
-          start.solidjs.com
-        </a>{" "}
-        to learn how to build SolidStart apps.
-      </p>
+      <Title>Добро пожаловать!</Title>
 
-      <h1 class="text-3xl font-bold underline">
-      Hello world!
-    </h1>
+      <div class="hero min-h-screen">
+  <div class="hero-content text-center">
+    <div class="max-w-md">
+      <h1 class="text-5xl font-bold">Security chat</h1>
+      <p class="py-6">Универсальный чат который даёт вам <strong>приватность</strong>, <strong>анонимность</strong> c открытым исходным кодом</p>
+      <button class="btn btn-primary" onClick={() => {
+        navigate("/login"); // TODO
+      }}>Начать использование!</button>
+    </div>
+  </div>
+</div>
     </main>
   );
 }

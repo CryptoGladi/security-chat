@@ -26,5 +26,5 @@ dist-ssr
 server/target
 examples/simple-client/target
 
-build
-.svelte-kit
+dist
+.solid
