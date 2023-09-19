@@ -8,6 +8,6 @@ export default {
 	plugins: [require('daisyui')],
 	daisyui: {
 		themes: ['dracula'],
-		logs: process.env.NODE_ENV === 'production' ? false : true
+		logs: false
 	}
 } satisfies Config;
