@@ -21,5 +21,9 @@ const Steps: Component<{ current_step: DoneStep }> = (props) => {
 export default function Index() {
 	let done_step = new DoneStep();
 
-	return <Steps current_step={done_step} />;
+	return (
+		<main>
+			<Steps current_step={done_step} />
+		</main>
+	);
 }

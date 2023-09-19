@@ -1,18 +1,21 @@
 import { Component } from 'solid-js';
 import { Title, useNavigate } from 'solid-start';
-import { hexToCSSFilter } from 'hex-to-css-filter';
-import debug from 'debug';
+import { open_that } from '~/api-tauri';
 
 const Logo: Component = () => {
-	const cssFilter = hexToCSSFilter('#00a4d6');
-	debug('eee' + cssFilter);
-	console.warn(cssFilter);
-	
 	return (
-		<div>
-			<img src="index/lock.svg" class="filter: invert(47%) sepia(92%) saturate(1908%) hue-rotate(160deg) brightness(92%) contrast(104%);"/>
+		<div class="flex flex-col items-center">
+			<img src="index/lock.svg" class="h-64 w-64 py-4" />
 
 			<h1 class="text-5xl font-bold">Security chat</h1>
+		</div>
+	);
+};
+
+const BadgeVersion: Component<{ version: string }> = (props) => {
+	return (
+		<div class="left-0 top-0 flex space-x-2 px-1 py-1" style="position: absolute;">
+			<div class="badge badge-secondary">{props.version}</div>
 		</div>
 	);
 };
@@ -24,27 +27,34 @@ export default function Home() {
 		<main>
 			<Title>Добро пожаловать!</Title>
 
-			<div class="text-center hero min-h-screen">
+			<div class="hero min-h-screen text-center">
 				<div class="max-w-md">
-						<Logo/>
-						
-						<p class="py-6">
-							Универсальный чат который даёт вам <strong>приватность</strong>,{' '}
-							<strong>анонимность</strong> c{' '}
-							<a class="inline-flex items-center font-medium text-accent-focus cursor-pointer hover:underline">
-								открытым исходным кодом
-							</a>
-						</p>
-						<button
-							class="btn btn-primary"
-							onClick={() => {
-								navigate('/registration'); // TODO
+					<Logo />
+
+					<p class="py-6">
+						Универсальный чат который даёт вам <strong>приватность</strong>,{' '}
+						<strong>анонимность</strong> c{' '}
+						<a
+							class="inline-flex cursor-pointer items-center font-medium text-accent-focus hover:underline"
+							onclick={() => {
+								open_that('https://github.com/CryptoGladi/security-chat');
 							}}
 						>
-							Начать использование!
-						</button>
+							открытым исходным кодом
+						</a>
+					</p>
+					<button
+						class="btn btn-primary"
+						onClick={() => {
+							navigate('/registration'); // TODO
+						}}
+					>
+						Начать использование
+					</button>
 				</div>
 			</div>
+
+			<BadgeVersion version="0.1.0-alpha.2" />
 		</main>
 	);
 }
