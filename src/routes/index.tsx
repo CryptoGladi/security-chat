@@ -1,6 +1,6 @@
 import { Component } from 'solid-js';
 import { Title, useNavigate } from 'solid-start';
-import { open_that } from '~/ts/api-tauri';
+import { Link } from '~/components/link';
 
 const Logo: Component = () => {
 	return (
@@ -34,14 +34,7 @@ export default function Home() {
 					<p class="py-6">
 						Универсальный чат который даёт вам <strong>приватность</strong>,{' '}
 						<strong>анонимность</strong> c{' '}
-						<a
-							class="inline-flex cursor-pointer items-center font-medium text-accent-focus hover:underline"
-							onclick={() => {
-								open_that('https://github.com/CryptoGladi/security-chat');
-							}}
-						>
-							открытым исходным кодом
-						</a>
+						<Link text='открытым исходным кодом' link='https://github.com/CryptoGladi/security-chat'/>
 					</p>
 					<button
 						class="btn btn-primary"
