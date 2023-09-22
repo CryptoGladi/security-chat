@@ -1,6 +1,6 @@
 import { Component } from 'solid-js';
 import { Title, useNavigate } from 'solid-start';
-import { open_that } from '~/api-tauri';
+import { open_that } from '~/ts/api-tauri';
 
 const Logo: Component = () => {
 	return (
@@ -46,7 +46,7 @@ export default function Home() {
 					<button
 						class="btn btn-primary"
 						onClick={() => {
-							navigate('/registration'); // TODO
+							navigate('/registration');
 						}}
 					>
 						Начать использование
