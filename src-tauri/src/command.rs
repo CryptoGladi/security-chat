@@ -8,6 +8,8 @@ use high_level::{
     prelude::*,
 };
 use log::*;
+use rand::Rng;
+use rnglib::{Language, RNG};
 use tauri::{Manager, Runtime, Size};
 
 pub async fn load_client(app: tauri::AppHandle) {
@@ -261,4 +263,17 @@ pub async fn check_version() {
     if !smart_check_version().await {
         panic!("you have old version app. Please, update your app");
     }
+}
+
+#[tauri::command]
+pub fn get_random_nickname() -> String {
+    info!("run `get_random nickname`");
+    let mut rng_number = rand::thread_rng();
+    let rng_nickname = RNG::try_from(&Language::Fantasy).unwrap();
+
+    format!(
+        "{}{}",
+        rng_nickname.generate_name().to_lowercase(),
+        rng_number.gen_range(1000..9999)
+    )
 }
