@@ -1,3 +1,7 @@
 export default function Index() {
-	return <main></main>;
+	return (
+		<main>
+			dfds
+		</main>
+	);
 }

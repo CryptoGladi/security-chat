@@ -2,6 +2,7 @@ import { Component } from 'solid-js';
 import { Title, useNavigate } from 'solid-start';
 import { Link } from '~/components/link';
 import { BadgeVersion } from '~/components/badge_version';
+import { have_account } from '~/ts/api-tauri';
 
 const Logo: Component = () => {
 	return (
@@ -15,6 +16,12 @@ const Logo: Component = () => {
 
 export default function Index() {
 	const navigate = useNavigate();
+
+	have_account().then((have_account) => {
+		if (have_account) {
+			navigate('/main');
+		}
+	})
 
 	return (
 		<main>

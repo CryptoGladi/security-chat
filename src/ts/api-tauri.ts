@@ -15,3 +15,11 @@ export function nicknameIsTaken(nickname: string): Promise<string> {
 export function getVersionApp(): Promise<string> {
 	return invoke('get_version_app');
 }
+
+export function registration(nickname: string): Promise<void> {
+	return invoke('registration', { nickname: nickname });
+}
+
+export function have_account(): Promise<boolean> {
+	return invoke('have_account');
+}

@@ -1,8 +1,10 @@
 import { useNavigate, Title } from 'solid-start';
-import { getRandomNickname, nicknameIsTaken } from '~/ts/api-tauri';
-import { Component, Match, Switch, createSignal } from 'solid-js';
+import { getRandomNickname, nicknameIsTaken, registration } from '~/ts/api-tauri';
+import { Component, Match, Show, Switch, createSignal } from 'solid-js';
 import isAlphanumeric from 'validator/lib/isAlphanumeric';
 import { BadgeVersion } from '~/components/badge_version';
+
+const [valueNickname, setValueNickname] = createSignal('');
 
 async function getExampleNickame() {
 	return getRandomNickname();
@@ -52,7 +54,6 @@ const StateDivNickname: Component<{ state: StateNickname }> = (props) => {
 
 const ButtonRegistrationAccount: Component<{ state: StateNickname }> = (props) => {
 	const navigate = useNavigate();
-	let ree: HTMLDialogElement | ((el: HTMLDialogElement) => void) | undefined;
 
 	return (
 		<div>
@@ -60,25 +61,13 @@ const ButtonRegistrationAccount: Component<{ state: StateNickname }> = (props) =
 				class="btn btn-secondary"
 				classList={{ 'btn-disabled': props.state !== StateNickname.IsFree }}
 				onClick={() => {
-					my_modal_1.showModal()
-					//navigate('/main');
+					registration(valueNickname()).then(() => {
+						navigate('/main');
+					});					
 				}}
-				onclick="my_modal_1.showModal()"
 			>
 				Новый акканунт
 			</button>
-
-			<dialog ref={ree} id="my_modal_1" class="modal">
-				<div class="modal-box">
-					<h3 class="text-lg font-bold">Hello!</h3>
-					<p class="py-4">Press ESC key or click the button below to close</p>
-					<div class="modal-action">
-						<form method="dialog">
-							<button class="btn">Close</button>
-						</form>
-					</div>
-				</div>
-			</dialog>
 		</div>
 	);
 };
@@ -109,6 +98,7 @@ export default function Index() {
 					onInput={(e) => {
 						checkNickname(e.target.value).then((state) => {
 							setStateNickname(state);
+							setValueNickname(e.target.value);
 						});
 					}}
 				/>
