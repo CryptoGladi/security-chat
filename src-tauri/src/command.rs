@@ -266,7 +266,7 @@ pub async fn check_version() {
 }
 
 #[tauri::command]
-pub fn get_random_nickname() -> String {
+pub async fn get_random_nickname() -> String {
     info!("run `get_random nickname`");
     let mut rng_number = rand::thread_rng();
     let rng_nickname = RNG::try_from(&Language::Fantasy).unwrap();
@@ -276,4 +276,10 @@ pub fn get_random_nickname() -> String {
         rng_nickname.generate_name().to_lowercase(),
         rng_number.gen_range(1000..9999)
     )
+}
+
+#[tauri::command]
+pub async fn get_version_app() -> String {
+    debug!("run `get_version_app`");
+    env!("CARGO_PKG_VERSION").to_string()
 }

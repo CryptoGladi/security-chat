@@ -11,3 +11,7 @@ export function getRandomNickname(): Promise<string> {
 export function nicknameIsTaken(nickname: string): Promise<string> {
 	return invoke('nickname_is_taken', { nickname: nickname });
 }
+
+export function getVersionApp(): Promise<string> {
+	return invoke('get_version_app');
+}

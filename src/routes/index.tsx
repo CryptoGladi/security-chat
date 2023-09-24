@@ -13,7 +13,7 @@ const Logo: Component = () => {
 	);
 };
 
-export default function Home() {
+export default function Index() {
 	const navigate = useNavigate();
 
 	return (
@@ -43,7 +43,7 @@ export default function Home() {
 				</div>
 			</div>
 
-			<BadgeVersion version="0.1.0-alpha.2" />
+			<BadgeVersion />
 		</main>
 	);
 }

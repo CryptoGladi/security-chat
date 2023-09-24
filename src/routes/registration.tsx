@@ -1,4 +1,4 @@
-import { Title } from 'solid-start';
+import { useNavigate, Title } from 'solid-start';
 import { getRandomNickname, nicknameIsTaken } from '~/ts/api-tauri';
 import { Component, Match, Switch, createSignal } from 'solid-js';
 import isAlphanumeric from 'validator/lib/isAlphanumeric';
@@ -51,19 +51,36 @@ const StateDivNickname: Component<{ state: StateNickname }> = (props) => {
 };
 
 const ButtonRegistrationAccount: Component<{ state: StateNickname }> = (props) => {
-    // btn btn-secondary
-    return (
-        <div class="btn btn-secondary btn-disabled">
-            <Switch>
-                <Match when={props.state == StateNickname.IsFree}>
-                    <button class="">Новый акканунт</button>
-                </Match>
-                <Match when={props.state != StateNickname.IsFree}>
-                    <button class="btn-disabled">Новый акканунт</button>
-                </Match>
-            </Switch>
-        </div>
-    );
+	const navigate = useNavigate();
+	let ree: HTMLDialogElement | ((el: HTMLDialogElement) => void) | undefined;
+
+	return (
+		<div>
+			<button
+				class="btn btn-secondary"
+				classList={{ 'btn-disabled': props.state !== StateNickname.IsFree }}
+				onClick={() => {
+					my_modal_1.showModal()
+					//navigate('/main');
+				}}
+				onclick="my_modal_1.showModal()"
+			>
+				Новый акканунт
+			</button>
+
+			<dialog ref={ree} id="my_modal_1" class="modal">
+				<div class="modal-box">
+					<h3 class="text-lg font-bold">Hello!</h3>
+					<p class="py-4">Press ESC key or click the button below to close</p>
+					<div class="modal-action">
+						<form method="dialog">
+							<button class="btn">Close</button>
+						</form>
+					</div>
+				</div>
+			</dialog>
+		</div>
+	);
 };
 
 export default function Index() {
@@ -98,10 +115,10 @@ export default function Index() {
 
 				<StateDivNickname state={stateNickname()} />
 
-				<ButtonRegistrationAccount state={stateNickname()}/>
+				<ButtonRegistrationAccount state={stateNickname()} />
 			</div>
 
-            <BadgeVersion version="0.1.0-alpha.2" />
+			<BadgeVersion />
 		</main>
 	);
 }
