@@ -9,6 +9,7 @@
 - :white_large_square: Add check version after connection
 - :white_large_square: Add env config
 - :white_large_square: SvelteKit to SolidJS
+- :white_large_square: Add support Windows build
 
 # 0.1.0-alpha.2
 
