@@ -2,7 +2,7 @@ import { useNavigate, Title } from 'solid-start';
 import { getRandomNickname, nicknameIsTaken, registration } from '~/ts/api-tauri';
 import { Component, Match, Show, Switch, createSignal } from 'solid-js';
 import isAlphanumeric from 'validator/lib/isAlphanumeric';
-import { BadgeVersion } from '~/components/badge_version';
+import { BadgeVersion } from '~/components/small/badge_version';
 
 const [valueNickname, setValueNickname] = createSignal('');
 
@@ -63,7 +63,7 @@ const ButtonRegistrationAccount: Component<{ state: StateNickname }> = (props) =
 				onClick={() => {
 					registration(valueNickname()).then(() => {
 						navigate('/main');
-					});					
+					});
 				}}
 			>
 				Новый акканунт
