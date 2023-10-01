@@ -1,6 +1,0 @@
-.sidebar-icon {
-	@apply relative mx-auto flex h-12 w-12 cursor-pointer
-           items-center justify-center
-           text-gray-400 transition-all duration-300
-            ease-linear hover:bg-neutral-focus;
-}
