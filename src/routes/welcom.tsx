@@ -28,9 +28,8 @@ export default function Index() {
 						Универсальный чат который даёт вам <strong>приватность</strong>,{' '}
 						<strong>анонимность</strong> c{' '}
 						<Link
-							text="открытым исходным кодом"
 							link="https://github.com/CryptoGladi/security-chat"
-						/>
+						>открытым исходным кодом</Link>
 					</p>
 					<button
 						class="btn btn-primary"

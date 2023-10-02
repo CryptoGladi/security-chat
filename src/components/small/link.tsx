@@ -1,7 +1,7 @@
 import { Component } from 'solid-js';
 import { openThat } from '~/ts/api-tauri';
 
-export const Link: Component<{ text: string; link: string }> = (props) => {
+export const Link: Component<{ children: string; link: string }> = (props) => {
 	return (
 		<a
 			class="inline-flex cursor-pointer font-medium text-accent-focus hover:underline"
@@ -9,7 +9,7 @@ export const Link: Component<{ text: string; link: string }> = (props) => {
 				openThat(props.link);
 			}}
 		>
-			{props.text}
+			{props.children}
 		</a>
 	);
 };
