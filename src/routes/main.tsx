@@ -5,8 +5,15 @@ import { getVersionApp } from '~/ts/api-tauri';
 import randomItem from 'random-item';
 import { useNavigate } from 'solid-start';
 
-function getRandomText():string {
-	const texts = ['Помогите детям в Уганде!', 'Поддержите наш проект!'];
+function getRandomText(): string {
+	const texts = [
+		'Помогите детям в Уганде!', // VIM
+		'Поддержите наш проект!',
+		'Интересно, это кто-то читает?',
+		'Как же я стал писать этот проект...',
+		'Анонимность - свобода или ошибка?',
+		'Нужно взломать Пентагон'
+	];
 
 	return randomItem(texts);
 }
@@ -30,14 +37,21 @@ export default function Index() {
 
 						<div class="py-6">
 							<p>Версия: {version()}</p>
-							<p>Made by <Link link="https://github.com/CryptoGladi">CryptoGladi</Link></p>
+							<p>
+								Made by <Link link="https://github.com/CryptoGladi">CryptoGladi</Link>
+							</p>
 
-							<p>{getRandomText()}</p>
+							<p class="font-mono text-secondary">{getRandomText()}</p>
 						</div>
 
-						<button class="btn btn-primary" onclick={() => {
-							navigate('/main_window/add_friends');
-						}}>Найти друзей</button>
+						<button
+							class="btn btn-primary"
+							onclick={() => {
+								navigate('/main_window/add_friends');
+							}}
+						>
+							Найти друзей
+						</button>
 					</div>
 				</div>
 			</div>

@@ -2,8 +2,7 @@ import { Component, Index } from 'solid-js';
 import { BsPeople } from 'solid-icons/bs';
 import { VsTerminal } from 'solid-icons/vs';
 import { FaRegularUser } from 'solid-icons/fa';
-import { useNavigate } from 'solid-start';
-import { it } from 'node:test';
+import { useLocation, useNavigate } from 'solid-start';
 
 class Item {
 	icon: any;
@@ -18,9 +17,10 @@ class Item {
 }
 
 const Icon: Component<{ item: Item }> = (props) => {
-	// TODO SolidIcon
+	const location = useLocation();
+
 	return (
-		<li>
+		<li classList={{ 'border-accent border-l-2': location.pathname === props.item.navigate_path }}>
 			<a class="tooltip tooltip-right rounded-none" data-tip={props.item.text}>
 				{props.item.icon}
 			</a>
@@ -54,7 +54,7 @@ export const SideBar: Component = () => {
 				<hr style="border-color: grey;" />
 
 				<Icon
-					item={new Item('Пользователь {dd}', 'ds', <FaRegularUser size={24} color="grey" />)}
+					item={new Item('Пользователь: Gladi', 'ds', <FaRegularUser size={24} color="grey" />)}
 				/>
 			</ul>
 		</div>
