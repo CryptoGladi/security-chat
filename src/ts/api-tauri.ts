@@ -20,6 +20,11 @@ export function registration(nickname: string): Promise<void> {
 	return invoke('registration', { nickname: nickname });
 }
 
-export function have_account(): Promise<boolean> {
+export function haveAccount(): Promise<boolean> {
 	return invoke('have_account');
+}
+
+
+export function getCryptosForAccept(): Promise<string[]> {
+	return invoke('get_cryptos_for_accept');
 }
