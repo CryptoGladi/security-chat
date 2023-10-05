@@ -3,6 +3,7 @@ import { SideBar } from '~/components/side_bar';
 import { Loading } from '~/components/small/loading';
 import { getCryptosForAccept } from '~/ts/api-tauri';
 import { FaSolidFaceFrownOpen } from 'solid-icons/fa'
+import { Tabs, Tab } from '~/components/tabs';
 
 export const NotFriends: Component = () => {
 	return (
@@ -19,38 +20,18 @@ export const NotFriends: Component = () => {
 	);
 };
 
+const ConstTabs: Tab[] = [new Tab('Ваши друзья', NotFriends), new Tab('Заявки', NotFriends), new Tab('Запросы', NotFriends)];
+
 export default function Index() {
 	const [data] = createResource(async () => {
 		return await getCryptosForAccept();
 	})
 
 
-	
-
 	return (
 		<main class="flex">
 			<SideBar />
-
-			<div>
-				
-			</div>
-			<div class="tabs flex-row">
-  				<a class="tab tab-bordered">Tab 1</a> 
-  				<a class="tab tab-bordered tab-active">Tab 2</a> 
-  				<a class="tab tab-bordered">Tab 3</a>
-			</div>
-
-
-
-			<Suspense fallback={<Loading />}>
-				<Show when={data()?.length === 0}>
-					<NotFriends/>
-				</Show>
-				
-				<Show when={data()?.length !== 0}>
-					<p>s</p>
-				</Show>
-      		</Suspense>
+			<Tabs tabs={ConstTabs} default_index={0}/>	
 		</main>
 	);
 }
