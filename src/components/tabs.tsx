@@ -1,5 +1,4 @@
-import { table } from "console";
-import { Component, For } from "solid-js";
+import { Component, For, Setter, createSignal } from "solid-js";
 
 export class Tab {
     name!: string;
@@ -11,25 +10,29 @@ export class Tab {
     }
 }
 
-const ComponentTab: Component<{tab: Tab, my_index: number, currect_index: number}> = (props) => {
+const ComponentTab: Component<{tab: Tab, my_index: number, currect_index: number, index_setter: Setter<number>}> = (props) => {
     return (
-        <a class="tab tab-bordered flex-1" classList={{"tab-active": props.my_index === props.currect_index}}>{props.tab.name}</a>
+            <a class="tab tab-bordered flex-1" classList={{"tab-active": props.my_index === props.currect_index}} onclick={() => {
+                console.warn(props.my_index);
+                props.index_setter(props.my_index);
+            }}>{props.tab.name}</a>
     );
 }
 
 export const Tabs: Component<{tabs: Tab[], default_index: number}> = (props) => {
+    let [currectIndex, setCurrectIndex] = createSignal(props.default_index);
+
     return (
-        <div class="flex-row w-full">
+        <div class="flex-row w-full overflow-hidden">
 			<div class="flex">
                 <For each={props.tabs}>
-                    {(tab, index) => <ComponentTab tab={tab} my_index={index()} currect_index={props.default_index}/>}
+                    {(tab, index) => <ComponentTab tab={tab} my_index={index()} currect_index={currectIndex()} index_setter={setCurrectIndex}/>}
                 </For>
 			</div>
 
-            <div class="">
-                {props.tabs[props.default_index].compoment}
+            <div class="h-full">
+                {props.tabs[currectIndex()].compoment}
             </div>
-            
 		</div>	
     );
 }
