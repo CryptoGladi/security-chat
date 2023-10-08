@@ -19,7 +19,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "NOT_ENV! must be set")]
+    #[should_panic(expected = "NOT_ENV! env value must be set")]
     fn env_var_with_error_must_be_set() {
         super::get_env_var("NOT_ENV!");
     }

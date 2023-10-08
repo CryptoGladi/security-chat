@@ -1,8 +1,7 @@
-import { Component, Show, Suspense, createResource, lazy } from 'solid-js';
+import { Component, Show, Suspense, createResource, createSignal, lazy } from 'solid-js';
 import { FaSolidCircleCheck } from 'solid-icons/fa';
 import { getCryptosForAccept } from '~/ts/api-tauri';
 import { Loading } from '../small/loading';
-import { lazily } from 'solidjs-lazily';
 
 const DontHaveAddFriends: Component = () => {
 	return (
@@ -19,21 +18,32 @@ const DontHaveAddFriends: Component = () => {
 	);
 };
 
-const HaveAddFriends: Component = () => {
-	return <div></div>;
+const ShowData: Component<{ crypto_for_accept: string[] | undefined }> = (props) => {
+	if (props.crypto_for_accept == undefined) {
+		throw new Error('props.crypto_for_accept == undefined');
+	}
+
+	return (
+		<div class="h-full">
+			<Show when={props.crypto_for_accept.length === 0}>
+				<DontHaveAddFriends/>
+			</Show>
+		</div>
+	);
 };
 
-const { MyComponent } = lazily(async () => import('./async/list_friends'));
+function sleep(time: number) {
+	return new Promise((resolve) => setTimeout(resolve, time));
+}
 
 export const AddFriends: Component = () => {
 	const [crypto_for_accept] = createResource(async () => {
 		return await getCryptosForAccept();
 	});
 
-    // TODO https://codesandbox.io/embed/mystifying-roentgen-2o4wmxj9zy?codemirror=1
 	return (
-		<Suspense fallback={<p>Loading...</p>}>
-			<MyComponent lll={crypto_for_accept}></MyComponent>
-		</Suspense>
+		<div class="h-full">
+			{crypto_for_accept.loading ? <Loading /> : <ShowData crypto_for_accept={crypto_for_accept()} />}
+		</div>
 	);
 };
