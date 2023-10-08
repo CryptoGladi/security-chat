@@ -7,7 +7,12 @@ export const Loading: Component = (p) => {
 			<div>
 				<span class="loading loading-spinner text-primary"></span>
 				<p>
-					<SolidTyper text={["Пожалуйста подождите..."]} backspaceSpeed={30} typingSpeed={100} loop={true} />
+					<SolidTyper
+						text={['Пожалуйста подождите...']}
+						backspaceSpeed={30}
+						typingSpeed={100}
+						loop={true}
+					/>
 				</p>
 			</div>
 		</div>

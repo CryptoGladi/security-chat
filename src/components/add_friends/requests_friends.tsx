@@ -1,12 +1,7 @@
-import { Component } from "solid-js";
+import { Component } from 'solid-js';
 
 export const RequestsFriends: Component = () => {
-    // TODO
+	// TODO
 
-
-    return (
-        <div>
-            TODO
-        </div>
-    );
-}
+	return <div>TODO</div>;
+};

@@ -24,7 +24,6 @@ export function haveAccount(): Promise<boolean> {
 	return invoke('have_account');
 }
 
-
 export function getCryptosForAccept(): Promise<string[]> {
 	return invoke('get_cryptos_for_accept');
 }
