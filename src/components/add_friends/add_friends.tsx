@@ -26,7 +26,7 @@ const ShowData: Component<{ crypto_for_accept: string[] | undefined }> = (props)
 	return (
 		<div class="h-full">
 			<Show when={props.crypto_for_accept.length === 0}>
-				<DontHaveAddFriends/>
+				<DontHaveAddFriends />
 			</Show>
 		</div>
 	);
@@ -43,7 +43,11 @@ export const AddFriends: Component = () => {
 
 	return (
 		<div class="h-full">
-			{crypto_for_accept.loading ? <Loading /> : <ShowData crypto_for_accept={crypto_for_accept()} />}
+			{crypto_for_accept.loading ? (
+				<Loading />
+			) : (
+				<ShowData crypto_for_accept={crypto_for_accept()} />
+			)}
 		</div>
 	);
 };
