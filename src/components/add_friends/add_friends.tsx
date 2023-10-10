@@ -32,10 +32,6 @@ const ShowData: Component<{ crypto_for_accept: string[] | undefined }> = (props)
 	);
 };
 
-function sleep(time: number) {
-	return new Promise((resolve) => setTimeout(resolve, time));
-}
-
 export const AddFriends: Component = () => {
 	const [crypto_for_accept] = createResource(async () => {
 		return await getCryptosForAccept();
