@@ -2,10 +2,9 @@ import { Component, Show, Suspense, createResource, createSignal, lazy } from 's
 import { FaSolidCircleCheck } from 'solid-icons/fa';
 import { getCryptosForAccept } from '~/ts/api-tauri';
 import { Loading } from '../small/loading';
-import { Modal } from 'solid-js-modal';
+import { Modal, ModalRootElement } from 'solid-js-modal';
 
 // TODO perfectly-scrollable
-// TODO @thisbeyond/solid-select
 // TODO Add solid-jest
 
 let modalRef: any;
@@ -15,23 +14,19 @@ class ModalRef {
 		this.ref.showModal();		
 	}
 
-	public set(ref: any) {
-		this.ref = ref;
-	}
-
-	public ref: any;
+	public ref!: ModalRootElement;
 };
 
-const SearchFriendModal: Component<{modal_ref: any}> = (props) => {
+const SearchFriendModal: Component<{modal_ref: ModalRef}> = (props) => {
 	return (
-		<Modal ref={props.modal_ref}>
+		<Modal ref={props.modal_ref.ref}>
     		<p>This is modal content</p>
   		</Modal>
 	);
 }
 
 const DontHaveAddFriends: Component = () => {
-	let modal_search_friend: any;
+	let modal_search_friend: ModalRef;
 
 	return (
 		<div class="hero h-full w-full text-center">
@@ -44,11 +39,11 @@ const DontHaveAddFriends: Component = () => {
 				</div>
 
 				<button class="btn btn-accent" onclick={() => {
-					
+					modal_search_friend.show();
 				}}>Найти друга</button>
 			</div>
 
-			<SearchFriendModal modal_ref={modal_search_friend.ref}/>
+			<SearchFriendModal modal_ref={modal_search_friend}/>
 		</div>
 	);
 };
