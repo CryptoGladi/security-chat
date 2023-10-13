@@ -2,32 +2,33 @@ import { Component, Show, Suspense, createResource, createSignal, lazy } from 's
 import { FaSolidCircleCheck } from 'solid-icons/fa';
 import { getCryptosForAccept } from '~/ts/api-tauri';
 import { Loading } from '../small/loading';
-import { Modal, ModalRootElement } from 'solid-js-modal';
+import { FaSolidCheck } from 'solid-icons/fa'
 
 // TODO perfectly-scrollable
 // TODO Add solid-jest
 
-let modalRef: any;
+const AddFriendModal: Component = () => {
+	let [buttonIsEnable, setButtonIsEnable] = createSignal(false);
 
-class ModalRef {
-	public show() {
-		this.ref.showModal();		
-	}
-
-	public ref!: ModalRootElement;
-};
-
-const SearchFriendModal: Component<{modal_ref: ModalRef}> = (props) => {
 	return (
-		<Modal ref={props.modal_ref.ref}>
-    		<p>This is modal content</p>
-  		</Modal>
+		<div>
+			<h3 class="text-lg font-bold">Добавить друга</h3>
+
+			<div class="join py-6">
+	  			<input class="input input-bordered join-item" placeholder="Ник" oninput={(e) => {
+					setButtonIsEnable(e.target.value.length != 0)
+					// TODO solid-toast
+				}}/>
+
+	  			<button class="btn join-item rounded-r-full" classList={{"btn-disabled": !buttonIsEnable()}}>
+	  				<FaSolidCheck size={20}/>
+				</button>
+			</div>
+		</div>
 	);
 }
 
 const DontHaveAddFriends: Component = () => {
-	let modal_search_friend: ModalRef;
-
 	return (
 		<div class="hero h-full w-full text-center">
 			<div class="flex flex-col items-center">
@@ -38,12 +39,19 @@ const DontHaveAddFriends: Component = () => {
 					<p>Может попробуйте найти себе друзей?</p>
 				</div>
 
-				<button class="btn btn-accent" onclick={() => {
-					modal_search_friend.show();
-				}}>Найти друга</button>
+				<button class="btn btn-accent" onclick="my_modal_1.showModal()">
+					Найти друга
+				</button>
 			</div>
 
-			<SearchFriendModal modal_ref={modal_search_friend}/>
+			<dialog id="my_modal_1" class="modal">
+				<div class="modal-box">
+					<AddFriendModal/>
+				</div>
+				<form method="dialog" class="modal-backdrop">
+					<button>close</button>
+				</form>
+			</dialog>
 		</div>
 	);
 };
