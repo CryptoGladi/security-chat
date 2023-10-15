@@ -13,6 +13,7 @@ import {
 	Title
 } from 'solid-start';
 import './root.css';
+import { Toaster } from 'solid-toast';
 
 export default function Root() {
 	return (
@@ -31,6 +32,7 @@ export default function Root() {
 					</ErrorBoundary>
 				</Suspense>
 				<Scripts />
+				<Toaster position="top-center" />
 			</Body>
 		</Html>
 	);

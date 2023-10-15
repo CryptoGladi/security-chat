@@ -165,6 +165,12 @@ pub async fn run_command(command: String) {
 }
 
 #[tauri::command]
+pub async fn send_crypto(nickname: String) {
+    let mut client = global::LOADED_CLIENT.write().await;
+    client.as_mut().unwrap().send_crypto(Nickname(nickname)).await.unwrap();
+}
+
+#[tauri::command]
 pub async fn get_messages_for_user(nickname_from: String) -> Vec<MessageInfo> {
     // TODO переделать сообщение!
     global::LOADED_CLIENT

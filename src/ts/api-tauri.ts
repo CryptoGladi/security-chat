@@ -27,3 +27,7 @@ export function haveAccount(): Promise<boolean> {
 export function getCryptosForAccept(): Promise<string[]> {
 	return invoke('get_cryptos_for_accept');
 }
+
+export function sendCrypto(nickname: string): Promise<void> {
+	return invoke('send_crypto', { nickname: nickname });
+}

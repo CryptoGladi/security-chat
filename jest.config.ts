@@ -1,9 +1,9 @@
-import type {Config} from 'jest';
+import type { Config } from 'jest';
 
 const config: Config = {
-  verbose: true,
-  preset: "solid-jest/preset/browser",
-  testEnvironment: "jsdom",
+	verbose: true,
+	preset: 'solid-jest/preset/browser',
+	testEnvironment: 'jsdom'
 };
 
 export default config;

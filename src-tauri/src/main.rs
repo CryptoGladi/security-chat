@@ -45,6 +45,7 @@ fn main() {
             command::get_messages_for_user,
             command::get_nickname,
             command::send_message,
+            command::send_crypto,
             command::get_cryptos_for_accept,
             command::add_crypto,
             command::delete_crypto,

@@ -16,6 +16,17 @@ lto = "off"
 incremental = true
 debug = true
 
+[profile.max-release]
+inherits = "release"
+lto = "fat"
+debug = false
+codegen-units = 1
+opt-level = 3
+panic = "abort"
+strip = true
+debug-assertions = false
+overflow-checks = false
+
 [workspace]
 members = ["lower-level", "high-level", "crate-proto", "vim-like-command", "cache", "fcore"]
 

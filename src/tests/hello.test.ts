@@ -1,3 +1,1 @@
-test("counts on click", async () => {
-
-});
+test('counts on click', async () => {});
