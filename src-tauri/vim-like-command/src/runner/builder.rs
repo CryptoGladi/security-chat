@@ -5,14 +5,14 @@ pub const DEFAULT_COMMANDS: &[&HighLevelCommand] = crate::command::ALL_COMMANDS;
 #[derive(Debug)]
 pub struct RunnerBuilder<'a> {
     commands: Vec<&'a HighLevelCommand>,
-    limit_fuzzy: usize,
+    limit_for_fuzzy_search: usize,
 }
 
 impl<'a> Default for RunnerBuilder<'a> {
     fn default() -> Self {
         Self {
             commands: DEFAULT_COMMANDS.to_vec(),
-            limit_fuzzy: 10,
+            limit_for_fuzzy_search: 10,
         }
     }
 }
@@ -41,13 +41,13 @@ impl<'a> RunnerBuilder<'a> {
     pub fn new() -> Self {
         Self {
             commands: vec![],
-            limit_fuzzy: 1,
+            limit_for_fuzzy_search: 1,
         }
     }
 
     impl_setter!(commands, Vec<&'a HighLevelCommand>);
 
-    impl_setter!(limit_fuzzy, usize, limit_fuzzy >= 1);
+    impl_setter!(limit_for_fuzzy_search, usize, limit_for_fuzzy_search >= 1);
 
     pub fn build(self) -> VimError<Runner<'a>> {
         info!("run `build`");
@@ -62,7 +62,7 @@ impl<'a> RunnerBuilder<'a> {
 
         Ok(Runner {
             commands: parsed_commands,
-            limit_fuzzy: self.limit_fuzzy,
+            limit_for_fuzzy_search: self.limit_for_fuzzy_search,
         })
     }
 }
@@ -109,6 +109,9 @@ mod tests {
     #[test]
     #[should_panic]
     fn limit_fuzzy_panic() {
-        let _runner = RunnerBuilder::new().limit_fuzzy(0).build().unwrap();
+        let _runner = RunnerBuilder::new()
+            .limit_for_fuzzy_search(0)
+            .build()
+            .unwrap();
     }
 }

@@ -1,8 +1,17 @@
 //! Logger
 
 use log::{LevelFilter, SetLoggerError};
-use map_macro::hash_set;
 use std::collections::HashSet;
+
+const ALL_WORKSPACE_CRATE: &[&str] = &[
+    "vim_like_command",
+    "lower_level",
+    "high_level",
+    "fcore",
+    "crate_proto",
+    "cache",
+    "security_chat",
+];
 
 /// [`log::LevelFilter`] but for crate
 #[derive(Debug, Hash, PartialEq, Eq)]
@@ -15,14 +24,20 @@ pub struct CrateLevelFilter {
 }
 
 impl CrateLevelFilter {
-    pub fn new(names: HashSet<&str>, level: LevelFilter) -> HashSet<Self> {
+    pub fn new(names: &[&str], level: LevelFilter) -> HashSet<Self> {
         let mut result = HashSet::with_capacity(names.len());
 
         for name in names {
-            result.insert(Self {
+            let did_not_previously_contain = result.insert(Self {
                 name: name.to_string(),
                 level,
             });
+
+            assert!(
+                did_not_previously_contain,
+                "already have crate level filter: {}",
+                name
+            );
         }
 
         result
@@ -58,12 +73,7 @@ impl Logger {
 pub fn init_logger() {
     let logger = Logger {
         standard_level_for_crate: LevelFilter::Error,
-        level_for_targets: CrateLevelFilter::new(
-            hash_set! {
-                "vim-like-command", "lower-level", "high-level", "fcore", "crate-proto", "cache"
-            },
-            LevelFilter::Trace,
-        ),
+        level_for_targets: CrateLevelFilter::new(ALL_WORKSPACE_CRATE, LevelFilter::Trace),
     };
 
     logger.init().expect("run init function for logger");
@@ -75,13 +85,12 @@ mod tests {
 
     use super::{CrateLevelFilter, Logger};
     use log::LevelFilter;
-    use map_macro::hash_set;
 
     #[test]
     fn raw_init() {
         let logger = Logger {
             standard_level_for_crate: LevelFilter::Off,
-            level_for_targets: CrateLevelFilter::new(hash_set! {}, LevelFilter::Error),
+            level_for_targets: CrateLevelFilter::new(&[], LevelFilter::Error),
         };
 
         logger.init().unwrap();
@@ -89,8 +98,7 @@ mod tests {
 
     #[test]
     fn new_for_crate_level_filter() {
-        let crate_info_for_test =
-            CrateLevelFilter::new(hash_set! {"test1", "test2"}, LevelFilter::Warn);
+        let crate_info_for_test = CrateLevelFilter::new(&["test1", "test2"], LevelFilter::Warn);
 
         let crate_info_eq = {
             let mut result = HashSet::new();
@@ -109,5 +117,11 @@ mod tests {
         };
 
         assert_eq!(crate_info_for_test, crate_info_eq);
+    }
+
+    #[test]
+    #[should_panic(expected = "already have crate level filter: test1")]
+    fn panic_already_have_crate_level_filter() {
+        let _crate_info_for_test = CrateLevelFilter::new(&["test1", "test1"], LevelFilter::Warn);
     }
 }

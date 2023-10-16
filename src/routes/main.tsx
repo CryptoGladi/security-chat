@@ -1,7 +1,7 @@
-import { createSignal, onMount } from 'solid-js';
+import { createResource, createSignal, onMount } from 'solid-js';
 import { SideBar } from '~/components/side_bar';
 import { Link } from '~/components/small/link';
-import { getVersionApp } from '~/ts/api-tauri';
+import { getMyNickname, getVersionApp } from '~/ts/api-tauri';
 import randomItem from 'random-item';
 import { useNavigate } from 'solid-start';
 
@@ -21,6 +21,9 @@ function getRandomText(): string {
 export default function Index() {
 	const [version, setVersion] = createSignal('1.0.0');
 	const navigate = useNavigate();
+	const [nickname] = createResource(async () => {
+		return await getMyNickname();
+	});
 
 	onMount(async () => {
 		setVersion(await getVersionApp());
@@ -36,6 +39,7 @@ export default function Index() {
 						<h1 class="text-5xl font-bold">Security chat</h1>
 
 						<div class="py-6">
+							<p>Пользователь: {nickname.loading ? "LOADING..." : nickname()}</p>
 							<p>Версия: {version()}</p>
 							<p>
 								Made by <Link link="https://github.com/CryptoGladi">CryptoGladi</Link>

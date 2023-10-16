@@ -21,18 +21,22 @@ async function rawSendRequest(nickname: string): Promise<Status> {
 	return Status.Ok;
 }
 
-async function sendRequest(nickname: string) {
-	let status = await rawSendRequest(nickname);
-	
-	switch (status) {
-		case Status.Ok: Toast.success("");
-		case Status.NicknameNotFound: Toast.error("Пользователь не найден");
+async function toastSendRequest(nickname: string) {
+	switch (await rawSendRequest(nickname)) {
+		case Status.Ok: {
+			Toast.success("Заявка успешно отправлена")
+			break;
+		};
+		case Status.NicknameNotFound: {
+			Toast.error("Пользователь не найден!");
+			break;
+		}
 	}
 }
 
-const AddFriendModal: Component = () => {
-	let [buttonIsEnable, setButtonIsEnable] = createSignal(false);
-	let fd = '3232';
+const AddFriendModal: Component<{modal: HTMLDialogElement | ((el: HTMLDialogElement) => void) | undefined}> = (props) => {
+	const [buttonIsEnable, setButtonIsEnable] = createSignal(false);
+	const [inputNickname, setInputNickname] = createSignal("");
 
 	return (
 		<div>
@@ -40,17 +44,21 @@ const AddFriendModal: Component = () => {
 
 			<div class="join py-6">
 				<input
-					class="input join-item input-bordered"
+					class="input join-item input-bordered focus:outline-none"
 					placeholder="Ник"
 					oninput={(e) => {
 						setButtonIsEnable(e.target.value.length != 0);
-						Toast.error('Вы отправили запрос пользователю');
+						setInputNickname(e.target.value);
 					}}
 				/>
 
 				<button
 					class="btn btn-accent join-item rounded-r-full"
 					classList={{ 'btn-disabled': !buttonIsEnable() }}
+					onclick={() => {
+						toastSendRequest(inputNickname());
+						props.modal?.close();
+					}}
 				>
 					<FaSolidCheck size={20} />
 				</button>
@@ -85,7 +93,7 @@ const DontHaveAddFriends: Component = () => {
 
 			<dialog ref={fdd} class="modal">
 				<div class="modal-box">
-					<AddFriendModal />
+					<AddFriendModal modal={fdd}/>
 				</div>
 				<form method="dialog" class="modal-backdrop">
 					<button>close</button>

@@ -9,16 +9,36 @@ pub mod builder;
 pub mod error;
 pub mod impl_fuzzy_search;
 
+type NameCommand<'a> = &'a str;
+
+/// Struct for run commands
+///
+/// For initialization use [`crate::runner::builder::RunnerBuilder`]
 #[derive(Debug, Default)]
 pub struct Runner<'a> {
-    pub(crate) commands: HashMap<&'a str, &'a HighLevelCommand>,
-    pub(crate) limit_fuzzy: usize,
+    /// All commands
+    pub(crate) commands: HashMap<NameCommand<'a>, &'a HighLevelCommand>,
+
+    /// Maximum number of items that will be displayed during a [fuzzy search](https://en.wikipedia.org/wiki/Approximate_string_matching)
+    pub(crate) limit_for_fuzzy_search: usize,
 }
 
 impl<'a> Runner<'a> {
-    pub async fn run(&mut self, client: &mut Client, str: &str) -> VimError<()> {
-        info!("run `command`: {}", str);
-        let args: Vec<&str> = str.split_whitespace().collect();
+    /// Run command
+    ///
+    /// # Format
+    ///
+    /// {0} {1..2..3}
+    ///
+    /// * {0} - id command
+    /// * {1..2..3} - args command
+    ///
+    /// # Example
+    ///
+    /// test_command test_argument
+    pub async fn run(&mut self, client: &mut Client, command: &str) -> VimError<()> {
+        info!("run `command`: {}", command);
+        let args: Vec<&str> = command.split_whitespace().collect();
 
         self.commands
             .get(&args[0])

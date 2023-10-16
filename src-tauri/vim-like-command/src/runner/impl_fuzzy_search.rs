@@ -14,7 +14,11 @@ impl<'a> Runner<'a> {
         let result = corpus.search(id, 0.1);
 
         debug!("run `get_fuzzy_array`: {:?}", result);
-        result.iter().take(self.limit_fuzzy).cloned().collect()
+        result
+            .iter()
+            .take(self.limit_for_fuzzy_search)
+            .cloned()
+            .collect()
     }
 }
 
@@ -27,7 +31,7 @@ mod tests {
     fn get_fuzzy_array() {
         let runner = RunnerBuilder::default()
             .commands(vec![&TestCommand, &SameTestCommand])
-            .limit_fuzzy(2)
+            .limit_for_fuzzy_search(2)
             .build()
             .unwrap();
 
@@ -47,7 +51,7 @@ mod tests {
     fn limit_fuzzy() {
         let runner = RunnerBuilder::default()
             .commands(vec![&TestCommand, &SameTestCommand])
-            .limit_fuzzy(1)
+            .limit_for_fuzzy_search(1)
             .build()
             .unwrap();
 
@@ -58,7 +62,7 @@ mod tests {
     fn empty_get() {
         let runner = RunnerBuilder::default()
             .commands(vec![&TestCommand])
-            .limit_fuzzy(10)
+            .limit_for_fuzzy_search(10)
             .build()
             .unwrap();
 
@@ -69,7 +73,7 @@ mod tests {
     fn empty_str() {
         let runner = RunnerBuilder::default()
             .commands(vec![&TestCommand])
-            .limit_fuzzy(1)
+            .limit_for_fuzzy_search(1)
             .build()
             .unwrap();
 
