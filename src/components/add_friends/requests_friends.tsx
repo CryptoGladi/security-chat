@@ -1,4 +1,4 @@
-import { Component, Show, createResource, createSignal } from 'solid-js';
+import { Component, For, Show, Switch, createResource, createSignal } from 'solid-js';
 import { FaSolidCircleCheck } from 'solid-icons/fa';
 import { getCryptosForAccept, nicknameIsTaken, sendCrypto } from '~/ts/api-tauri';
 import { Loading } from '../small/loading';
@@ -24,19 +24,19 @@ async function rawSendRequest(nickname: string): Promise<Status> {
 async function toastSendRequest(nickname: string) {
 	switch (await rawSendRequest(nickname)) {
 		case Status.Ok: {
-			Toast.success("Заявка успешно отправлена")
+			Toast.success('Заявка успешно отправлена');
 			break;
-		};
+		}
 		case Status.NicknameNotFound: {
-			Toast.error("Пользователь не найден!");
+			Toast.error('Пользователь не найден!');
 			break;
 		}
 	}
 }
 
-const AddFriendModal: Component<{modal: HTMLDialogElement | ((el: HTMLDialogElement) => void) | undefined}> = (props) => {
+const AddFriendModal: Component<{ modal: HTMLDialogElement }> = (props) => {
 	const [buttonIsEnable, setButtonIsEnable] = createSignal(false);
-	const [inputNickname, setInputNickname] = createSignal("");
+	const [inputNickname, setInputNickname] = createSignal('');
 
 	return (
 		<div>
@@ -57,7 +57,7 @@ const AddFriendModal: Component<{modal: HTMLDialogElement | ((el: HTMLDialogElem
 					classList={{ 'btn-disabled': !buttonIsEnable() }}
 					onclick={() => {
 						toastSendRequest(inputNickname());
-						props.modal?.close();
+						props.modal.close();
 					}}
 				>
 					<FaSolidCheck size={20} />
@@ -68,7 +68,7 @@ const AddFriendModal: Component<{modal: HTMLDialogElement | ((el: HTMLDialogElem
 };
 
 const DontHaveAddFriends: Component = () => {
-	let fdd: HTMLDialogElement | ((el: HTMLDialogElement) => void) | undefined;
+	let modal_add_friend: HTMLDialogElement | undefined;
 
 	return (
 		<div class="hero h-full w-full text-center">
@@ -83,17 +83,16 @@ const DontHaveAddFriends: Component = () => {
 				<button
 					class="btn btn-accent"
 					onclick={() => {
-						// @ts-ignore
-						fdd?.showModal();
+						modal_add_friend?.showModal();
 					}}
 				>
 					Найти друга
 				</button>
 			</div>
 
-			<dialog ref={fdd} class="modal">
+			<dialog ref={modal_add_friend} class="modal">
 				<div class="modal-box">
-					<AddFriendModal modal={fdd}/>
+					<AddFriendModal modal={modal_add_friend!} />
 				</div>
 				<form method="dialog" class="modal-backdrop">
 					<button>close</button>
@@ -112,6 +111,36 @@ const ShowData: Component<{ crypto_for_accept: string[] | undefined }> = (props)
 		<div class="h-full">
 			<Show when={props.crypto_for_accept.length === 0}>
 				<DontHaveAddFriends />
+			</Show>
+
+			<Show when={props.crypto_for_accept.length !== 0}>
+				<p>sasas</p>
+
+				<div class="h-full w-full">
+					<For each={props.crypto_for_accept}>
+						{(item, index) => (
+							<div class="flex flex-row">
+								<p>{item}</p>
+								<button class="btn btn-circle">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										class="h-6 w-6"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M6 18L18 6M6 6l12 12"
+										/>
+									</svg>
+								</button>
+							</div>
+						)}
+					</For>
+				</div>
 			</Show>
 		</div>
 	);
