@@ -1,7 +1,40 @@
-import { Component, Show, Suspense, createResource, createSignal, lazy } from 'solid-js';
+import { Component, For, Show, Suspense, createResource, createSignal, lazy } from 'solid-js';
 import { FaSolidCircleCheck } from 'solid-icons/fa';
 import { getCryptosForAccept } from '~/ts/api-tauri';
 import { Loading } from '../small/loading';
+import { HiSolidXMark } from 'solid-icons/hi';
+import { HiSolidPlus } from 'solid-icons/hi';
+import { PerfectlyScrollable } from 'perfectly-scrollable';
+
+const ScrollableDiv = PerfectlyScrollable('div');
+
+const HaveAddFriends: Component<{ crypto_for_accept: string[] }> = (props) => {
+	let dsd = [];
+
+	return (
+		<div class="h-full w-full">
+			<ScrollableDiv>
+				<For each={props.crypto_for_accept}>
+					{(item, index) => (
+						<div class="m-2 flex items-center bg-neutral p-3">
+							<p>{item}</p>
+
+							<div class="flex w-full justify-end space-x-2">
+								<button class="btn btn-circle btn-neutral btn-active btn-sm">
+									<HiSolidPlus size={20} color="#52fa7c" />
+								</button>
+
+								<button class="btn btn-circle btn-neutral  btn-active btn-sm">
+									<HiSolidXMark size={20} color="#ff5757" />
+								</button>
+							</div>
+						</div>
+					)}
+				</For>
+			</ScrollableDiv>
+		</div>
+	);
+};
 
 const DontHaveAddFriends: Component = () => {
 	return (
@@ -27,6 +60,10 @@ const ShowData: Component<{ crypto_for_accept: string[] | undefined }> = (props)
 		<div class="h-full">
 			<Show when={props.crypto_for_accept.length === 0}>
 				<DontHaveAddFriends />
+			</Show>
+
+			<Show when={props.crypto_for_accept.length !== 0}>
+				<HaveAddFriends crypto_for_accept={props.crypto_for_accept} />
 			</Show>
 		</div>
 	);
