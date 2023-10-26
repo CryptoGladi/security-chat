@@ -1,28 +1,45 @@
 import { SideBar } from '~/components/side_bar';
 import { useParams } from 'solid-start';
-import { Component } from 'solid-js';
+import { Component, For, createSignal } from 'solid-js';
+import { PerfectlyScrollable } from 'perfectly-scrollable';
+import { IoSend } from 'solid-icons/io';
+
+const ScrollableDiv = PerfectlyScrollable('div');
+
+class Message {
+	constructor(text: string, type: TypeBubble) {
+		this.text = text;
+		this.type = type;
+	}
+
+	text!: string;
+	type!: TypeBubble;
+}
 
 enum TypeBubble {
 	ChatStart,
 	ChatEnd
 }
 
-const MessageBubble: Component<{ text: string; type: TypeBubble }> = (props) => {
+let [messages, setMessages] = createSignal([new Message('text', TypeBubble.ChatEnd)]);
+
+const MessageBubble: Component<{ message: Message }> = (props) => {
 	return (
 		<div
 			class="chat"
 			classList={{
-				'chat-start': props.type === TypeBubble.ChatStart,
-				'chat-end': props.type === TypeBubble.ChatEnd
+				'chat-start': props.message.type === TypeBubble.ChatStart,
+				'chat-end': props.message.type === TypeBubble.ChatEnd
 			}}
 		>
-			<div class="chat-bubble">{props.text}</div>
+			<div class="chat-bubble">{props.message.text}</div>
 		</div>
 	);
 };
 
 export default function Index() {
 	const params = useParams<{ nickname: string }>();
+	let inputMessage: HTMLTextAreaElement;
 
 	return (
 		<main class="flex h-screen w-full">
@@ -33,14 +50,27 @@ export default function Index() {
 					<p class="font-bold text-secondary">{params.nickname}</p>
 				</div>
 
-				<div class="flex-1">
-					<MessageBubble text={'Рандомный текст'} type={TypeBubble.ChatStart} />
+				<ScrollableDiv class="flex-1" style={{ position: 'relative' }}>
+					<For each={messages()}>
+						{(message, index) => <MessageBubble message={message}></MessageBubble>}
+					</For>
+				</ScrollableDiv>
 
-					<MessageBubble text={'Ответ на рандомных текст'} type={TypeBubble.ChatEnd} />
-				</div>
-
-				<div class="h-10 flex-none border-t-[1px]" style="border-color: grey;">
-					<p>messager</p>
+				<div class="flex h-auto flex-none flex-row border-t-[1px]" style="border-color: grey;">
+					<textarea
+						class="textarea textarea-ghost flex-1 focus:outline-none"
+						placeholder="Для отправки сообщения нажмите Enter"
+						maxlength={200}
+						// @ts-ignore
+						ref={inputMessage}
+						onkeydown={(e) => {
+							if (e.key === 'Enter') {
+								setMessages((a) => [...a, new Message(inputMessage.value, TypeBubble.ChatEnd)]);
+								inputMessage.value = '';
+								return;
+							}
+						}}
+					></textarea>
 				</div>
 			</div>
 		</main>
