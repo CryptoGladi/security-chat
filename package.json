@@ -42,6 +42,7 @@
 		"vite": "^4.4.9"
 	},
 	"dependencies": {
+		"@solid-primitives/autofocus": "^0.0.108",
 		"@solidjs/meta": "^0.28.6",
 		"@solidjs/router": "^0.8.3",
 		"@tauri-apps/api": "^1.4.0",
