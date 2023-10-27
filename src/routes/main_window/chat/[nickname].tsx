@@ -2,7 +2,7 @@ import { SideBar } from '~/components/side_bar';
 import { useParams } from 'solid-start';
 import { Component, For, createSignal } from 'solid-js';
 import { PerfectlyScrollable } from 'perfectly-scrollable';
-import { IoSend } from 'solid-icons/io';
+import '~/styles/scrollbar.scss';
 
 const ScrollableDiv = PerfectlyScrollable('div');
 
@@ -21,7 +21,30 @@ enum TypeBubble {
 	ChatEnd
 }
 
-let [messages, setMessages] = createSignal([new Message('text', TypeBubble.ChatEnd)]);
+let [messages, setMessages] = createSignal([
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd),
+	new Message('text', TypeBubble.ChatEnd)
+]);
 
 const MessageBubble: Component<{ message: Message }> = (props) => {
 	return (
@@ -40,6 +63,7 @@ const MessageBubble: Component<{ message: Message }> = (props) => {
 export default function Index() {
 	const params = useParams<{ nickname: string }>();
 	let inputMessage: HTMLTextAreaElement;
+	let scrollableDiv: HTMLDivElement;
 
 	return (
 		<main class="flex h-screen w-full">
@@ -50,7 +74,12 @@ export default function Index() {
 					<p class="font-bold text-secondary">{params.nickname}</p>
 				</div>
 
-				<ScrollableDiv class="flex-1" style={{ position: 'relative' }}>
+				<ScrollableDiv
+					// @ts-ignore
+					ref={scrollableDiv}
+					class="flex-1"
+					style={{ position: 'relative', '--scrollbar-color': 'red' }}
+				>
 					<For each={messages()}>
 						{(message, index) => <MessageBubble message={message}></MessageBubble>}
 					</For>
@@ -64,10 +93,11 @@ export default function Index() {
 						// @ts-ignore
 						ref={inputMessage}
 						onkeydown={(e) => {
-							if (e.key === 'Enter') {
+							if (e.key === 'Enter' && !e.shiftKey && inputMessage.value.trim() !== '') {
 								setMessages((a) => [...a, new Message(inputMessage.value, TypeBubble.ChatEnd)]);
 								inputMessage.value = '';
-								return;
+								scrollableDiv.scrollTop = scrollableDiv.scrollHeight;
+								e.preventDefault();
 							}
 						}}
 					></textarea>
