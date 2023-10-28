@@ -4,16 +4,17 @@ import { getCryptosForAccept } from '~/ts/api-tauri';
 import { Loading } from '../small/loading';
 import { HiSolidXMark } from 'solid-icons/hi';
 import { HiSolidPlus } from 'solid-icons/hi';
-import { PerfectlyScrollable } from 'perfectly-scrollable';
 
-const ScrollableDiv = PerfectlyScrollable('div');
+// const ScrollableDiv = PerfectlyScrollable('div');
 
 const HaveAddFriends: Component<{ crypto_for_accept: string[] }> = (props) => {
 	let dsd = [];
 
 	return (
 		<div class="h-full w-full">
-			<ScrollableDiv>
+			<div>
+				{' '}
+				// TODO ScrollableDiv
 				<For each={props.crypto_for_accept}>
 					{(item, index) => (
 						<div class="m-2 flex items-center bg-neutral p-3">
@@ -31,7 +32,7 @@ const HaveAddFriends: Component<{ crypto_for_accept: string[] }> = (props) => {
 						</div>
 					)}
 				</For>
-			</ScrollableDiv>
+			</div>
 		</div>
 	);
 };

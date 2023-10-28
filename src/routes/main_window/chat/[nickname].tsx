@@ -1,10 +1,7 @@
 import { SideBar } from '~/components/side_bar';
 import { useParams } from 'solid-start';
 import { Component, For, createSignal } from 'solid-js';
-import { PerfectlyScrollable } from 'perfectly-scrollable';
-import '~/styles/scrollbar.scss';
-
-const ScrollableDiv = PerfectlyScrollable('div');
+import styles from '~/styles/scrollbar.module.scss';
 
 class Message {
 	constructor(text: string, type: TypeBubble) {
@@ -74,16 +71,16 @@ export default function Index() {
 					<p class="font-bold text-secondary">{params.nickname}</p>
 				</div>
 
-				<ScrollableDiv
+				<div
 					// @ts-ignore
 					ref={scrollableDiv}
-					class="flex-1"
-					style={{ position: 'relative', '--scrollbar-color': 'red' }}
+					class={`scrollbar-thin flex-1 overflow-y-scroll ${styles.scrollbarthumbbb}`}
+					style={{ position: 'relative' }}
 				>
 					<For each={messages()}>
 						{(message, index) => <MessageBubble message={message}></MessageBubble>}
 					</For>
-				</ScrollableDiv>
+				</div>
 
 				<div class="flex h-auto flex-none flex-row border-t-[1px]" style="border-color: grey;">
 					<textarea
