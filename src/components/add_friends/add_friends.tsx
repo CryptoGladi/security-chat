@@ -1,14 +1,12 @@
 import { Component, For, Show, Suspense, createResource, createSignal, lazy } from 'solid-js';
 import { FaSolidCircleCheck } from 'solid-icons/fa';
-import { getCryptosForAccept } from '~/ts/api-tauri';
+import { addCrypto, getCryptosForAccept } from '~/ts/api-tauri';
 import { Loading } from '../small/loading';
 import { HiSolidXMark } from 'solid-icons/hi';
 import { HiSolidPlus } from 'solid-icons/hi';
 import '~/styles/scrollbar.scss';
 
 const HaveAddFriends: Component<{ crypto_for_accept: string[] }> = (props) => {
-	console.warn(props.crypto_for_accept);
-
 	return (
 		<div class="h-full w-full">
 			<div class="scrollbar">
@@ -18,11 +16,23 @@ const HaveAddFriends: Component<{ crypto_for_accept: string[] }> = (props) => {
 							<p>{item}</p>
 
 							<div class="flex w-full justify-end space-x-2">
-								<button class="btn btn-circle btn-neutral btn-active btn-sm" onclick={() => {}}>
+								<button
+									class="btn btn-circle btn-neutral btn-active btn-sm"
+									onclick={() => {
+										addCrypto(item).then(() => {
+											window.location.reload();
+										});
+									}}
+								>
 									<HiSolidPlus size={20} color="#52fa7c" />
 								</button>
 
-								<button class="btn btn-circle btn-neutral  btn-active btn-sm">
+								<button
+									class="btn btn-circle btn-neutral  btn-active btn-sm"
+									onclick={() => {
+										// TODO
+									}}
+								>
 									<HiSolidXMark size={20} color="#ff5757" />
 								</button>
 							</div>

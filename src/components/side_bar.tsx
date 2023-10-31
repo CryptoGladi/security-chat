@@ -39,7 +39,7 @@ function createItemForUser(nickname: string): Item {
 
 const StantardItems = [
 	new Item('Главная страница', '/main', <AiOutlineHome size={24} color="grey" />),
-	new Item('Запросы в друзья', '/main_window/add_friends', <BsPeople size={24} color="grey" />),
+	new Item('Друзья', '/main_window/add_friends', <BsPeople size={24} color="grey" />),
 	new Item('Выполнить комманду', '/main_window/run_command', <VsTerminal size={24} color="grey" />)
 ];
 

@@ -39,3 +39,11 @@ export function getMyNickname(): Promise<string> {
 export function getOrderAddingCrypto(): Promise<string[]> {
 	return invoke('get_order_adding_crypto');
 }
+
+export function addCrypto(nickname: string): Promise<void> {
+	return invoke('add_crypto', { nickname: nickname });
+}
+
+export function getAllMyFriends(): Promise<string[]> {
+	return invoke('get_all_users');
+}

@@ -249,6 +249,7 @@ pub async fn add_crypto(nickname: String) {
         .filter(|x| x.0.nickname_to == nickname)
     {
         key.accept(locked_client.as_mut().unwrap()).await.unwrap();
+        key.delete(locked_client.as_mut().unwrap()).await.unwrap();
     }
 }
 

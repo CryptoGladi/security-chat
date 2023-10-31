@@ -2,7 +2,7 @@
 
 - :white_check_mark: Add core crate (crate for testing and core functions)
 - :white_large_square: Ability to view ALL messages
-- :white_large_square: Refactoring and documentation client
+- :white_large_square: Refactoring and documentation client. Add SOLID
 - :white_large_square: Beautiful UI for client
 - :white_large_square: Crate high-level to [tauri_command](https://tauri.app/v1/guides/features/command)
 - :white_large_square: Add cache

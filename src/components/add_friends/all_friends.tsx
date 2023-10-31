@@ -1,7 +1,7 @@
 import { FaSolidFaceFrownOpen } from 'solid-icons/fa';
-import { Component, Show } from 'solid-js';
+import { Component, For, Show, createResource } from 'solid-js';
 import { Loading } from '~/components/small/loading';
-import { getCryptosForAccept } from '~/ts/api-tauri';
+import { getAllMyFriends, getCryptosForAccept } from '~/ts/api-tauri';
 
 const NotFriends: Component = () => {
 	return (
@@ -20,17 +20,48 @@ const NotFriends: Component = () => {
 	);
 };
 
-const HaveFriends: Component = () => {
+const HaveFriends: Component<{ all_my_friends: string[] }> = (props) => {
 	// TODO
 
-	return <div>TODO</div>;
+	return (
+		<div>
+			<For each={props.all_my_friends}>
+				{(item, index) => (
+					<div class="m-2 flex items-center bg-neutral p-3">
+						<p>{item}</p>
+					</div>
+				)}
+			</For>
+		</div>
+	);
+};
+
+const ShowData: Component<{ all_my_friends: string[] | undefined }> = (props) => {
+	if (props.all_my_friends == undefined) {
+		throw new Error('props.all_my_friends == undefined');
+	}
+
+	return (
+		<div class="h-full w-full">
+			<Show when={props.all_my_friends.length === 0}>
+				<NotFriends />
+			</Show>
+
+			<Show when={props.all_my_friends.length !== 0}>
+				<HaveFriends all_my_friends={props.all_my_friends} />
+			</Show>
+		</div>
+	);
 };
 
 export const AllFriends: Component = () => {
-	let have_friends = false;
+	const [allMyFriends] = createResource(async () => {
+		return await getAllMyFriends();
+	});
+
 	return (
-		<Show when={!have_friends}>
-			<NotFriends />
-		</Show>
+		<div class="h-full">
+			{allMyFriends.loading ? <Loading /> : <ShowData all_my_friends={allMyFriends()} />}
+		</div>
 	);
 };
