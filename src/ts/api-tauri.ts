@@ -35,3 +35,7 @@ export function sendCrypto(nickname: string): Promise<void> {
 export function getMyNickname(): Promise<string> {
 	return invoke('get_nickname');
 }
+
+export function getOrderAddingCrypto(): Promise<string[]> {
+	return invoke('get_order_adding_crypto');
+}

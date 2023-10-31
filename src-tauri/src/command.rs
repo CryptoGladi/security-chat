@@ -220,6 +220,7 @@ pub async fn send_message(nickname: String, message: String) {
 #[tauri::command]
 pub async fn get_cryptos_for_accept() -> Vec<String> {
     debug!("run get_cryptos_for_accept");
+
     global::LOADED_CLIENT
         .write()
         .await
@@ -293,4 +294,18 @@ pub async fn get_random_nickname() -> String {
 pub async fn get_version_app() -> String {
     debug!("run `get_version_app`");
     env!("CARGO_PKG_VERSION").to_string()
+}
+
+#[tauri::command]
+pub async fn get_order_adding_crypto() -> Vec<String> {
+    debug!("run `get_request_for_send_crypto`");
+
+    global::LOADED_CLIENT
+        .read()
+        .await
+        .as_ref()
+        .unwrap()
+        .get_order_adding_crypto()
+        .await
+        .collect()
 }

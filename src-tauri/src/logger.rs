@@ -29,7 +29,7 @@ impl CrateLevelFilter {
 
         for name in names {
             let did_not_previously_contain = result.insert(Self {
-                name: name.to_string(),
+                name: (*name).to_string(),
                 level,
             });
 

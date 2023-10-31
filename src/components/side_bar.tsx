@@ -3,6 +3,7 @@ import { BsPeople } from 'solid-icons/bs';
 import { VsTerminal } from 'solid-icons/vs';
 import { FaRegularUser } from 'solid-icons/fa';
 import { useLocation, useNavigate } from 'solid-start';
+import { AiOutlineHome } from 'solid-icons/ai';
 
 class Item {
 	icon: any;
@@ -37,6 +38,7 @@ function createItemForUser(nickname: string): Item {
 }
 
 const StantardItems = [
+	new Item('Главная страница', '/main', <AiOutlineHome size={24} color="grey" />),
 	new Item('Запросы в друзья', '/main_window/add_friends', <BsPeople size={24} color="grey" />),
 	new Item('Выполнить комманду', '/main_window/run_command', <VsTerminal size={24} color="grey" />)
 ];

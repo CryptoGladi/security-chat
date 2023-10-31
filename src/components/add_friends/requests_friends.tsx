@@ -1,12 +1,11 @@
 import { Component, For, Show, Switch, createResource, createSignal } from 'solid-js';
 import { FaSolidCircleCheck } from 'solid-icons/fa';
-import { getCryptosForAccept, nicknameIsTaken, sendCrypto } from '~/ts/api-tauri';
+import { nicknameIsTaken, sendCrypto, getOrderAddingCrypto } from '~/ts/api-tauri';
 import { Loading } from '../small/loading';
 import { FaSolidCheck } from 'solid-icons/fa';
 import { Toast } from '~/ts/custom-toast';
-
-// TODO perfectly-scrollable
-// TODO Add solid-jest
+import '~/styles/scrollbar.scss';
+import { AiOutlinePlus } from 'solid-icons/ai';
 
 enum Status {
 	Ok,
@@ -107,6 +106,8 @@ const ShowData: Component<{ crypto_for_accept: string[] | undefined }> = (props)
 		throw new Error('props.crypto_for_accept == undefined');
 	}
 
+	let modal_add_friend: HTMLDialogElement | undefined;
+
 	return (
 		<div class="h-full">
 			<Show when={props.crypto_for_accept.length === 0}>
@@ -114,49 +115,51 @@ const ShowData: Component<{ crypto_for_accept: string[] | undefined }> = (props)
 			</Show>
 
 			<Show when={props.crypto_for_accept.length !== 0}>
-				<p>sasas</p>
-
-				<div class="h-full w-full">
+				<div class="h-full w-full scrollbar">
 					<For each={props.crypto_for_accept}>
 						{(item, index) => (
-							<div class="flex flex-row">
+							<div class="m-2 flex items-center bg-neutral p-3">
 								<p>{item}</p>
-								<button class="btn btn-circle">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										class="h-6 w-6"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke="currentColor"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M6 18L18 6M6 6l12 12"
-										/>
-									</svg>
-								</button>
 							</div>
 						)}
 					</For>
 				</div>
+
+				<div class="tooltip tooltip-left absolute bottom-0 right-0" data-tip="Отправить запрос">
+					<button
+						class="btn btn-accent m-2 rounded-full"
+						onclick={() => {
+							modal_add_friend?.showModal();
+						}}
+					>
+						<AiOutlinePlus size="16" color="black" />
+					</button>
+				</div>
 			</Show>
+
+			<dialog ref={modal_add_friend} class="modal">
+				<div class="modal-box">
+					<AddFriendModal modal={modal_add_friend!} />
+				</div>
+				<form method="dialog" class="modal-backdrop">
+					<button>close</button>
+				</form>
+			</dialog>
 		</div>
 	);
 };
 
 export const RequestsFriends: Component = () => {
-	const [crypto_for_accept] = createResource(async () => {
-		return await getCryptosForAccept();
+	const [orderAddingCrypto] = createResource(async () => {
+		return await getOrderAddingCrypto();
 	});
 
 	return (
 		<div class="h-full">
-			{crypto_for_accept.loading ? (
+			{orderAddingCrypto.loading ? (
 				<Loading />
 			) : (
-				<ShowData crypto_for_accept={crypto_for_accept()} />
+				<ShowData crypto_for_accept={orderAddingCrypto()} />
 			)}
 		</div>
 	);

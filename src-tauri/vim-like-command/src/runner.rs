@@ -35,7 +35,9 @@ impl<'a> Runner<'a> {
     ///
     /// # Example
     ///
-    /// test_command test_argument
+    /// `test_command` `test_argument`
+    ///
+    /// `send_crypto` `nickname_my_friend`
     pub async fn run(&mut self, client: &mut Client, command: &str) -> VimError<()> {
         info!("run `command`: {}", command);
         let args: Vec<&str> = command.split_whitespace().collect();

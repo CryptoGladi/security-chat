@@ -1,7 +1,7 @@
 import { SideBar } from '~/components/side_bar';
 import { useParams } from 'solid-start';
 import { Component, For, createSignal } from 'solid-js';
-import styles from '~/styles/scrollbar.module.scss';
+import '~/styles/scrollbar.scss';
 
 class Message {
 	constructor(text: string, type: TypeBubble) {
@@ -74,7 +74,7 @@ export default function Index() {
 				<div
 					// @ts-ignore
 					ref={scrollableDiv}
-					class={`scrollbar-thin flex-1 overflow-y-scroll ${styles.scrollbarthumbbb}`}
+					class="flex-1 scrollbar"
 					style={{ position: 'relative' }}
 				>
 					<For each={messages()}>

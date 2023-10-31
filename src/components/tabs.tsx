@@ -21,7 +21,6 @@ const ComponentTab: Component<{
 			class="tab tab-bordered flex-1"
 			classList={{ 'tab-active': props.my_index === props.currect_index }}
 			onclick={() => {
-				console.warn(props.my_index);
 				props.index_setter(props.my_index);
 			}}
 		>

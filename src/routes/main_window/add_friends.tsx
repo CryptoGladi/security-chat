@@ -7,7 +7,7 @@ import { AddFriends } from '~/components/add_friends/add_friends';
 const ConstTabs: Tab[] = [
 	new Tab('Ваши друзья', AllFriends),
 	new Tab('Запросы', AddFriends),
-	new Tab('Заявки', RequestsFriends)
+	new Tab('Ваши Заявки', RequestsFriends)
 ];
 
 export default function Index() {

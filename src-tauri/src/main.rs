@@ -51,7 +51,8 @@ fn main() {
             command::delete_crypto,
             command::check_version,
             command::get_random_nickname,
-            command::get_version_app
+            command::get_version_app,
+            command::get_order_adding_crypto
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
