@@ -47,6 +47,7 @@
 		"@solidjs/meta": "^0.28.6",
 		"@solidjs/router": "^0.8.3",
 		"@tauri-apps/api": "^1.4.0",
+		"@types/lodash": "^4.14.200",
 		"@types/validator": "^13.11.1",
 		"lodash": "^4.17.21",
 		"random-item": "^4.0.1",

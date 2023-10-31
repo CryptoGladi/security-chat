@@ -1,9 +1,11 @@
-import { Component, Index } from 'solid-js';
+import { Component, Index, Signal, createSignal, onMount } from 'solid-js';
 import { BsPeople } from 'solid-icons/bs';
 import { VsTerminal } from 'solid-icons/vs';
 import { FaRegularUser } from 'solid-icons/fa';
 import { useLocation, useNavigate } from 'solid-start';
 import { AiOutlineHome } from 'solid-icons/ai';
+import { getAllMyFriends } from '~/ts/api-tauri';
+import _ from 'lodash';
 
 class Item {
 	icon: any;
@@ -58,9 +60,17 @@ const ItemForForEach: Component<{ item: Item }> = (props) => {
 };
 
 export const SideBar: Component = () => {
-	const navigate = useNavigate();
+	let [users, setUsers]: Signal<Item[]> = createSignal([]);
 
-	let users = [createItemForUser('Gladi')];
+	onMount(async () => {
+		let userss = await getAllMyFriends();
+
+		let fds = _.map(userss, (e) => {
+			return createItemForUser(e);
+		});
+
+		setUsers(fds);
+	});
 
 	return (
 		<div class="h-[100svh] border-r-[1px]" style="border-color: grey;">
@@ -69,7 +79,7 @@ export const SideBar: Component = () => {
 
 				<hr style="border-color: grey;" />
 
-				<Index each={users}>{(item, i) => <ItemForForEach item={item()} />}</Index>
+				<Index each={users()}>{(item, i) => <ItemForForEach item={item()} />}</Index>
 			</ul>
 		</div>
 	);
