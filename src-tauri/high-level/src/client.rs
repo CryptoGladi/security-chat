@@ -12,7 +12,6 @@ use lower_level::client::{
     },
     Client as RawClient,
 };
-use storage_crypto::Nickname;
 
 pub mod config;
 pub mod error;
@@ -54,7 +53,7 @@ impl Client {
         })
     }
 
-    pub fn get_all_users(&self) -> Result<Vec<Nickname>, Error> {
+    pub fn get_all_users(&self) -> Result<Vec<String>, Error> {
         let storage_crypto = self.config.storage_crypto.read().unwrap();
         Ok(storage_crypto.0.keys().cloned().collect())
     }
@@ -69,7 +68,7 @@ impl Client {
             bincode_config::load(init_config.path_to_config_file.clone())?;
         let api = RawClient::api_connect(init_config.address_to_server.clone()).await?;
 
-        if !*RawClient::check_valid(
+        if !RawClient::check_valid(
             &config.client_data.nickname,
             &config.client_data.auth_key,
             init_config.address_to_server.clone(),
@@ -101,8 +100,8 @@ impl Client {
         Ok(())
     }
 
-    pub fn get_nickname(&self) -> Nickname {
-        Nickname(self.config.client_data.nickname.clone())
+    pub fn get_nickname(&self) -> String {
+        self.config.client_data.nickname.clone()
     }
 
     pub async fn subscribe(&mut self) -> Result<AsyncReceiver<Notification>, Error> {
@@ -156,7 +155,7 @@ mod tests {
                 .unwrap()
         );
         assert!(
-            !Client::nickname_is_taken(&client_config, &get_rand_string())
+            !Client::nickname_is_taken(&client_config, &get_rand_string(20))
                 .await
                 .unwrap()
         );
@@ -190,7 +189,7 @@ mod tests {
 
         assert_eq!(
             client.get_nickname(),
-            Nickname::from(client.raw_client.data.nickname)
+            client.raw_client.data.nickname
         );
     }
 }

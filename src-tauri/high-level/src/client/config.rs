@@ -1,4 +1,4 @@
-use super::storage_crypto::{Nickname, StorageCrypto};
+use super::storage_crypto::StorageCrypto;
 use hashbrown::HashMap;
 use lower_level::client::crypto::ecdh::EphemeralSecretDef;
 use lower_level::client::ClientData;
@@ -38,7 +38,7 @@ pub struct ClientConfigData {
     pub storage_crypto: StorageCrypto,
 
     /// nickname_from - secter_to
-    pub order_adding_crypto: HashMap<Nickname, EphemeralSecretDef>,
+    pub order_adding_crypto: HashMap<String, EphemeralSecretDef>,
 }
 
 impl ClientConfigData {
@@ -66,7 +66,7 @@ pub struct ClientConfig {
     pub storage_crypto: Arc<RwLock<StorageCrypto>>,
 
     /// nickname_from - secter_to
-    pub order_adding_crypto: HashMap<Nickname, EphemeralSecretDef>,
+    pub order_adding_crypto: HashMap<String, EphemeralSecretDef>,
 }
 
 impl ClientConfig {

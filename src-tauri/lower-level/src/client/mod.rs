@@ -1,5 +1,4 @@
 use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
-use crate::utils::MustBool;
 use crate_proto::*;
 use error::Error;
 use http::uri::Uri;
@@ -59,7 +58,7 @@ impl Client {
         nickname: &str,
         authkey: &str,
         address: Uri,
-    ) -> Result<MustBool, Error> {
+    ) -> Result<bool, Error> {
         let mut api = Client::api_connect(address).await?;
         let request = tonic::Request::new(CheckValidRequest {
             nickname: nickname.to_string(),
@@ -67,7 +66,7 @@ impl Client {
         });
 
         let response = api.check_valid(request).await?;
-        Ok(MustBool::new(response.get_ref().is_valid))
+        Ok(response.get_ref().is_valid)
     }
 
     pub async fn subscribe(&mut self) -> Result<Response<Streaming<Notification>>, Error> {
@@ -92,28 +91,26 @@ pub async fn nickname_is_taken(nickname: &str, address: Uri) -> Result<bool, Err
 
 #[cfg(test)]
 mod tests {
-    pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
-
+    use fcore::test_utils::*;
     use super::*;
     use crate::client::crypto::ecdh::PublicKey;
-    use crate::test_utils;
 
     #[tokio::test]
     async fn too_big_message() {
         let mut client_to = Client::registration(
-            &test_utils::get_rand_string(20),
+            &get_rand_string(20),
             ADDRESS_SERVER.parse().unwrap(),
         )
         .await
         .unwrap();
         let client_from = Client::registration(
-            &test_utils::get_rand_string(20),
+            &get_rand_string(20),
             ADDRESS_SERVER.parse().unwrap(),
         )
         .await
         .unwrap();
 
-        let text = test_utils::get_rand_string(MAX_LEN_MESSAGE + 100);
+        let text = get_rand_string(MAX_LEN_MESSAGE + 100);
         let error = client_to
             .send_message(
                 client_from.data.nickname,
@@ -132,13 +129,13 @@ mod tests {
     #[tokio::test]
     async fn send_message_and_subscribe() {
         let mut client_to = Client::registration(
-            &test_utils::get_rand_string(20),
+            &get_rand_string(20),
             ADDRESS_SERVER.parse().unwrap(),
         )
         .await
         .unwrap();
         let mut client_from = Client::registration(
-            &test_utils::get_rand_string(20),
+            &get_rand_string(20),
             ADDRESS_SERVER.parse().unwrap(),
         )
         .await
@@ -176,13 +173,13 @@ mod tests {
     #[tokio::test]
     async fn send_and_get_aes_key() {
         let mut client_to = Client::registration(
-            &test_utils::get_rand_string(20),
+            &get_rand_string(20),
             ADDRESS_SERVER.parse().unwrap(),
         )
         .await
         .unwrap();
         let mut client_from = Client::registration(
-            &test_utils::get_rand_string(20),
+            &get_rand_string(20),
             ADDRESS_SERVER.parse().unwrap(),
         )
         .await
@@ -214,7 +211,7 @@ mod tests {
 
     #[tokio::test]
     async fn registration() {
-        let nickname = test_utils::get_rand_string(20);
+        let nickname = get_rand_string(20);
         let client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
@@ -225,7 +222,7 @@ mod tests {
 
     #[tokio::test]
     async fn nickname_is_taken() {
-        let nickname = test_utils::get_rand_string(20);
+        let nickname = get_rand_string(20);
         let result = super::nickname_is_taken(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
@@ -243,13 +240,13 @@ mod tests {
     }
 
     async fn check_limit(size: i64) {
-        let nickname = test_utils::get_rand_string(20);
+        let nickname = get_rand_string(20);
         let mut client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
 
         client
-            .get_latest_messages(vec![test_utils::get_rand_string(20)], size)
+            .get_latest_messages(vec![get_rand_string(20)], size)
             .await
             .unwrap();
     }
@@ -273,13 +270,13 @@ mod tests {
     async fn get_latest_messages_to_negative_limit() {
         const LIMIT: i64 = -1;
 
-        let nickname = test_utils::get_rand_string(20);
+        let nickname = get_rand_string(20);
         let mut client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
 
         client
-            .get_latest_messages(vec![test_utils::get_rand_string(20)], LIMIT)
+            .get_latest_messages(vec![get_rand_string(20)], LIMIT)
             .await
             .unwrap();
     }
@@ -287,7 +284,7 @@ mod tests {
     #[tokio::test]
     async fn check_valid() {
         let client = Client::registration(
-            &test_utils::get_rand_string(20),
+            &get_rand_string(20),
             ADDRESS_SERVER.parse().unwrap(),
         )
         .await
@@ -302,11 +299,11 @@ mod tests {
             Client::check_valid(&nickname, &auth_key, ADDRESS_SERVER.parse().unwrap())
                 .await
                 .unwrap();
-        assert!(*is_successful);
+        assert!(is_successful);
 
         let is_successful = Client::check_valid("dddddd", "dddd", ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
-        assert!(!*is_successful);
+        assert!(!is_successful);
     }
 }

@@ -14,7 +14,7 @@ pub enum Event {
 
 #[derive(Debug, Clone)]
 pub struct Notification {
-    pub by_nickname: Nickname,
+    pub by_nickname: String,
     pub event: Event,
 }
 
@@ -28,7 +28,7 @@ impl Client {
                 body: Client::decrypt_message(
                     storage_crypto,
                     message.message.unwrap(),
-                    Nickname(raw.by_nickname.clone()),
+                    raw.by_nickname.clone(),
                 )?,
                 sender: raw.by_nickname.clone(),
                 id: message.id,
@@ -38,7 +38,7 @@ impl Client {
         };
 
         Ok(Notification {
-            by_nickname: Nickname(raw.by_nickname),
+            by_nickname: raw.by_nickname,
             event,
         })
     }

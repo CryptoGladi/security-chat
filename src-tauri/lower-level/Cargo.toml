@@ -24,6 +24,7 @@ criterion = { version = "0.4", features = ["html_reports", "async_tokio"] }
 uuid = { version = "1.4.1", features = ["v4"] }
 rand = "0.8.5"
 temp-dir = "0.1.11"
+fcore = { path = "../fcore" }
 
 [[bench]]
 name = "registration"

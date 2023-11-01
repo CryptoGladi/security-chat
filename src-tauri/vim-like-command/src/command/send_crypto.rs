@@ -5,7 +5,6 @@
 //! `send_crypto test_nickname`
 
 use super::*;
-use high_level::client::storage_crypto::Nickname;
 
 #[derive(Debug)]
 pub struct SendCrypto;
@@ -22,7 +21,7 @@ impl Command<CommandError> for SendCrypto {
         };
 
         client
-            .send_crypto(Nickname((*nickname).to_string()))
+            .send_crypto((*nickname).to_string())
             .await?;
         Ok(())
     }

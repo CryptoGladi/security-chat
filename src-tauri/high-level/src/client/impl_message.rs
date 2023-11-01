@@ -25,7 +25,7 @@ pub struct MessageInfo {
 impl Client {
     pub async fn send_message(
         &mut self,
-        nickname_from: Nickname,
+        nickname_from: String,
         message: Message,
     ) -> Result<(), Error> {
         info!("run send_message");
@@ -46,7 +46,7 @@ impl Client {
         // self.cache.put(&nickname_from, &encryptred_data).await?; TODO
         self.raw_client
             .send_message(
-                nickname_from.0,
+                nickname_from,
                 crate_proto::Message {
                     body: encryptred_data.data,
                     nonce: encryptred_data.nonce.to_vec(),
@@ -59,16 +59,16 @@ impl Client {
 
     pub async fn get_messages_for_user(
         &mut self,
-        nickname: Nickname,
+        nickname: String,
         limit: i64,
     ) -> Result<Vec<MessageInfo>, Error> {
-        self.raw_get_last_message(vec![nickname.0], limit).await
+        self.raw_get_last_message(vec![nickname], limit).await
     }
 
     pub(crate) fn decrypt_message(
         storage_crypto: &StorageCrypto,
         message: crate_proto::Message,
-        nickname_from: Nickname,
+        nickname_from: String,
     ) -> Result<Message, Error> {
         info!("run decrypt_message");
         let aes = storage_crypto.get(&nickname_from)?;
@@ -95,11 +95,11 @@ impl Client {
             .messages
             .into_iter()
             .map(|x| {
-                let nickname = Nickname::from(if x.sender_nickname == *self.get_nickname() {
+                let nickname = if x.sender_nickname == *self.get_nickname() {
                     x.recipient_nickname.clone()
                 } else {
                     x.sender_nickname.clone()
-                });
+                };
 
                 (
                     Client::decrypt_message(
@@ -129,7 +129,6 @@ impl Client {
             .0
             .keys()
             .cloned()
-            .map(|x| x.0)
             .collect();
 
         // TODO

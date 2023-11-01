@@ -39,7 +39,7 @@ impl AesKeyForAccept {
             .storage_crypto
             .write()
             .unwrap()
-            .add(Nickname(self.0.nickname_to.clone()), aes)?;
+            .add(self.0.nickname_to.clone(), aes)?;
 
         client.save()?;
         Ok(())

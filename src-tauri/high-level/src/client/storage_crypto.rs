@@ -6,40 +6,11 @@ use serde::{Deserialize, Serialize};
 
 pub mod error;
 
-#[derive(Debug, Default, Hash, PartialEq, Eq, Serialize, Deserialize, Clone)]
-pub struct Nickname(pub String);
-
-impl From<String> for Nickname {
-    fn from(value: String) -> Self {
-        Self(value)
-    }
-}
-
-impl std::fmt::Display for Nickname {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl std::ops::Deref for Nickname {
-    type Target = String;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl Nickname {
-    pub fn get_user() -> Self {
-        todo!()
-    }
-}
-
 #[derive(Serialize, Deserialize, Default, Clone, Debug)]
-pub struct StorageCrypto(pub HashMap<Nickname, Aes>);
+pub struct StorageCrypto(pub HashMap<String, Aes>);
 
 impl StorageCrypto {
-    pub fn add(&mut self, nickname: Nickname, aes: Aes) -> Result<(), Error> {
+    pub fn add(&mut self, nickname: String, aes: Aes) -> Result<(), Error> {
         info!("adding new key for {}", nickname);
 
         if self.0.contains_key(&nickname) {
@@ -50,7 +21,7 @@ impl StorageCrypto {
         Ok(())
     }
 
-    pub fn get(&self, nickname: &Nickname) -> Result<&Aes, Error> {
+    pub fn get(&self, nickname: &str) -> Result<&Aes, Error> {
         match self.0.get(nickname) {
             Some(aes) => Ok(aes),
             None => Err(Error::NotFound),
@@ -67,7 +38,7 @@ mod tests {
     fn add_and_get() {
         let mut storage_crypto = StorageCrypto::default();
         let aes = Aes::generate();
-        let nickname = Nickname::from("da".to_string());
+        let nickname = "da".to_string();
 
         storage_crypto.add(nickname.clone(), aes).unwrap();
         assert_eq!(*storage_crypto.get(&nickname).unwrap(), aes);
@@ -79,7 +50,7 @@ mod tests {
 
         assert_eq!(
             storage_crypto
-                .get(&Nickname("ss".to_string()))
+                .get(&"ss".to_string())
                 .err()
                 .unwrap(),
             Error::NotFound
@@ -89,7 +60,7 @@ mod tests {
     #[test]
     fn add_already_exists() {
         let mut storage_crypto = StorageCrypto::default();
-        let nickname = Nickname::from("irlik".to_string());
+        let nickname = "irlik".to_string();
 
         storage_crypto
             .add(nickname.clone(), Aes::generate())

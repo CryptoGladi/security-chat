@@ -2427,6 +2427,7 @@ dependencies = [
  "built",
  "crate-proto",
  "criterion",
+ "fcore",
  "http",
  "log",
  "p384",

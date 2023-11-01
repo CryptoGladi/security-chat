@@ -1,10 +1,8 @@
 use crate::check_version::smart_check_version;
 use crate::global;
 use high_level::{
-    client::{
+    client::
         impl_message::{Message, MessageInfo},
-        storage_crypto::Nickname,
-    },
     prelude::*,
 };
 use log::*;
@@ -117,7 +115,6 @@ pub async fn get_all_users() -> Vec<String> {
         .get_all_users()
         .unwrap()
         .into_iter()
-        .map(|x| x.0)
         .collect();
 
     debug!("get_all_users: {:?}", users);
@@ -171,7 +168,7 @@ pub async fn send_crypto(nickname: String) {
     client
         .as_mut()
         .unwrap()
-        .send_crypto(Nickname(nickname))
+        .send_crypto(nickname)
         .await
         .unwrap();
 }
@@ -189,7 +186,7 @@ pub async fn get_messages_for_user(nickname_from: String) -> Vec<MessageInfo> {
         .await
         .as_mut()
         .unwrap()
-        .get_messages_for_user(Nickname(nickname_from), 1_000)
+        .get_messages_for_user(nickname_from, 1_000)
         .await
         .unwrap()
 }
@@ -202,7 +199,6 @@ pub async fn get_nickname() -> String {
         .as_ref()
         .unwrap()
         .get_nickname()
-        .0
 }
 
 #[tauri::command]
@@ -213,7 +209,7 @@ pub async fn send_message(nickname: String, message: String) {
         .as_mut()
         .unwrap()
         .send_message(
-            Nickname(nickname),
+            nickname,
             Message {
                 text: message,
                 reply: None,

@@ -1,7 +1,7 @@
 //! Logger
 
-use log::{LevelFilter, SetLoggerError};
 use hashbrown::HashSet;
+use log::{LevelFilter, SetLoggerError};
 
 const ALL_WORKSPACE_CRATE: &[&str] = &[
     "vim_like_command",
@@ -81,7 +81,7 @@ pub fn init_logger() {
 
 #[cfg(test)]
 mod tests {
-    use super::{CrateLevelFilter, Logger, HashSet};
+    use super::{CrateLevelFilter, HashSet, Logger};
     use log::LevelFilter;
 
     #[test]

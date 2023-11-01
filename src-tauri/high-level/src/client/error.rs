@@ -1,4 +1,3 @@
-use super::storage_crypto::Nickname;
 use lower_level::client::crypto::CryptoError;
 use thiserror::Error;
 
@@ -14,10 +13,10 @@ pub enum Error {
     AccoutIsInvalid,
 
     #[error("nickname is same: `{0}`")]
-    NicknameSame(Nickname),
+    NicknameSame(String),
 
     #[error("storage already have nickname: `{0}`")]
-    StorageAlreadyHaveNickname(Nickname),
+    StorageAlreadyHaveNickname(String),
 
     #[error("problem in storage crypto: `{0}`")]
     StorageCrypto(#[from] crate::client::storage_crypto::error::Error),

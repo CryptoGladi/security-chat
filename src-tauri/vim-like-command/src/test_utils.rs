@@ -48,7 +48,7 @@ pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
         paths.path_to_cache.clone(),
         ADDRESS_SERVER,
     );
-    let client = Client::registration(&get_rand_string(), client_config.clone())
+    let client = Client::registration(&get_rand_string(20), client_config.clone())
         .await
         .unwrap();
 

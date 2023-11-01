@@ -4,7 +4,7 @@ use super::*;
 pub use aes_key_for_accept::AesKeyForAccept;
 
 impl Client {
-    pub async fn send_crypto(&mut self, nickname_from: Nickname) -> Result<(), Error> {
+    pub async fn send_crypto(&mut self, nickname_from: String) -> Result<(), Error> {
         info!("run send_crypto");
         if self.raw_client.data.nickname == *nickname_from {
             return Err(Error::NicknameSame(nickname_from));
@@ -35,7 +35,7 @@ impl Client {
                 !self
                     .config
                     .order_adding_crypto
-                    .contains_key(&Nickname(x.nickname_from.clone()))
+                    .contains_key(&x.nickname_from)
             });
 
         Ok(aes_info.map(AesKeyForAccept).collect())
@@ -47,7 +47,7 @@ impl Client {
         self.config
             .order_adding_crypto
             .iter()
-            .map(|x| x.0 .0.clone())
+            .map(|x| x.0.clone())
     }
 
     pub async fn accept_all_cryptos(&mut self) -> Result<(), Error> {
@@ -67,7 +67,7 @@ impl Client {
 
         for i in keys_info {
             trace!("iter key_info: {:?}", i);
-            let nickname_from = Nickname(i.nickname_from.clone());
+            let nickname_from = i.nickname_from.clone();
             let (Some(nickname_from_public_key), Some(ephemeral_secret_def)) = (
                 &i.nickname_from_public_key,
                 self.config.order_adding_crypto.get(&nickname_from),
@@ -137,7 +137,7 @@ mod tests {
             .map(|x| x.0.nickname_to.clone())
             .collect();
 
-        assert_eq!(a, vec![client_to.get_nickname().0]);
+        assert_eq!(a, vec![client_to.get_nickname()]);
     }
 
     #[test(tokio::test)]
@@ -264,6 +264,6 @@ mod tests {
             .get_order_adding_crypto()
             .await
             .collect::<Vec<String>>();
-        assert_eq!(order_adding_crypto, vec![client_from.get_nickname().0]);
+        assert_eq!(order_adding_crypto, vec![client_from.get_nickname()]);
     }
 }
