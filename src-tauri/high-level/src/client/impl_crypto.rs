@@ -32,7 +32,7 @@ impl Client {
             .await?
             .into_iter()
             .filter(|x| {
-                self
+                !self
                     .config
                     .order_adding_crypto
                     .contains_key(&Nickname(x.nickname_from.clone()))

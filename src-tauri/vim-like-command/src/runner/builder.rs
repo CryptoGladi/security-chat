@@ -1,10 +1,11 @@
 use super::*;
 
-pub const DEFAULT_COMMANDS: &[&HighLevelCommand] = crate::command::ALL_COMMANDS;
+pub const DEFAULT_COMMANDS: &[&dyn Command] = crate::command::ALL_COMMANDS;
 
+/// Builder for [`crate::runner::Runner`]
 #[derive(Debug)]
 pub struct RunnerBuilder<'a> {
-    commands: Vec<&'a HighLevelCommand>,
+    commands: Vec<&'a dyn Command>,
     limit_for_fuzzy_search: usize,
 }
 
@@ -45,12 +46,12 @@ impl<'a> RunnerBuilder<'a> {
         }
     }
 
-    impl_setter!(commands, Vec<&'a HighLevelCommand>);
+    impl_setter!(commands, Vec<&'a dyn Command>);
 
     impl_setter!(limit_for_fuzzy_search, usize, limit_for_fuzzy_search >= 1);
 
     pub fn build(self) -> VimError<Runner<'a>> {
-        info!("run `build`");
+        trace!("run `build`");
 
         let mut parsed_commands = HashMap::new();
 
@@ -80,17 +81,18 @@ mod tests {
             .build()
             .unwrap();
 
-        let from_runner = runner
+        let commands_from_runner = runner
             .commands
             .values()
             .map(|x| x.get_id())
             .collect::<Vec<&str>>();
-        let from_const = DEFAULT_COMMANDS
+
+        let commands_from_const = DEFAULT_COMMANDS
             .iter()
             .map(|x| x.get_id())
             .collect::<Vec<&str>>();
 
-        assert_eq!(from_runner, from_const);
+        assert_eq!(commands_from_runner, commands_from_const);
     }
 
     #[test]
@@ -103,6 +105,7 @@ mod tests {
         let runner = RunnerBuilder::new()
             .commands(vec![&TestCommand, &TestCommand])
             .build();
+
         assert!(matches!(runner, Err(error::Error::IdenticalId)));
     }
 

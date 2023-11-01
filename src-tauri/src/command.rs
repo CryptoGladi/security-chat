@@ -129,10 +129,11 @@ pub async fn fuzzy_search_vim_command(command: String) -> Vec<String> {
     let result = global::VIM_RUNNER
         .lock()
         .await
-        .get_fuzzy_array(&command)
+        .fuzzy_search(&command)
         .into_iter()
         .map(|x| x.text)
         .collect();
+
     trace!("run `fuzzy_search_vim_command`: {:?}", result);
 
     result
@@ -177,7 +178,10 @@ pub async fn send_crypto(nickname: String) {
 
 #[tauri::command]
 pub async fn get_messages_for_user(nickname_from: String) -> Vec<MessageInfo> {
-    debug!("run `get_messages_for_user` nickname_from: {}", nickname_from);
+    debug!(
+        "run `get_messages_for_user` nickname_from: {}",
+        nickname_from
+    );
 
     // TODO переделать сообщение!
     global::LOADED_CLIENT

@@ -32,28 +32,32 @@ fn main() {
 
     let _lock = Lock::new(crate::path::get_app_folder().join("lockfile"));
 
-    tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
-            command::open,
-            command::nickname_is_taken,
-            command::registration,
-            command::have_account,
-            command::fuzzy_search_vim_command,
-            command::run_command,
-            command::get_all_users,
-            command::change_window_for_main_page,
-            command::get_messages_for_user,
-            command::get_nickname,
-            command::send_message,
-            command::send_crypto,
-            command::get_cryptos_for_accept,
-            command::add_crypto,
-            command::delete_crypto,
-            command::check_version,
-            command::get_random_nickname,
-            command::get_version_app,
-            command::get_order_adding_crypto
-        ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+    let tauri_builder = tauri::Builder::default().invoke_handler(tauri::generate_handler![
+        command::open,
+        command::nickname_is_taken,
+        command::registration,
+        command::have_account,
+        command::fuzzy_search_vim_command,
+        command::run_command,
+        command::get_all_users,
+        command::change_window_for_main_page,
+        command::get_messages_for_user,
+        command::get_nickname,
+        command::send_message,
+        command::send_crypto,
+        command::get_cryptos_for_accept,
+        command::add_crypto,
+        command::delete_crypto,
+        command::check_version,
+        command::get_random_nickname,
+        command::get_version_app,
+        command::get_order_adding_crypto
+    ]);
+
+    #[allow(clippy::disallowed_types)]
+    {
+        tauri_builder
+            .run(tauri::generate_context!())
+            .expect("error while running tauri application");
+    }
 }

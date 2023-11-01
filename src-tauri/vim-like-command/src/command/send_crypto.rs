@@ -1,20 +1,24 @@
+//! Command for send crypto
+//!
+//! # Example
+//!
+//! `send_crypto test_nickname`
+
 use super::*;
 use high_level::client::storage_crypto::Nickname;
-use log::error;
 
 #[derive(Debug)]
 pub struct SendCrypto;
 
 #[async_trait]
-impl Command<ClientError> for SendCrypto {
+impl Command<CommandError> for SendCrypto {
     fn get_id(&self) -> &'static str {
         "send_crypto"
     }
 
-    async fn run(&self, client: &mut Client, args: &[&str]) -> Result<(), ClientError> {
+    async fn run(&self, client: &mut Client, args: &[&str]) -> Result<(), CommandError> {
         let Some(nickname) = args.get(1) else {
-            error!("invalid arg nickname");
-            return Ok(());
+            return Err(CommandError::Other("nickname is invalid"));
         };
 
         client
@@ -30,6 +34,23 @@ mod tests {
     use crate::test_utils::*;
     use high_level::client::impl_message::Message;
     use test_log::test;
+
+    #[test(tokio::test)]
+    #[should_panic(expected = r#"Other("nickname is invalid")"#)]
+    async fn nickname_is_invalid() {
+        let (_temp_dir, _, mut client_to) = get_client().await;
+        let command = "send_crypto ";
+
+        let send_crypto = SendCrypto;
+
+        send_crypto
+            .run(
+                &mut client_to,
+                &command.split_whitespace().collect::<Vec<&str>>(),
+            )
+            .await
+            .unwrap();
+    }
 
     #[test(tokio::test)]
     async fn raw_run() {

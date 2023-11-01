@@ -1,9 +1,12 @@
-use crate::command::HighLevelCommand;
+//! Module for running commands
+
 use error::VimError;
+use hashbrown::HashMap;
 use high_level::prelude::Client;
 use log::*;
-use std::collections::HashMap;
 use std::fmt::Debug;
+
+use crate::command::Command;
 
 pub mod builder;
 pub mod error;
@@ -17,7 +20,7 @@ type NameCommand<'a> = &'a str;
 #[derive(Debug, Default)]
 pub struct Runner<'a> {
     /// All commands
-    pub(crate) commands: HashMap<NameCommand<'a>, &'a HighLevelCommand>,
+    pub(crate) commands: HashMap<NameCommand<'a>, &'a dyn Command>,
 
     /// Maximum number of items that will be displayed during a [fuzzy search](https://en.wikipedia.org/wiki/Approximate_string_matching)
     pub(crate) limit_for_fuzzy_search: usize,
@@ -31,7 +34,7 @@ impl<'a> Runner<'a> {
     /// {0} {1..2..3}
     ///
     /// * {0} - id command
-    /// * {1..2..3} - args command
+    /// * {1..2..3} - args for command
     ///
     /// # Example
     ///
@@ -39,7 +42,7 @@ impl<'a> Runner<'a> {
     ///
     /// `send_crypto` `nickname_my_friend`
     pub async fn run(&mut self, client: &mut Client, command: &str) -> VimError<()> {
-        info!("run `command`: {}", command);
+        debug!("run `command`: {}", command);
         let args: Vec<&str> = command.split_whitespace().collect();
 
         self.commands

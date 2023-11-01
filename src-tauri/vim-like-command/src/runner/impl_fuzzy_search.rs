@@ -1,19 +1,23 @@
 use super::*;
 use ngrammatic::{CorpusBuilder, Pad, SearchResult};
 
+const THRESHOLD: f32 = 0.1;
+
 impl<'a> Runner<'a> {
-    pub fn get_fuzzy_array(&self, str: &str) -> Vec<SearchResult> {
-        if str.is_empty() {
+    /// Searching command by [fuzzy](https://en.wikipedia.org/wiki/Approximate_string_matching)
+    pub fn fuzzy_search(&self, command: &str) -> Vec<SearchResult> {
+        if command.is_empty() {
             return vec![];
         }
 
         let mut corpus = CorpusBuilder::new().pad_full(Pad::Auto).finish();
         self.commands.keys().for_each(|&x| corpus.add_text(x));
-        let id = str.split_whitespace().next().unwrap();
+        let id = command.split_whitespace().next().unwrap();
 
-        let result = corpus.search(id, 0.1);
+        let result = corpus.search(id, THRESHOLD);
 
-        debug!("run `get_fuzzy_array`: {:?}", result);
+        trace!("run `get_fuzzy_array`: {:?}", result);
+
         result
             .iter()
             .take(self.limit_for_fuzzy_search)
@@ -28,7 +32,7 @@ mod tests {
     use test_log::test;
 
     #[test]
-    fn get_fuzzy_array() {
+    fn fuzzy_search() {
         let runner = RunnerBuilder::default()
             .commands(vec![&TestCommand, &SameTestCommand])
             .limit_for_fuzzy_search(2)
@@ -36,7 +40,7 @@ mod tests {
             .unwrap();
 
         let output = runner
-            .get_fuzzy_array(TestCommand.get_id())
+            .fuzzy_search(TestCommand.get_id())
             .into_iter()
             .map(|x| x.text)
             .collect::<Vec<String>>();
@@ -55,7 +59,7 @@ mod tests {
             .build()
             .unwrap();
 
-        assert_eq!(runner.get_fuzzy_array("test_command").len(), 1);
+        assert_eq!(runner.fuzzy_search("test_command").len(), 1);
     }
 
     #[test]
@@ -66,7 +70,7 @@ mod tests {
             .build()
             .unwrap();
 
-        assert!(runner.get_fuzzy_array("1").is_empty());
+        assert!(runner.fuzzy_search("1").is_empty());
     }
 
     #[test]
@@ -77,6 +81,6 @@ mod tests {
             .build()
             .unwrap();
 
-        assert!(runner.get_fuzzy_array("").is_empty());
+        assert!(runner.fuzzy_search("").is_empty());
     }
 }
