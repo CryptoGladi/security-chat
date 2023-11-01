@@ -47,3 +47,7 @@ export function addCrypto(nickname: string): Promise<void> {
 export function getAllMyFriends(): Promise<string[]> {
 	return invoke('get_all_users');
 }
+
+export function sendMessage(nickname: String, message: String): Promise<void> {
+	return invoke('send_message', { nickname: nickname, message: message });
+}

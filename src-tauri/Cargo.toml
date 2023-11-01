@@ -12,6 +12,15 @@ debug = 1
 split-debuginfo = "unpacked"
 lto = "off"
 
+[profile.dev.package.flate2]
+opt-level = 3
+
+[profile.dev.package.tokio]
+opt-level = 3
+
+[profile.dev.package.hyper]
+opt-level = 3
+
 [profile.release]
 incremental = true
 debug = true

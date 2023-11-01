@@ -1,4 +1,4 @@
-import { Component, Index, Signal, createSignal, onMount } from 'solid-js';
+import { Component, Index, Signal, createResource, createSignal, onMount } from 'solid-js';
 import { BsPeople } from 'solid-icons/bs';
 import { VsTerminal } from 'solid-icons/vs';
 import { FaRegularUser } from 'solid-icons/fa';
@@ -60,16 +60,12 @@ const ItemForForEach: Component<{ item: Item }> = (props) => {
 };
 
 export const SideBar: Component = () => {
-	let [users, setUsers]: Signal<Item[]> = createSignal([]);
-
-	onMount(async () => {
+	let [users] = createResource(async () => {
 		let userss = await getAllMyFriends();
 
-		let fds = _.map(userss, (e) => {
+		return _.map(userss, (e) => {
 			return createItemForUser(e);
 		});
-
-		setUsers(fds);
 	});
 
 	return (

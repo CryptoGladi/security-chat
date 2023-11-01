@@ -1,7 +1,8 @@
 import { SideBar } from '~/components/side_bar';
 import { useParams } from 'solid-start';
-import { Component, For, createSignal } from 'solid-js';
+import { Component, For, Signal, createResource, createSignal } from 'solid-js';
 import '~/styles/scrollbar.scss';
+import { sendMessage } from '~/ts/api-tauri';
 
 class Message {
 	constructor(text: string, type: TypeBubble) {
@@ -18,30 +19,8 @@ enum TypeBubble {
 	ChatEnd
 }
 
-let [messages, setMessages] = createSignal([
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd),
-	new Message('text', TypeBubble.ChatEnd)
-]);
+//@ts-ignore
+let [messages, setMessages]: Signal<Message[]> = createSignal([]);
 
 const MessageBubble: Component<{ message: Message }> = (props) => {
 	return (
@@ -59,6 +38,9 @@ const MessageBubble: Component<{ message: Message }> = (props) => {
 
 export default function Index() {
 	const params = useParams<{ nickname: string }>();
+
+	const messagess = createResource(async () => {});
+
 	let inputMessage: HTMLTextAreaElement;
 	let scrollableDiv: HTMLDivElement;
 
@@ -92,8 +74,11 @@ export default function Index() {
 						onkeydown={(e) => {
 							if (e.key === 'Enter' && !e.shiftKey && inputMessage.value.trim() !== '') {
 								setMessages((a) => [...a, new Message(inputMessage.value, TypeBubble.ChatEnd)]);
+								sendMessage(params.nickname, inputMessage.value);
+
 								inputMessage.value = '';
 								scrollableDiv.scrollTop = scrollableDiv.scrollHeight;
+
 								e.preventDefault();
 							}
 						}}
