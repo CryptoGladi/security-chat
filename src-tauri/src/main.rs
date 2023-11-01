@@ -45,10 +45,14 @@ fn main() {
             command::get_messages_for_user,
             command::get_nickname,
             command::send_message,
+            command::send_crypto,
             command::get_cryptos_for_accept,
             command::add_crypto,
             command::delete_crypto,
-            command::check_version
+            command::check_version,
+            command::get_random_nickname,
+            command::get_version_app,
+            command::get_order_adding_crypto
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

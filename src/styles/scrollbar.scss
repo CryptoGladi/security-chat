@@ -1,0 +1,5 @@
+.scrollbar {
+	@apply overflow-y-scroll;
+	@apply scrollbar-thin;
+	@apply hover:scrollbar-thumb-neutral;
+}

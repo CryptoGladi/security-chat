@@ -33,7 +33,7 @@ pub fn save<T: Serialize + DeserializeOwned>(
     Ok(())
 }
 
-/// Загрузить [`ClientData`]
+/// Загрузить
 ///
 /// **Загрузить можно только если файл существует!**
 pub fn load<T: Serialize + DeserializeOwned>(path: impl AsRef<Path>) -> Result<T, Error> {

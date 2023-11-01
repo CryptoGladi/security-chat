@@ -25,8 +25,29 @@ impl Client {
 
     pub async fn get_cryptos_for_accept(&mut self) -> Result<Vec<AesKeyForAccept>, Error> {
         info!("run get_cryptos_for_accept");
-        let aes_info = self.raw_client.get_aes_keys().await?;
-        Ok(aes_info.into_iter().map(AesKeyForAccept).collect())
+
+        let aes_info = self
+            .raw_client
+            .get_aes_keys()
+            .await?
+            .into_iter()
+            .filter(|x| {
+                self
+                    .config
+                    .order_adding_crypto
+                    .contains_key(&Nickname(x.nickname_from.clone()))
+            });
+
+        Ok(aes_info.map(AesKeyForAccept).collect())
+    }
+
+    pub async fn get_order_adding_crypto(&self) -> impl Iterator<Item = String> + '_ {
+        info!("run `get_request_for_send_crypto`");
+
+        self.config
+            .order_adding_crypto
+            .iter()
+            .map(|x| x.0 .0.clone())
     }
 
     pub async fn accept_all_cryptos(&mut self) -> Result<(), Error> {
@@ -98,6 +119,26 @@ mod tests {
     use crate::client::impl_message::Message;
     use crate::test_utils::get_client;
     use test_log::test;
+
+    #[test(tokio::test)]
+    async fn get_cryptos_for_accept() {
+        let (_paths, _, mut client_to) = get_client().await;
+        let (_paths, _, mut client_from) = get_client().await;
+
+        client_to
+            .send_crypto(client_from.get_nickname())
+            .await
+            .unwrap();
+        let a: Vec<String> = client_from
+            .get_cryptos_for_accept()
+            .await
+            .unwrap()
+            .iter()
+            .map(|x| x.0.nickname_to.clone())
+            .collect();
+
+        assert_eq!(a, vec![client_to.get_nickname().0]);
+    }
 
     #[test(tokio::test)]
     async fn add_crypto_via_subscribe() {
@@ -207,5 +248,22 @@ mod tests {
 
         assert_eq!(client_from.get_cryptos_for_accept().await.unwrap().len(), 0);
         assert_eq!(client_to.get_cryptos_for_accept().await.unwrap().len(), 0);
+    }
+
+    #[test(tokio::test)]
+    async fn get_order_adding_crypto() {
+        let (_paths, _, mut client_to) = get_client().await;
+        let (_paths, _, client_from) = get_client().await;
+
+        client_to
+            .send_crypto(client_from.get_nickname())
+            .await
+            .unwrap();
+
+        let order_adding_crypto = client_to
+            .get_order_adding_crypto()
+            .await
+            .collect::<Vec<String>>();
+        assert_eq!(order_adding_crypto, vec![client_from.get_nickname().0]);
     }
 }

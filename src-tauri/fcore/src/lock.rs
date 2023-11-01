@@ -16,11 +16,16 @@ impl Lock {
         debug!("new with path: {}", path.as_ref().display());
 
         let mut file = LockFile::open(path.clone().as_ref()).expect("open file for check lock");
-        assert!(
-            file.try_lock_with_pid()
-                .expect("problem in try_lock_with_pid()"),
-            "APP IS LOCKED"
-        );
+        let successful = file
+            .try_lock_with_pid()
+            .expect("problem in try_lock_with_pid()");
+
+        if !successful {
+            panic!(
+                "APP IS LOCKED. If is error you can delete {}",
+                path.as_ref().display()
+            );
+        }
 
         Self { _file: file }
     }

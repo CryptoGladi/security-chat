@@ -1,0 +1,6 @@
+{
+    "1094416": {
+      "active": false,
+      "notes": "Ignored since we don't use Vite Environment Variables"
+    }
+}

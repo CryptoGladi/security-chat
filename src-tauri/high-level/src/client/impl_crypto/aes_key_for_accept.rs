@@ -40,8 +40,8 @@ impl AesKeyForAccept {
             .write()
             .unwrap()
             .add(Nickname(self.0.nickname_to.clone()), aes)?;
-        client.save()?;
 
+        client.save()?;
         Ok(())
     }
 

@@ -8,6 +8,8 @@ use high_level::{
     prelude::*,
 };
 use log::*;
+use rand::Rng;
+use rnglib::{Language, RNG};
 use tauri::{Manager, Runtime, Size};
 
 pub async fn load_client(app: tauri::AppHandle) {
@@ -163,7 +165,20 @@ pub async fn run_command(command: String) {
 }
 
 #[tauri::command]
+pub async fn send_crypto(nickname: String) {
+    let mut client = global::LOADED_CLIENT.write().await;
+    client
+        .as_mut()
+        .unwrap()
+        .send_crypto(Nickname(nickname))
+        .await
+        .unwrap();
+}
+
+#[tauri::command]
 pub async fn get_messages_for_user(nickname_from: String) -> Vec<MessageInfo> {
+    debug!("run `get_messages_for_user` nickname_from: {}", nickname_from);
+
     // TODO переделать сообщение!
     global::LOADED_CLIENT
         .write()
@@ -207,6 +222,7 @@ pub async fn send_message(nickname: String, message: String) {
 #[tauri::command]
 pub async fn get_cryptos_for_accept() -> Vec<String> {
     debug!("run get_cryptos_for_accept");
+
     global::LOADED_CLIENT
         .write()
         .await
@@ -261,4 +277,37 @@ pub async fn check_version() {
     if !smart_check_version().await {
         panic!("you have old version app. Please, update your app");
     }
+}
+
+#[tauri::command]
+pub async fn get_random_nickname() -> String {
+    info!("run `get_random nickname`");
+    let mut rng_number = rand::thread_rng();
+    let rng_nickname = RNG::try_from(&Language::Fantasy).unwrap();
+
+    format!(
+        "{}{}",
+        rng_nickname.generate_name().to_lowercase(),
+        rng_number.gen_range(1000..9999)
+    )
+}
+
+#[tauri::command]
+pub async fn get_version_app() -> String {
+    debug!("run `get_version_app`");
+    env!("CARGO_PKG_VERSION").to_string()
+}
+
+#[tauri::command]
+pub async fn get_order_adding_crypto() -> Vec<String> {
+    debug!("run `get_request_for_send_crypto`");
+
+    global::LOADED_CLIENT
+        .read()
+        .await
+        .as_ref()
+        .unwrap()
+        .get_order_adding_crypto()
+        .await
+        .collect()
 }

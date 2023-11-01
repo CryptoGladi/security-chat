@@ -1,21 +1,30 @@
 module.exports = {
-	root: true,
-	plugins: ['@typescript-eslint', 'eslint-plugin-svelte'],
-	extends: [
-		'eslint:recommended',
-		'plugin:svelte/recommended',
-		'prettier',
-		'plugin:@typescript-eslint/eslint-recommended',
-		'plugin:@typescript-eslint/recommended'
-	],
-	parserOptions: {
-		sourceType: 'module',
-		ecmaVersion: 2020,
-		extraFileExtensions: ['.svelte']
-	},
 	env: {
 		browser: true,
-		es2017: true,
-		node: true
+		es2021: true
+	},
+	extends: ['eslint:recommended', 'plugin:solid/typescript', 'plugin:tailwindcss/recommended'],
+	parser: '@typescript-eslint/parser',
+	plugins: ['solid'],
+	overrides: [
+		{
+			env: {
+				node: true
+			},
+			files: ['.eslintrc.{js,cjs}'],
+			parserOptions: {
+				sourceType: 'script'
+			}
+		}
+	],
+	parserOptions: {
+		ecmaFeatures: {
+			jsx: true
+		}
+	},
+	rules: {
+		'solid/reactivity': 'warn',
+		'solid/no-destructure': 'warn',
+		'solid/jsx-no-undef': 'error'
 	}
 };
