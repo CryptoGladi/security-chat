@@ -177,6 +177,8 @@ pub async fn send_crypto(nickname: String) {
 
 #[tauri::command]
 pub async fn get_messages_for_user(nickname_from: String) -> Vec<MessageInfo> {
+    debug!("run `get_messages_for_user` nickname_from: {}", nickname_from);
+
     // TODO переделать сообщение!
     global::LOADED_CLIENT
         .write()
@@ -249,7 +251,6 @@ pub async fn add_crypto(nickname: String) {
         .filter(|x| x.0.nickname_to == nickname)
     {
         key.accept(locked_client.as_mut().unwrap()).await.unwrap();
-        key.delete(locked_client.as_mut().unwrap()).await.unwrap();
     }
 }
 

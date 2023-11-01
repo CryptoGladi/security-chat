@@ -48,6 +48,21 @@ export function getAllMyFriends(): Promise<string[]> {
 	return invoke('get_all_users');
 }
 
-export function sendMessage(nickname: String, message: String): Promise<void> {
+export function sendMessage(nickname: string, message: string): Promise<void> {
 	return invoke('send_message', { nickname: nickname, message: message });
+}
+
+export type MessageBody = {
+	text: string;
+	reply: number | null;
+};
+
+export type MessageInfo = {
+	body: MessageBody;
+	sender: string;
+	id: number;
+};
+
+export function getMessageByNickname(nickname: string): Promise<MessageInfo[]> {
+	return invoke('get_messages_for_user', { nicknameFrom: nickname });
 }
