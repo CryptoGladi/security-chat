@@ -5,6 +5,7 @@ import '~/styles/scrollbar.scss';
 import { MessageInfo, getMessageByNickname, sendMessage } from '~/ts/api-tauri';
 import _ from 'lodash';
 import { Loading } from '~/components/small/loading';
+import { EventCallback, listen, Event } from '@tauri-apps/api/event';
 
 class Message {
 	constructor(text: string, type: TypeBubble) {
@@ -43,6 +44,11 @@ const ShowData: Component<{ messages: MessageInfo[] }> = (props) => {
 	const params = useParams<{ nickname: string }>();
 	let inputMessage: HTMLTextAreaElement;
 	let scrollableDiv: HTMLDivElement;
+
+	listen('new-message', (e: Event<MessageInfo>) => {
+		setMessages((a) => [...a, new Message(e.payload.body.text, TypeBubble.ChatStart)]);
+		scrollableDiv.scrollTop = scrollableDiv.scrollHeight;
+	});
 
 	let [messages, setMessages]: Signal<Message[]> = createSignal(
 		_.reverse(
@@ -102,10 +108,7 @@ export default function Index() {
 	const params = useParams<{ nickname: string }>();
 
 	const [resource_messages] = createResource(async () => {
-		console.error('LOADING');
-		let i = await getMessageByNickname(params.nickname);
-		console.error(i);
-		return i;
+		return await getMessageByNickname(params.nickname);
 	});
 
 	return (
