@@ -1,8 +1,7 @@
 use crate::check_version::smart_check_version;
 use crate::global;
 use high_level::{
-    client::
-        impl_message::{Message, MessageInfo},
+    client::impl_message::{Message, MessageInfo},
     prelude::*,
 };
 use log::*;

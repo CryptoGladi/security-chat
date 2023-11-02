@@ -1,6 +1,6 @@
 use super::*;
+use api_lower_level::client::crypto::CryptoError;
 use crate_proto::AesKeyInfo;
-use lower_level::client::crypto::CryptoError;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct AesKeyForAccept(pub AesKeyInfo);
@@ -61,7 +61,7 @@ mod tests {
     use crate::client::error::Error;
     use crate::client::Client;
     use crate::test_utils::get_client;
-    use lower_level::client::crypto::CryptoError;
+    use api_lower_level::client::crypto::CryptoError;
     use test_log::test;
 
     async fn iter_function(

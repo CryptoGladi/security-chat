@@ -1,7 +1,7 @@
+use api_lower_level::client::crypto::Aes;
 use error::Error;
 use hashbrown::HashMap;
 use log::info;
-use lower_level::client::crypto::Aes;
 use serde::{Deserialize, Serialize};
 
 pub mod error;
@@ -49,10 +49,7 @@ mod tests {
         let storage_crypto = StorageCrypto::default();
 
         assert_eq!(
-            storage_crypto
-                .get(&"ss".to_string())
-                .err()
-                .unwrap(),
+            storage_crypto.get("ss").err().unwrap(),
             Error::NotFound
         );
     }

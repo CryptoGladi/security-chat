@@ -31,7 +31,7 @@ where
 
     /// Run command
     ///
-    /// * [client] - сlient API
-    /// * [args] - arguments when your command is called
+    /// * `client` - сlient API
+    /// * `args` - arguments when your command is called
     async fn run(&self, client: &mut Client, args: &[&str]) -> Result<(), ErrorType>;
 }

@@ -1,7 +1,7 @@
 use super::storage_crypto::StorageCrypto;
+use api_lower_level::client::crypto::ecdh::EphemeralSecretDef;
+use api_lower_level::client::DataForAutification;
 use hashbrown::HashMap;
-use lower_level::client::crypto::ecdh::EphemeralSecretDef;
-use lower_level::client::ClientData;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
@@ -34,7 +34,7 @@ impl ClientInitConfig {
 
 #[derive(Serialize, Deserialize, Default, Clone)]
 pub struct ClientConfigData {
-    pub client_data: ClientData,
+    pub client_data: DataForAutification,
     pub storage_crypto: StorageCrypto,
 
     /// nickname_from - secter_to
@@ -62,7 +62,7 @@ impl Debug for ClientConfigData {
 
 #[derive(Default, Clone, Debug)]
 pub struct ClientConfig {
-    pub client_data: ClientData,
+    pub client_data: DataForAutification,
     pub storage_crypto: Arc<RwLock<StorageCrypto>>,
 
     /// nickname_from - secter_to

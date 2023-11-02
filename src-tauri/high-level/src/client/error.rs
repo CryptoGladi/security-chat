@@ -1,10 +1,10 @@
-use lower_level::client::crypto::CryptoError;
+use api_lower_level::client::crypto::CryptoError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("from client: `{0}`")]
-    Client(#[from] lower_level::client::error::Error),
+    Client(#[from] api_lower_level::client::error::Error),
 
     #[error("from config: `{0}`")]
     Config(#[from] crate::bincode_config::Error),

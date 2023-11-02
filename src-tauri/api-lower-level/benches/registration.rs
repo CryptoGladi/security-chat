@@ -32,7 +32,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                     .collect::<String>()
             },
             |rand_string| async move {
-                let _client = lower_level::client::Client::registration(
+                let _client = api_lower_level::client::Client::registration(
                     &rand_string,
                     ADDRESS_SERVER.parse().unwrap(),
                 )
@@ -50,14 +50,16 @@ fn criterion_benchmark(c: &mut Criterion) {
             .map(char::from)
             .collect::<String>();
 
-        let client =
-            lower_level::client::Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
-                .await
-                .unwrap();
+        let client = api_lower_level::client::Client::registration(
+            &nickname,
+            ADDRESS_SERVER.parse().unwrap(),
+        )
+        .await
+        .unwrap();
 
         TestAccount {
-            nickname: client.data.nickname,
-            authkey: client.data.auth_key,
+            nickname: client.data_for_autification.nickname,
+            authkey: client.data_for_autification.auth_key,
         }
     });
 
@@ -66,7 +68,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         &test_account,
         |b, s| {
             b.to_async(create_async_runtime()).iter(|| async {
-                lower_level::client::Client::check_valid(
+                api_lower_level::client::Client::check_account_valid(
                     &s.nickname,
                     &s.authkey,
                     ADDRESS_SERVER.parse().unwrap(),

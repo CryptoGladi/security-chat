@@ -170,6 +170,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
+name = "api-lower-level"
+version = "0.0.0"
+dependencies = [
+ "aes-gcm",
+ "built",
+ "crate-proto",
+ "criterion",
+ "fcore",
+ "http",
+ "log",
+ "p384",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "serde",
+ "static_assertions",
+ "temp-dir",
+ "thiserror",
+ "tokio",
+ "tonic",
+ "uuid",
+]
+
+[[package]]
 name = "async-trait"
 version = "0.1.73"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1928,6 +1951,7 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 name = "high-level"
 version = "0.0.0"
 dependencies = [
+ "api-lower-level",
  "bincode",
  "cache",
  "crate-proto",
@@ -1938,7 +1962,6 @@ dependencies = [
  "http",
  "kanal",
  "log",
- "lower-level",
  "serde",
  "test-log",
  "thiserror",
@@ -2417,29 +2440,6 @@ dependencies = [
  "serde_json",
  "tracing",
  "tracing-subscriber",
-]
-
-[[package]]
-name = "lower-level"
-version = "0.0.0"
-dependencies = [
- "aes-gcm",
- "built",
- "crate-proto",
- "criterion",
- "fcore",
- "http",
- "log",
- "p384",
- "rand 0.8.5",
- "rand_chacha 0.3.1",
- "serde",
- "static_assertions",
- "temp-dir",
- "thiserror",
- "tokio",
- "tonic",
- "uuid",
 ]
 
 [[package]]

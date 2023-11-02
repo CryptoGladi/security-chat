@@ -6,7 +6,7 @@ pub use aes_key_for_accept::AesKeyForAccept;
 impl Client {
     pub async fn send_crypto(&mut self, nickname_from: String) -> Result<(), Error> {
         info!("run send_crypto");
-        if self.raw_client.data.nickname == *nickname_from {
+        if self.raw_client.data_for_autification.nickname == *nickname_from {
             return Err(Error::NicknameSame(nickname_from));
         }
         if self.config.order_adding_crypto.contains_key(&nickname_from) {
@@ -44,10 +44,7 @@ impl Client {
     pub async fn get_order_adding_crypto(&self) -> impl Iterator<Item = String> + '_ {
         info!("run `get_request_for_send_crypto`");
 
-        self.config
-            .order_adding_crypto
-            .iter()
-            .map(|x| x.0.clone())
+        self.config.order_adding_crypto.iter().map(|x| x.0.clone())
     }
 
     pub async fn accept_all_cryptos(&mut self) -> Result<(), Error> {

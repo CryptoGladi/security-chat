@@ -1,5 +1,5 @@
 use super::{storage_crypto::StorageCrypto, *};
-use lower_level::client::crypto::EncryptedMessage;
+use api_lower_level::client::crypto::EncryptedMessage;
 use serde::{Deserialize, Serialize};
 
 // BODY
@@ -192,8 +192,14 @@ mod tests {
         client_from.accept_all_cryptos().await.unwrap();
         client_to.update_cryptos().await.unwrap();
 
-        println!("nickname_to: {}", client_to.raw_client.data.nickname);
-        println!("nickname_from: {}", client_from.raw_client.data.nickname);
+        println!(
+            "nickname_to: {}",
+            client_to.raw_client.data_for_autification.nickname
+        );
+        println!(
+            "nickname_from: {}",
+            client_from.raw_client.data_for_autification.nickname
+        );
 
         const TEST_MESSAGE: &str = "Фёдор, я тебя очень сильно люблю";
 

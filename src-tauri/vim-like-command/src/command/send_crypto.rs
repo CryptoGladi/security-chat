@@ -20,9 +20,7 @@ impl Command<CommandError> for SendCrypto {
             return Err(CommandError::Other("nickname is invalid"));
         };
 
-        client
-            .send_crypto((*nickname).to_string())
-            .await?;
+        client.send_crypto((*nickname).to_string()).await?;
         Ok(())
     }
 }

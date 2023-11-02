@@ -4,7 +4,7 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-lower-level = { path = "../lower-level" }
+api-lower-level = { path = "../api-lower-level" }
 thiserror.workspace = true
 serde.workspace = true
 http.workspace = true

@@ -19,5 +19,5 @@ pub enum Error {
     TooBigMessage,
 
     #[error("invalid argument: `{0}`")]
-    InvalidArgument(String),
+    InvalidArgument(&'static str),
 }

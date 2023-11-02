@@ -1,5 +1,5 @@
 [package]
-name = "lower-level"
+name = "api-lower-level"
 version = "0.0.0"
 edition = "2021"
 build = "build.rs"

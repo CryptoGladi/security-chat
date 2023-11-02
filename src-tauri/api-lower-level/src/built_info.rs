@@ -1,3 +1,5 @@
+//! Module for getting information while building
+
 pub(crate) mod raw {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
 }
