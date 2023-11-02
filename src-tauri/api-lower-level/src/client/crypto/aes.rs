@@ -1,10 +1,11 @@
 use super::ecdh::SharedSecret;
-use crate::client::crypto::{common::get_rand, CryptoError};
+use crate::client::crypto::CryptoError;
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, Nonce},
     Aes256Gcm, Key,
 };
-use log::info;
+use fcore::prelude::get_crypto_rand;
+use log::debug;
 use serde::{Deserialize, Serialize};
 
 pub const SIZE_KEY: usize = 256 / 8; // = 32
@@ -23,8 +24,8 @@ pub struct EncryptedMessage {
 
 impl Aes {
     pub fn generate() -> Self {
-        info!("generating key...");
-        let key_array = Aes256Gcm::generate_key(get_rand());
+        debug!("generating key...");
+        let key_array = Aes256Gcm::generate_key(get_crypto_rand());
         let key: [u8; SIZE_KEY] = key_array.try_into().unwrap();
 
         Self { key }
@@ -37,10 +38,10 @@ impl Aes {
     }
 
     pub fn encrypt(&self, message: &[u8]) -> Result<EncryptedMessage, CryptoError> {
-        info!("encypting message...");
+        debug!("encypting message...");
         let key = Key::<Aes256Gcm>::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
-        let nonce = Aes256Gcm::generate_nonce(&mut get_rand());
+        let nonce = Aes256Gcm::generate_nonce(&mut get_crypto_rand());
 
         let data = cipher.encrypt(&nonce, message).map_err(CryptoError::Aes)?;
 
@@ -51,7 +52,7 @@ impl Aes {
     }
 
     pub fn decrypt(&self, message: &EncryptedMessage) -> Result<Vec<u8>, CryptoError> {
-        info!("decrypting message...");
+        debug!("decrypting message...");
         let key = Key::<Aes256Gcm>::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
         let nonce = Nonce::<Aes256Gcm>::clone_from_slice(&message.nonce);

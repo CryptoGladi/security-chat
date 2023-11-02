@@ -1,3 +1,5 @@
+//! Module for messages;
+
 use super::*;
 
 impl Client {
@@ -31,6 +33,7 @@ impl Client {
         if limit <= 0 {
             return Err(Error::InvalidArgument("limit <= 0"));
         }
+
         if limit > MAX_LIMIT_GET_MESSAGES {
             return Err(Error::InvalidArgument("limit > MAX_LIMIT_GET_MESSAGES"));
         }
@@ -52,18 +55,13 @@ impl Client {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::get_client;
     use fcore::test_utils::*;
 
     #[tokio::test]
     async fn too_big_message() {
-        let mut client_to =
-            Client::registration(&get_rand_string(20), ADDRESS_SERVER.parse().unwrap())
-                .await
-                .unwrap();
-        let client_from =
-            Client::registration(&get_rand_string(20), ADDRESS_SERVER.parse().unwrap())
-                .await
-                .unwrap();
+        let mut client_to = get_client().await.unwrap();
+        let client_from = get_client().await.unwrap();
 
         let text = get_rand_string(MAX_LEN_MESSAGE + 100);
         let error = client_to
@@ -83,14 +81,9 @@ mod tests {
 
     #[tokio::test]
     async fn send_message_and_subscribe() {
-        let mut client_to =
-            Client::registration(&get_rand_string(20), ADDRESS_SERVER.parse().unwrap())
-                .await
-                .unwrap();
-        let mut client_from =
-            Client::registration(&get_rand_string(20), ADDRESS_SERVER.parse().unwrap())
-                .await
-                .unwrap();
+        let mut client_to = get_client().await.unwrap();
+        let mut client_from = get_client().await.unwrap();
+
         const TEST_MESSAGE: &[u8] = b"What hath God wrought!";
 
         let mut notification = client_from.subscribe_to_notifications().await.unwrap();
@@ -110,7 +103,7 @@ mod tests {
         };
 
         let Notice::NewMessage(new_message) = notify.notice.unwrap() else {
-            panic!();
+            panic!("wrong notification");
         };
 
         println!("new_message: {:?}", new_message);
@@ -127,7 +120,7 @@ mod tests {
         );
     }
 
-    async fn check_limit(size: i64) {
+    async fn check_limit_for_get_latest_messages(size: i64) {
         let nickname = get_rand_string(20);
         let mut client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
@@ -143,29 +136,20 @@ mod tests {
     #[should_panic]
     async fn get_latest_messages_to_big_limit() {
         const LIMIT: i64 = max_size::MAX_LIMIT_GET_MESSAGES + 100;
-        check_limit(LIMIT).await;
+        check_limit_for_get_latest_messages(LIMIT).await;
     }
 
     #[tokio::test]
     #[should_panic]
     async fn get_latest_messages_to_zero_limit() {
         const LIMIT: i64 = 0;
-        check_limit(LIMIT).await;
+        check_limit_for_get_latest_messages(LIMIT).await;
     }
 
     #[tokio::test]
     #[should_panic]
     async fn get_latest_messages_to_negative_limit() {
         const LIMIT: i64 = -1;
-
-        let nickname = get_rand_string(20);
-        let mut client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
-            .await
-            .unwrap();
-
-        client
-            .get_latest_messages(vec![get_rand_string(20)], LIMIT)
-            .await
-            .unwrap();
+        check_limit_for_get_latest_messages(LIMIT).await;
     }
 }

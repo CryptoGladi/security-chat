@@ -10,21 +10,15 @@ thiserror.workspace = true
 log.workspace = true
 serde.workspace = true
 p384 = { version = "0.13.0", default-features = false, features = ["ecdh", "serde"] }
-rand = { version = "0.8.5", default-features = false, features = ["rand_chacha"] }
-rand_chacha = "0.3.1"
 http.workspace = true
 crate-proto = { path = "../crate-proto"}
 static_assertions = "1.1.0"
+fcore = { path = "../fcore" }
 
 [dev-dependencies]
 tokio = { version = "1.29.1", features = ["full"] }
-criterion = { version = "0.4", features = ["html_reports", "async_tokio"] }
-uuid = { version = "1.4.1", features = ["v4"] }
 rand = "0.8.5"
 temp-dir = "0.1.11"
 fcore = { path = "../fcore" }
 totally-safe-transmute = "0.0.4"
-
-[[bench]]
-name = "registration"
-harness = false
+rand_chacha = "0.3.1"

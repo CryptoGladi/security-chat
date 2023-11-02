@@ -33,5 +33,3 @@ impl EphemeralSecretDef {
         std::mem::transmute(self)
     }
 }
-
-// TODO make testing

@@ -1,3 +1,33 @@
+//! Module for encryption key management.
+//!
+//! # Includes:
+//!
+//! 1. Generation and exchange of keys between users
+//! 2. Deletion of keys
+//! and so on...
+//!
+//! # Algorithm
+//!
+//! - [ECDH](https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman)
+//! - [AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
+//! - [Diffie–Hellman key exchange](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange)
+//!
+//! Short: the algorithm repeats itself ECDH, after creating AES.
+//! [ECDH is very cool](https://crypto.stackexchange.com/questions/61248/aes-and-ecdh-key)
+//!
+//! 1. User "A" wants to transfer (in fact, no key transfer takes place.
+//! Only a common passphrase is exchanged) the encryption key to user "B".
+//! 2. User "A" executes the function [`Client::send_aes_key`].
+//! It involves generating a passphrase and sending it to the **server**
+//! 3. User "B" executes the function [`Client::get_aes_keys`].
+//! It is needed to get the passphrase of user "A".
+//! 4. User "B" creates his part of the passphrase for user "A" through the [`Client::set_aes_key`] function
+//! 5. Now User "A" and user "B" have two identical passphrases!
+//! This can be used to create a symmetric encryption key (e.g. AES).
+//!
+//! This algorithm allows for privacy (like [Telegram's secure chats](https://core.telegram.org/blackberry/secretchats)),
+//! but only requires one user to be online
+
 use super::*;
 
 impl Client {
@@ -14,7 +44,6 @@ impl Client {
 
         Ok(())
     }
-
     pub async fn send_aes_key(&mut self, nickname_form: &str) -> Result<EphemeralSecret, Error> {
         assert_ne!(
             nickname_form, self.data_for_autification.nickname,

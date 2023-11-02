@@ -175,7 +175,6 @@ version = "0.0.0"
 dependencies = [
  "aes-gcm",
  "crate-proto",
- "criterion",
  "fcore",
  "http",
  "log",
@@ -189,7 +188,6 @@ dependencies = [
  "tokio",
  "tonic",
  "totally-safe-transmute",
- "uuid",
 ]
 
 [[package]]
@@ -1288,6 +1286,7 @@ dependencies = [
  "fslock",
  "log",
  "rand 0.8.5",
+ "rand_chacha 0.3.1",
  "serde",
  "temp-dir",
  "test-log",

@@ -1,5 +1,6 @@
-use super::{aes, common::get_rand, CryptoError};
+use super::{aes, CryptoError};
 pub use ephemeral_secret_def::EphemeralSecretDef;
+use fcore::prelude::get_crypto_rand;
 use log::info;
 pub use p384::ecdh::{EphemeralSecret, SharedSecret as RawSharedSecter};
 pub use p384::elliptic_curve::sec1::ToEncodedPoint;
@@ -19,7 +20,7 @@ impl SharedSecret {
 
 pub fn get_public_info() -> Result<(EphemeralSecret, PublicKey), CryptoError> {
     info!("run get_public_info");
-    let secret = EphemeralSecret::random(&mut get_rand());
+    let secret = EphemeralSecret::random(&mut get_crypto_rand());
     let private_key = EncodedPoint::from(secret.public_key());
     let public_key = PublicKey::from_sec1_bytes(private_key.as_ref()).map_err(CryptoError::Ecdh)?;
 
