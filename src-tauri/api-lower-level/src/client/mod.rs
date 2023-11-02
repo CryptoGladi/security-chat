@@ -112,8 +112,8 @@ impl Client {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use fcore::test_utils::*;
     use crate::test_utils::get_client;
+    use fcore::test_utils::*;
 
     #[tokio::test]
     async fn grpc_connect() {

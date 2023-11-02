@@ -1,4 +1,3 @@
-use crate::built_info::CrateInfo;
 use crate::client::crypto::ecdh::NistP384;
 use crate::client::crypto::ecdh::NonZeroScalar;
 use crate::client::EphemeralSecret;
@@ -16,18 +15,14 @@ impl std::fmt::Debug for EphemeralSecretDef {
 }
 
 static_assertions::assert_eq_size!(EphemeralSecret, EphemeralSecretDef);
-
-const CRATE_FOR_MODULE: CrateInfo<'_> = CrateInfo {
-    name: "p384",
-    version: "0.13.0",
-};
+static_assertions::assert_eq_align!(EphemeralSecret, EphemeralSecretDef);
+static_assertions::assert_fields!(EphemeralSecretDef: scalar);
 
 impl EphemeralSecretDef {
     /// # Safety
     ///
     /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
     pub unsafe fn from(x: EphemeralSecret) -> Self {
-        debug_assert!(crate::built_info::check_package(CRATE_FOR_MODULE));
         std::mem::transmute(x)
     }
 
@@ -35,7 +30,6 @@ impl EphemeralSecretDef {
     ///
     /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
     pub unsafe fn get(self) -> EphemeralSecret {
-        debug_assert!(crate::built_info::check_package(CRATE_FOR_MODULE));
         std::mem::transmute(self)
     }
 }
@@ -43,9 +37,15 @@ impl EphemeralSecretDef {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand_chacha::{rand_core::SeedableRng, ChaCha20Rng};
 
     #[test]
-    fn check_package() {
-        assert!(crate::built_info::check_package(CRATE_FOR_MODULE));
+    fn check_transmute() {
+        let mut rng = rand_chacha::ChaCha20Rng::from_entropy();
+
+        let d: EphemeralSecretDef =
+            totally_safe_transmute::totally_safe_transmute(2); // TODO NOT WORK!
+
+        todo!("make testing");
     }
 }

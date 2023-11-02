@@ -48,10 +48,7 @@ mod tests {
     fn get_not_found() {
         let storage_crypto = StorageCrypto::default();
 
-        assert_eq!(
-            storage_crypto.get("ss").err().unwrap(),
-            Error::NotFound
-        );
+        assert_eq!(storage_crypto.get("ss").err().unwrap(), Error::NotFound);
     }
 
     #[test]

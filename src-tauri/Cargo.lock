@@ -174,7 +174,6 @@ name = "api-lower-level"
 version = "0.0.0"
 dependencies = [
  "aes-gcm",
- "built",
  "crate-proto",
  "criterion",
  "fcore",
@@ -189,6 +188,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tonic",
+ "totally-safe-transmute",
  "uuid",
 ]
 
@@ -405,16 +405,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "built"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b99c4cdc7b2c2364182331055623bdf45254fcb679fea565c40c3c11c101889a"
-dependencies = [
- "cargo-lock",
- "semver",
-]
-
-[[package]]
 name = "bumpalo"
 version = "3.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -478,18 +468,6 @@ dependencies = [
  "glib-sys",
  "libc",
  "system-deps 6.1.1",
-]
-
-[[package]]
-name = "cargo-lock"
-version = "9.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e11c675378efb449ed3ce8de78d75d0d80542fc98487c26aba28eb3b82feac72"
-dependencies = [
- "semver",
- "serde",
- "toml 0.7.6",
- "url",
 ]
 
 [[package]]
@@ -4798,6 +4776,12 @@ dependencies = [
  "quote",
  "syn 1.0.109",
 ]
+
+[[package]]
+name = "totally-safe-transmute"
+version = "0.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f9ba0bff2dd5eb3e6cd23c755f32b3645821810cea541877c36a813d457463a8"
 
 [[package]]
 name = "tower"

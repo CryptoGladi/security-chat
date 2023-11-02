@@ -32,9 +32,7 @@ impl Client {
             return Err(Error::InvalidArgument("limit <= 0"));
         }
         if limit > MAX_LIMIT_GET_MESSAGES {
-            return Err(Error::InvalidArgument(
-                "limit > MAX_LIMIT_GET_MESSAGES",
-            ));
+            return Err(Error::InvalidArgument("limit > MAX_LIMIT_GET_MESSAGES"));
         }
 
         let request = tonic::Request::new(GetLatestMessagesRequest {

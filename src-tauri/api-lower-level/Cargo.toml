@@ -2,7 +2,6 @@
 name = "api-lower-level"
 version = "0.0.0"
 edition = "2021"
-build = "build.rs"
 
 [dependencies]
 aes-gcm = "0.10.2"
@@ -16,7 +15,6 @@ rand_chacha = "0.3.1"
 http.workspace = true
 crate-proto = { path = "../crate-proto"}
 static_assertions = "1.1.0"
-built = { version = "0.6.1", features = ["semver"] }
 
 [dev-dependencies]
 tokio = { version = "1.29.1", features = ["full"] }
@@ -25,10 +23,8 @@ uuid = { version = "1.4.1", features = ["v4"] }
 rand = "0.8.5"
 temp-dir = "0.1.11"
 fcore = { path = "../fcore" }
+totally-safe-transmute = "0.0.4"
 
 [[bench]]
 name = "registration"
 harness = false
-
-[build-dependencies]
-built = "0.6.1"
