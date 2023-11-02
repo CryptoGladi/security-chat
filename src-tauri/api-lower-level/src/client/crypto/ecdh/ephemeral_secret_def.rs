@@ -34,18 +34,4 @@ impl EphemeralSecretDef {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use rand_chacha::{rand_core::SeedableRng, ChaCha20Rng};
-
-    #[test]
-    fn check_transmute() {
-        let mut rng = rand_chacha::ChaCha20Rng::from_entropy();
-
-        let d: EphemeralSecretDef =
-            totally_safe_transmute::totally_safe_transmute(2); // TODO NOT WORK!
-
-        todo!("make testing");
-    }
-}
+// TODO make testing

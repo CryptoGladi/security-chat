@@ -1,5 +1,4 @@
 use self::notification::Notification;
-use crate::bincode_config;
 use api_lower_level::client::{
     crypto::{
         ecdh::{get_shared_secret, EphemeralSecretDef, PublicKey},
@@ -10,6 +9,7 @@ use api_lower_level::client::{
 use cache::prelude::*;
 use config::{ClientConfig, ClientConfigData, ClientInitConfig};
 use error::Error;
+use fcore::prelude::{BincodeConfig, Config};
 use kanal::AsyncReceiver;
 use log::*;
 
@@ -24,8 +24,8 @@ pub mod storage_crypto;
 pub struct Client {
     raw_client: RawClient,
     config: ClientConfig,
+    bincode_config: BincodeConfig<ClientConfigData>,
     _cache: CacheSQLite, // TODO
-    init_config: ClientInitConfig,
 }
 
 impl Client {
@@ -51,8 +51,8 @@ impl Client {
             }
             .as_normal(),
             _cache: cache,
-            init_config,
             raw_client,
+            bincode_config: BincodeConfig::new(init_config.path_to_config_file),
         })
     }
 
@@ -66,9 +66,11 @@ impl Client {
     }
 
     pub async fn load(init_config: ClientInitConfig) -> Result<Client, Error> {
-        info!("run load");
-        let config: ClientConfigData =
-            bincode_config::load(init_config.path_to_config_file.clone())?;
+        debug!("run `load`");
+
+        let bincode_config = BincodeConfig::new(init_config.path_to_config_file.clone());
+        let config: ClientConfigData = bincode_config.load()?;
+
         let api = RawClient::grpc_connect(init_config.address_to_server.clone()).await?;
 
         if !RawClient::check_account_valid(
@@ -90,16 +92,13 @@ impl Client {
             },
             _cache: cache,
             config: config.as_normal(),
-            init_config,
+            bincode_config,
         })
     }
 
     pub fn save(&self) -> Result<(), Error> {
         info!("run save");
-        bincode_config::save(
-            &self.config.as_data(),
-            &self.init_config.path_to_config_file,
-        )?;
+        self.bincode_config.save(&self.config.as_data())?;
         Ok(())
     }
 
@@ -108,7 +107,7 @@ impl Client {
     }
 
     pub async fn subscribe(&mut self) -> Result<AsyncReceiver<Notification>, Error> {
-        info!("run subscribe");
+        debug!("run subscribe");
         let mut subscribe = self.raw_client.subscribe_to_notifications().await?;
         let (send, recv) = kanal::unbounded_async();
         let storage_crypto = self.config.storage_crypto.clone();
@@ -117,7 +116,7 @@ impl Client {
             loop {
                 let notify = subscribe.get_mut().message().await.unwrap().unwrap();
                 let notify = Client::nofity(&storage_crypto.read().unwrap(), notify).unwrap();
-                info!("new notify: {:?}", notify);
+                debug!("new notify: {:?}", notify);
 
                 if send.send(notify).await.is_err() {
                     break;
@@ -132,7 +131,7 @@ impl Client {
         init_config: &ClientInitConfig,
         nickname: &str,
     ) -> Result<bool, Error> {
-        info!("run nickname_is_taken");
+        debug!("run nickname_is_taken");
 
         Ok(api_lower_level::client::Client::nickname_is_taken(
             nickname,

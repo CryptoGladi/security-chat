@@ -7,7 +7,7 @@ pub enum Error {
     Client(#[from] api_lower_level::client::error::Error),
 
     #[error("from config: `{0}`")]
-    Config(#[from] crate::bincode_config::Error),
+    Config(#[from] fcore::prelude::ConfigError),
 
     #[error("account is invalid")]
     AccoutIsInvalid,
