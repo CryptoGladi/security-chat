@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use crate::check_version::smart_check_version;
 use fcore::prelude::*;
 use log::warn;
 
@@ -26,6 +27,12 @@ fn main() {
     warn!("running chat...");
     warn!("env server address: {}", get_env_var("ADDRESS_SERVER"));
 
+    tauri::async_runtime::spawn(async {
+        if !smart_check_version().await {
+            panic!("you have old version app. Please, update your app");
+        }
+    });
+
     if !crate::path::get_app_folder().is_dir() {
         std::fs::create_dir_all(crate::path::get_app_folder()).unwrap();
     }
@@ -48,7 +55,6 @@ fn main() {
         command::get_cryptos_for_accept,
         command::add_crypto,
         command::delete_crypto,
-        command::check_version,
         command::get_random_nickname,
         command::get_version_app,
         command::get_order_adding_crypto

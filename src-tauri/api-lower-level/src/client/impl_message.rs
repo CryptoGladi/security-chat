@@ -8,6 +8,12 @@ impl Client {
         nickname_from: String,
         message: Message,
     ) -> Result<(), Error> {
+        trace!(
+            "run `send_message` for nickname_from: {} and message {:?}",
+            nickname_from,
+            message
+        );
+
         if message.body.len() >= MAX_LEN_MESSAGE {
             return Err(Error::TooBigMessage);
         }
@@ -30,6 +36,8 @@ impl Client {
         nickname_for_get: Vec<String>,
         limit: i64,
     ) -> Result<GetLatestMessagesReply, Error> {
+        trace!("run `get_latest_messages` for {:?}", nickname_for_get);
+
         if limit <= 0 {
             return Err(Error::InvalidArgument("limit <= 0"));
         }

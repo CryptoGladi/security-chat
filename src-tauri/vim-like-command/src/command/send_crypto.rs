@@ -29,7 +29,7 @@ impl Command<CommandError> for SendCrypto {
 mod tests {
     use super::*;
     use crate::test_utils::*;
-    use high_level::client::impl_message::Message;
+    use api_high_level::client::impl_message::Message;
     use test_log::test;
 
     #[test(tokio::test)]

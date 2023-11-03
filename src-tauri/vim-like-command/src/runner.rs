@@ -2,7 +2,7 @@
 
 use error::VimError;
 use hashbrown::HashMap;
-use high_level::prelude::Client;
+use api_high_level::prelude::Client;
 use log::*;
 use std::fmt::Debug;
 

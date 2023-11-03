@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-high-level = { path = "../../src-tauri/high-level" }
+api-high-level = { path = "../../src-tauri/api-high-level" }
 log = "0.4.19"
 once_cell = "1.18.0"
 rustyline = "12.0.0"

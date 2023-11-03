@@ -31,7 +31,10 @@
 use super::*;
 
 impl Client {
+    /// Delete key for **server**
     pub async fn delete_key(&mut self, id: i64) -> Result<(), Error> {
+        debug!("run `delete_key` by id: {}", id);
+
         let request = tonic::Request::new(DeleteAesKeyRequest {
             nickname: Some(Check {
                 nickname: self.data_for_autification.nickname.clone(),
@@ -44,11 +47,16 @@ impl Client {
 
         Ok(())
     }
+
+    /// Generate and send key to **server**
     pub async fn send_aes_key(&mut self, nickname_form: &str) -> Result<EphemeralSecret, Error> {
+        debug!("run `send_aes_key` by nickname_from: {}", nickname_form);
+
         assert_ne!(
             nickname_form, self.data_for_autification.nickname,
             "ТЫ СОВСЕМ ЕБНУТЫЙ!?"
         );
+
         let (secret, public_key) = crypto::ecdh::get_public_info()?;
 
         let request = tonic::Request::new(SendAesKeyRequest {
@@ -65,7 +73,10 @@ impl Client {
         Ok(secret)
     }
 
+    /// Get all keys from **server**
     pub async fn get_aes_keys(&mut self) -> Result<Vec<AesKeyInfo>, Error> {
+        debug!("run `get_aes_key`");
+
         let request = tonic::Request::new(GetAesKeyRequest {
             nickname: Some(Check {
                 nickname: self.data_for_autification.nickname.clone(),
@@ -77,14 +88,17 @@ impl Client {
         Ok(info.get_ref().info.clone())
     }
 
-    pub async fn set_aes_key(&mut self, key_info: &AesKeyInfo) -> Result<EphemeralSecret, Error> {
+    /// Send my **second part** of the key
+    pub async fn set_aes_key(&mut self, key_id: i64) -> Result<EphemeralSecret, Error> {
+        debug!("run `set_aes_key` by key_id: {}", key_id);
+
         let (secret, public_key) = crypto::ecdh::get_public_info()?;
         let request = tonic::Request::new(SetUserFromAesKeyRequest {
             nickname: Some(Check {
                 nickname: self.data_for_autification.nickname.clone(),
                 authkey: self.data_for_autification.auth_key.clone(),
             }),
-            id: key_info.id,
+            id: key_id,
             public_key: public_key.to_encoded_point(true).as_bytes().to_vec(),
         });
 
@@ -119,7 +133,7 @@ mod tests {
 
         println!("keys: {:?}", keys);
 
-        let secter_from = client_from.set_aes_key(&keys[0]).await.unwrap();
+        let secter_from = client_from.set_aes_key(keys[0].id).await.unwrap();
         let new_keys = client_from.get_aes_keys().await.unwrap();
         println!("new_keys: {:?}", new_keys);
 
@@ -131,6 +145,6 @@ mod tests {
         let sect = crypto::ecdh::get_shared_secret(&secret_to, &public_from);
         let sss = crypto::ecdh::get_shared_secret(&secter_from, &public_to);
 
-        assert_eq!(sect.0.raw_secret_bytes(), sss.0.raw_secret_bytes());
+        assert_eq!(sect.raw_secret_bytes(), sss.raw_secret_bytes());
     }
 }

@@ -5,7 +5,7 @@ use crate::command::CommandError;
 pub use crate::runner::builder::RunnerBuilder;
 pub use async_trait::async_trait;
 use fcore::test_utils::*;
-pub use high_level::prelude::*;
+pub use api_high_level::prelude::*;
 
 #[derive(Debug, Default)]
 pub struct TestCommand;

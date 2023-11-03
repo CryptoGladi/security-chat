@@ -6,7 +6,7 @@ use log::{LevelFilter, SetLoggerError};
 const ALL_WORKSPACE_CRATE: &[&str] = &[
     "vim_like_command",
     "api_lower_level",
-    "high_level",
+    "api_high_level",
     "fcore",
     "crate_proto",
     "cache",

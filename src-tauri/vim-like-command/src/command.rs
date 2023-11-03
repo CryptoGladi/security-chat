@@ -3,7 +3,7 @@
 //! Please, add them to the [`ALL_COMMANDS`] variable after adding a new command
 
 use async_trait::async_trait;
-use high_level::prelude::*;
+use api_high_level::prelude::*;
 use std::{error::Error, fmt::Debug};
 use thiserror::Error;
 

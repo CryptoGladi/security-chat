@@ -13,7 +13,7 @@ use tonic::{Response, Streaming};
 
 pub mod crypto;
 pub mod error;
-pub mod impl_aes;
+pub mod impl_crypto;
 pub mod impl_message;
 pub mod max_size;
 
@@ -30,6 +30,7 @@ pub struct Client {
 }
 
 impl Client {
+    /// Init [gRPC](https://grpc.io/) connect and enable compression
     pub async fn grpc_connect(address: Uri) -> Result<SecurityChatClient<Channel>, Error> {
         trace!("run `grpc_connect` to address: {}", address);
 

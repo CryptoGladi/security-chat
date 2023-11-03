@@ -1,11 +1,11 @@
 //! Module for [env variables](https://en.wikipedia.org/wiki/Environment_variable)
 
-use log::warn;
+use log::info;
 
 /// Get env variables by key
 pub fn get_env_var(key: &str) -> String {
     let env = std::env::var(key).unwrap_or_else(|_| panic!("{} env value must be set", key));
-    warn!("get var from env. {} = {}", key, env);
+    info!("get var from env. {} = {}", key, env);
 
     env
 }

@@ -1,15 +1,17 @@
-use super::ecdh::SharedSecret;
+//! Module for [AES-256-GCM](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
+
 use crate::client::crypto::CryptoError;
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, Nonce},
     Aes256Gcm, Key,
 };
 use fcore::prelude::get_crypto_rand;
-use log::debug;
+use log::{debug, trace};
+use p384::ecdh::SharedSecret;
 use serde::{Deserialize, Serialize};
 
-pub const SIZE_KEY: usize = 256 / 8; // = 32
-pub const SIZE_NONCE: usize = 96 / 8; // = 12
+pub const SIZE_KEY: usize = 256 / 8; // = 32 (for AES-256)
+pub const SIZE_NONCE: usize = 96 / 8; // = 12 (for AES-256)
 
 #[derive(Debug, Default, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 pub struct Aes {
@@ -23,8 +25,10 @@ pub struct EncryptedMessage {
 }
 
 impl Aes {
+    /// Generate key by [`fcore::rand::get_crypto_rand`]
     pub fn generate() -> Self {
-        debug!("generating key...");
+        trace!("generating key...");
+
         let key_array = Aes256Gcm::generate_key(get_crypto_rand());
         let key: [u8; SIZE_KEY] = key_array.try_into().unwrap();
 
@@ -32,13 +36,18 @@ impl Aes {
     }
 
     pub fn with_shared_key(shared_secret: SharedSecret) -> Self {
-        let key: [u8; SIZE_KEY] = shared_secret.get_key_for_aes_256().try_into().unwrap();
+        trace!("with_shared_key");
+
+        let key: [u8; 32] = shared_secret.raw_secret_bytes()[..SIZE_KEY]
+            .try_into()
+            .unwrap();
 
         Self { key }
     }
 
     pub fn encrypt(&self, message: &[u8]) -> Result<EncryptedMessage, CryptoError> {
         debug!("encypting message...");
+
         let key = Key::<Aes256Gcm>::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
         let nonce = Aes256Gcm::generate_nonce(&mut get_crypto_rand());
@@ -53,6 +62,7 @@ impl Aes {
 
     pub fn decrypt(&self, message: &EncryptedMessage) -> Result<Vec<u8>, CryptoError> {
         debug!("decrypting message...");
+
         let key = Key::<Aes256Gcm>::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
         let nonce = Nonce::<Aes256Gcm>::clone_from_slice(&message.nonce);
@@ -108,5 +118,19 @@ mod tests {
         let decrypted_message = decrypt(&crypto, MESSAGE_FOR_CRYPTO);
 
         assert_eq!(MESSAGE_FOR_CRYPTO, decrypted_message);
+    }
+
+    #[test]
+    #[should_panic(expected = "called `Result::unwrap()` on an `Err` value: Aes(Error)")]
+    fn frong_key() {
+        const MESSAGE_FOR_CRYPTO: &[u8] = b"super secret message";
+
+        let crypto1 = Aes::generate();
+        let crypto2 = Aes::generate();
+
+        let encrypted_message = crypto1.encrypt(MESSAGE_FOR_CRYPTO).unwrap();
+        let _decrypted_message = crypto2.decrypt(&encrypted_message).unwrap();
+
+        // assert_eq!(matches!(decrypted_message, Aes));
     }
 }

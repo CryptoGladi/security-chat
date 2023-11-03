@@ -28,7 +28,7 @@ impl AesKeyForAccept {
         info!("run accept with id: {}", self.0.id);
         self.check_key_is_already_accepted()?;
 
-        let secret = client.raw_client.set_aes_key(&self.0).await?;
+        let secret = client.raw_client.set_aes_key(self.0.id).await?;
         let public_key =
             PublicKey::from_sec1_bytes(&self.0.nickname_to_public_key.clone()[..]).unwrap();
         let shared = get_shared_secret(&secret, &public_key);

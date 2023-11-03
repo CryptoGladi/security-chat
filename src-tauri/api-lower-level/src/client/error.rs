@@ -18,6 +18,6 @@ pub enum Error {
     #[error("too big message")]
     TooBigMessage,
 
-    #[error("invalid argument: `{0}`")]
+    #[error("invalid argument for function: `{0}`")]
     InvalidArgument(&'static str),
 }
