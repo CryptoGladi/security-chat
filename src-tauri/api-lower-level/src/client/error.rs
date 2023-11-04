@@ -1,4 +1,4 @@
-use super::crypto::CryptoError;
+use crate::client::impl_crypto::error::CryptoError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

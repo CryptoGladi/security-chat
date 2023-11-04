@@ -6,14 +6,14 @@ pub use aes_key_for_accept::AesKeyForAccept;
 impl Client {
     pub async fn send_crypto(&mut self, nickname_from: String) -> Result<(), Error> {
         info!("run send_crypto");
-        if self.raw_client.data_for_autification.nickname == *nickname_from {
+        if self.lower_level_client.data_for_autification.nickname == *nickname_from {
             return Err(Error::NicknameSame(nickname_from));
         }
         if self.config.order_adding_crypto.contains_key(&nickname_from) {
             return Err(Error::NicknameSame(nickname_from));
         }
 
-        let secret = self.raw_client.send_aes_key(&nickname_from).await?;
+        let secret = self.lower_level_client.send_aes_key(&nickname_from).await?;
         let secret_def = unsafe { EphemeralSecretDef::from(secret) };
 
         self.config
@@ -27,7 +27,7 @@ impl Client {
         info!("run get_cryptos_for_accept");
 
         let aes_info = self
-            .raw_client
+            .lower_level_client
             .get_aes_keys()
             .await?
             .into_iter()
@@ -60,7 +60,7 @@ impl Client {
 
     pub async fn update_cryptos(&mut self) -> Result<(), Error> {
         info!("run update_cryptos");
-        let keys_info = self.raw_client.get_aes_keys().await?;
+        let keys_info = self.lower_level_client.get_aes_keys().await?;
 
         for i in keys_info {
             trace!("iter key_info: {:?}", i);
@@ -102,7 +102,7 @@ impl Client {
                 .order_adding_crypto
                 .remove(&nickname_from)
                 .unwrap();
-            self.raw_client.delete_key(i.id).await?;
+            self.lower_level_client.delete_key(i.id).await?;
         }
 
         self.save()?;

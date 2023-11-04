@@ -1,5 +1,5 @@
-use crate::client::crypto::ecdh::NistP384;
-use crate::client::crypto::ecdh::NonZeroScalar;
+use crate::client::impl_crypto::ecdh::NistP384;
+use crate::client::impl_crypto::ecdh::NonZeroScalar;
 use crate::client::EphemeralSecret;
 use log::debug;
 use serde::{Deserialize, Serialize};
@@ -42,7 +42,7 @@ impl EphemeralSecretDef {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::client::crypto::ecdh::{get_public_info, get_shared_secret};
+    use crate::client::impl_crypto::ecdh::{get_public_info, get_shared_secret};
     use fcore::prelude::{BincodeConfig, Config};
     use temp_dir::TempDir;
 

@@ -1,8 +1,8 @@
 //! Module for running commands
 
+use api_high_level::prelude::Client;
 use error::VimError;
 use hashbrown::HashMap;
-use api_high_level::prelude::Client;
 use log::*;
 use std::fmt::Debug;
 

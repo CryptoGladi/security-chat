@@ -2,8 +2,8 @@
 //!
 //! Please, add them to the [`ALL_COMMANDS`] variable after adding a new command
 
-use async_trait::async_trait;
 use api_high_level::prelude::*;
+use async_trait::async_trait;
 use std::{error::Error, fmt::Debug};
 use thiserror::Error;
 

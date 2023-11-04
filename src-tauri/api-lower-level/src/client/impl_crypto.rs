@@ -28,6 +28,10 @@
 //! This algorithm allows for privacy (like [Telegram's secure chats](https://core.telegram.org/blackberry/secretchats)),
 //! but only requires one user to be online
 
+pub mod aes;
+pub mod ecdh;
+pub mod error;
+
 use super::*;
 
 impl Client {
@@ -57,7 +61,7 @@ impl Client {
             "ТЫ СОВСЕМ ЕБНУТЫЙ!?"
         );
 
-        let (secret, public_key) = crypto::ecdh::get_public_info()?;
+        let (secret, public_key) = impl_crypto::ecdh::get_public_info()?;
 
         let request = tonic::Request::new(SendAesKeyRequest {
             nickname_to: Some(Check {
@@ -92,7 +96,7 @@ impl Client {
     pub async fn set_aes_key(&mut self, key_id: i64) -> Result<EphemeralSecret, Error> {
         debug!("run `set_aes_key` by key_id: {}", key_id);
 
-        let (secret, public_key) = crypto::ecdh::get_public_info()?;
+        let (secret, public_key) = impl_crypto::ecdh::get_public_info()?;
         let request = tonic::Request::new(SetUserFromAesKeyRequest {
             nickname: Some(Check {
                 nickname: self.data_for_autification.nickname.clone(),
@@ -110,7 +114,7 @@ impl Client {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::client::crypto::ecdh::PublicKey;
+    use crate::client::impl_crypto::ecdh::PublicKey;
     use fcore::test_utils::*;
 
     #[tokio::test]
@@ -142,8 +146,8 @@ mod tests {
                 .unwrap();
         let public_to =
             PublicKey::from_sec1_bytes(&new_keys[0].nickname_to_public_key.clone()[..]).unwrap();
-        let sect = crypto::ecdh::get_shared_secret(&secret_to, &public_from);
-        let sss = crypto::ecdh::get_shared_secret(&secter_from, &public_to);
+        let sect = impl_crypto::ecdh::get_shared_secret(&secret_to, &public_from);
+        let sss = impl_crypto::ecdh::get_shared_secret(&secter_from, &public_to);
 
         assert_eq!(sect.raw_secret_bytes(), sss.raw_secret_bytes());
     }

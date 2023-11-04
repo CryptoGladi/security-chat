@@ -1,4 +1,4 @@
-//! Crate for low-level API management between client and server.
+//! Crate for low-level API management **only** between client and server.
 //!
 //! Includes:
 //! 1. A wrapper for [gRPC](https://grpc.io/) calls

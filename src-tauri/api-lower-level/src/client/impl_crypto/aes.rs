@@ -1,6 +1,6 @@
 //! Module for [AES-256-GCM](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
 
-use crate::client::crypto::CryptoError;
+use crate::client::impl_crypto::error::CryptoError;
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, Nonce},
     Aes256Gcm, Key,
@@ -78,7 +78,7 @@ impl Aes {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::client::crypto::ecdh::{get_public_info, get_shared_secret};
+    use crate::client::impl_crypto::ecdh::{get_public_info, get_shared_secret};
 
     fn decrypt(crypto: &Aes, message_for_crypto: &[u8]) -> Vec<u8> {
         let encrypted_message = crypto.encrypt(message_for_crypto).unwrap();

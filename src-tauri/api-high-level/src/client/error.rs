@@ -1,4 +1,4 @@
-use api_lower_level::client::crypto::CryptoError;
+use api_lower_level::client::impl_crypto::error::CryptoError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

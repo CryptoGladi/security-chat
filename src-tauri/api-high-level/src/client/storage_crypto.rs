@@ -1,4 +1,4 @@
-use api_lower_level::client::crypto::Aes;
+use api_lower_level::client::impl_crypto::aes::Aes;
 use error::Error;
 use hashbrown::HashMap;
 use log::info;

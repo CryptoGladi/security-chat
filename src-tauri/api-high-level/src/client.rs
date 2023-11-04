@@ -1,19 +1,21 @@
+//! Main module
+
 use self::notification::Notification;
 use api_lower_level::client::{
-    crypto::{
+    impl_crypto::{
+        aes::Aes,
         ecdh::{get_shared_secret, EphemeralSecretDef, PublicKey},
-        Aes,
     },
-    Client as RawClient,
+    Client as LowerLevelClient,
 };
 use cache::prelude::*;
-use config::{ClientConfig, ClientConfigData, ClientInitConfig};
+use impl_config::{ClientConfig, ClientInitConfig};
 use error::Error;
 use fcore::prelude::{BincodeConfig, Config};
 use kanal::AsyncReceiver;
 use log::*;
 
-pub mod config;
+pub mod impl_config;
 pub mod error;
 pub mod impl_crypto;
 pub mod impl_message;
@@ -22,9 +24,9 @@ pub mod storage_crypto;
 
 #[derive(Debug)]
 pub struct Client {
-    raw_client: RawClient,
+    lower_level_client: LowerLevelClient,
     config: ClientConfig,
-    bincode_config: BincodeConfig<ClientConfigData>,
+    bincode_config: BincodeConfig<ClientConfig>,
     _cache: CacheSQLite, // TODO
 }
 
@@ -36,7 +38,7 @@ impl Client {
         debug!("run registration...");
 
         let raw_client =
-            RawClient::registration(nickname, init_config.address_to_server.clone()).await?;
+            LowerLevelClient::registration(nickname, init_config.address_to_server.clone()).await?;
         let cache = Cache::new(init_config.path_to_cache.clone()).await?;
 
         warn!(
@@ -51,7 +53,7 @@ impl Client {
             }
             .as_normal(),
             _cache: cache,
-            raw_client,
+            lower_level_client: raw_client,
             bincode_config: BincodeConfig::new(init_config.path_to_config_file),
         })
     }
@@ -71,9 +73,9 @@ impl Client {
         let bincode_config = BincodeConfig::new(init_config.path_to_config_file.clone());
         let config: ClientConfigData = bincode_config.load()?;
 
-        let api = RawClient::grpc_connect(init_config.address_to_server.clone()).await?;
+        let api = LowerLevelClient::grpc_connect(init_config.address_to_server.clone()).await?;
 
-        if !RawClient::check_account_valid(
+        if !LowerLevelClient::check_account_valid(
             &config.client_data.nickname,
             &config.client_data.auth_key,
             init_config.address_to_server.clone(),
@@ -86,7 +88,7 @@ impl Client {
         let cache = Cache::new(init_config.path_to_cache.clone()).await?;
 
         Ok(Self {
-            raw_client: RawClient {
+            lower_level_client: LowerLevelClient {
                 grpc: api,
                 data_for_autification: config.client_data.clone(),
             },
@@ -98,7 +100,7 @@ impl Client {
 
     pub fn save(&self) -> Result<(), Error> {
         info!("run save");
-        self.bincode_config.save(&self.config.as_data())?;
+        self.bincode_config.save(&self.config)?;
         Ok(())
     }
 
@@ -108,7 +110,7 @@ impl Client {
 
     pub async fn subscribe(&mut self) -> Result<AsyncReceiver<Notification>, Error> {
         debug!("run subscribe");
-        let mut subscribe = self.raw_client.subscribe_to_notifications().await?;
+        let mut subscribe = self.lower_level_client.subscribe_to_notifications().await?;
         let (send, recv) = kanal::unbounded_async();
         let storage_crypto = self.config.storage_crypto.clone();
 
@@ -169,17 +171,20 @@ mod tests {
         let (_paths, client_config, client) = get_client().await;
 
         client.save().unwrap();
-        let client_data = client.raw_client.data_for_autification.clone();
+        let client_data = client.lower_level_client.data_for_autification.clone();
         drop(client); // for cache
 
         let loaded_client = Client::load(client_config).await.unwrap();
         println!(
             "loaded_client data: {:#?}",
-            loaded_client.raw_client.data_for_autification
+            loaded_client.lower_level_client.data_for_autification
         );
         println!("client data: {:#?}", client_data);
         assert_eq!(
-            loaded_client.raw_client.data_for_autification.nickname,
+            loaded_client
+                .lower_level_client
+                .data_for_autification
+                .nickname,
             client_data.nickname
         );
     }
@@ -198,7 +203,7 @@ mod tests {
 
         assert_eq!(
             client.get_nickname(),
-            client.raw_client.data_for_autification.nickname
+            client.lower_level_client.data_for_autification.nickname
         );
     }
 }

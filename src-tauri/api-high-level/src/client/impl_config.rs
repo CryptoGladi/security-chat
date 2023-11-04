@@ -1,11 +1,15 @@
 use super::storage_crypto::StorageCrypto;
-use api_lower_level::client::crypto::ecdh::EphemeralSecretDef;
+use api_lower_level::client::impl_crypto::ecdh::EphemeralSecretDef;
 use api_lower_level::client::DataForAutification;
 use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
+use serde::ser::{Serializer, SerializeStruct};
+use serde::de::{Deserialize, Deserializer, Visitor, SeqAccess, MapAccess};
+
+pub mod client_init_config;
 
 #[derive(Debug, Clone)]
 pub struct ClientInitConfig {
@@ -32,34 +36,6 @@ impl ClientInitConfig {
     }
 }
 
-#[derive(Serialize, Deserialize, Default, Clone)]
-pub struct ClientConfigData {
-    pub client_data: DataForAutification,
-    pub storage_crypto: StorageCrypto,
-
-    /// nickname_from - secter_to
-    pub order_adding_crypto: HashMap<String, EphemeralSecretDef>,
-}
-
-impl ClientConfigData {
-    pub fn as_normal(&self) -> ClientConfig {
-        ClientConfig {
-            client_data: self.client_data.clone(),
-            storage_crypto: Arc::new(RwLock::new(self.storage_crypto.clone())),
-            order_adding_crypto: self.order_adding_crypto.clone(),
-        }
-    }
-}
-
-impl Debug for ClientConfigData {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_tuple("ClientConfig")
-            .field(&self.client_data)
-            .field(&self.storage_crypto)
-            .finish()
-    }
-}
-
 #[derive(Default, Clone, Debug)]
 pub struct ClientConfig {
     pub client_data: DataForAutification,
@@ -69,12 +45,24 @@ pub struct ClientConfig {
     pub order_adding_crypto: HashMap<String, EphemeralSecretDef>,
 }
 
-impl ClientConfig {
-    pub fn as_data(&self) -> ClientConfigData {
-        ClientConfigData {
-            client_data: self.client_data.clone(),
-            storage_crypto: self.storage_crypto.read().unwrap().clone(),
-            order_adding_crypto: self.order_adding_crypto.clone(),
-        }
+impl Serialize for ClientConfig {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer {
+        let mut state = serializer.serialize_struct("ClientConfig", 3)?;
+
+        state.serialize_field("client_data", &self.client_data)?;
+        state.serialize_field("storage_crypto", &self.storage_crypto.read().unwrap().0);
+        state.serialize_field("order_adding_crypto", &self.order_adding_crypto);
+
+        state.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for ClientConfig {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: Deserializer<'de> {
+        deserializer.
     }
 }

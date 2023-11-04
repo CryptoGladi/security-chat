@@ -1,6 +1,6 @@
 //! Main module for API
 
-use crate::client::crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
+use crate::client::impl_crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
 use crate_proto::*;
 use error::Error;
 use http::uri::Uri;
@@ -11,7 +11,6 @@ use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
 use tonic::{Response, Streaming};
 
-pub mod crypto;
 pub mod error;
 pub mod impl_crypto;
 pub mod impl_message;

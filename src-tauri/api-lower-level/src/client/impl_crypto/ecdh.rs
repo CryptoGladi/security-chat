@@ -1,6 +1,6 @@
 //! Module for [ECDH](https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman)
 
-use super::CryptoError;
+use crate::client::impl_crypto::error::CryptoError;
 pub use ephemeral_secret_def::EphemeralSecretDef;
 use fcore::prelude::get_crypto_rand;
 use log::debug;

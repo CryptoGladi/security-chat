@@ -1,5 +1,5 @@
 use super::{storage_crypto::StorageCrypto, *};
-use api_lower_level::client::crypto::EncryptedMessage;
+use api_lower_level::client::impl_crypto::aes::EncryptedMessage;
 use serde::{Deserialize, Serialize};
 
 // BODY
@@ -44,7 +44,7 @@ impl Client {
         let encryptred_data = aes.encrypt(&bincode[..])?;
 
         // self.cache.put(&nickname_from, &encryptred_data).await?; TODO
-        self.raw_client
+        self.lower_level_client
             .send_message(
                 nickname_from,
                 crate_proto::Message {
@@ -87,7 +87,7 @@ impl Client {
         limit: i64,
     ) -> Result<Vec<MessageInfo>, Error> {
         let messages = self
-            .raw_client
+            .lower_level_client
             .get_latest_messages(nicknames, limit)
             .await?;
 
@@ -194,11 +194,14 @@ mod tests {
 
         println!(
             "nickname_to: {}",
-            client_to.raw_client.data_for_autification.nickname
+            client_to.lower_level_client.data_for_autification.nickname
         );
         println!(
             "nickname_from: {}",
-            client_from.raw_client.data_for_autification.nickname
+            client_from
+                .lower_level_client
+                .data_for_autification
+                .nickname
         );
 
         const TEST_MESSAGE: &str = "Фёдор, я тебя очень сильно люблю";
