@@ -9,6 +9,7 @@ pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
         paths.path_to_config_file.clone(),
         paths.path_to_cache.clone(),
         ADDRESS_SERVER,
+        false,
     );
 
     let client = Client::registration(&get_rand_string(20), client_config.clone())

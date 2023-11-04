@@ -15,6 +15,7 @@ fn get_client_init_config() -> ClientInitConfig {
         dir.join("config.bin"),
         dir.join("cache.db"),
         get_env_var("ADDRESS_SERVER"),
+        true,
     )
 }
 

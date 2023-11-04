@@ -41,7 +41,7 @@ impl AesKeyForAccept {
             .unwrap()
             .add(self.0.nickname_to.clone(), aes)?;
 
-        client.save()?;
+        client.save_config()?;
         Ok(())
     }
 

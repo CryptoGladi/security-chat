@@ -35,3 +35,54 @@ pub trait Config {
     /// Get path for loading and saving config
     fn get_path_for_config(&self) -> PathBuf;
 }
+
+/// Function for simple [`load`](crate::config::Config::load) data
+pub fn simple_load<T>(impl_config: &T) -> Result<T::Item, Error>
+where
+    T: Config,
+{
+    impl_config.load()
+}
+
+/// Function for simple [`save`](crate::config::Config::save) data
+pub fn simple_save<T>(impl_config: &T, data: &T::Item) -> Result<(), Error>
+where
+    T: Config,
+{
+    impl_config.save(data)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::prelude::BincodeConfig;
+    use temp_dir::TempDir;
+
+    #[test]
+    fn simple_load() {
+        let temp_dir = TempDir::new().unwrap();
+        let temp_file = temp_dir.child("config.bin");
+
+        super::simple_save(&BincodeConfig::new(temp_file.clone()), &1).unwrap();
+        let value: i32 = super::simple_load(&BincodeConfig::new(temp_file)).unwrap();
+
+        assert_eq!(value, 1);
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "called `Result::unwrap()` on an `Err` value: IO(Os { code: 2, kind: NotFound, message: \"No such file or directory\" })"
+    )]
+    fn simple_load_with_error_file_not_found() {
+        let value: i32 = super::simple_load(&BincodeConfig::new("not_file.txt")).unwrap();
+
+        assert_eq!(value, 404);
+    }
+
+    #[test]
+    fn simple_save() {
+        let temp_dir = TempDir::new().unwrap();
+        let temp_file = temp_dir.child("config.bin");
+
+        super::simple_save(&BincodeConfig::new(temp_file), &1).unwrap();
+    }
+}

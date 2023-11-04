@@ -19,7 +19,7 @@ impl Client {
         self.config
             .order_adding_crypto
             .insert(nickname_from, secret_def);
-        self.save()?;
+        self.save_config()?;
         Ok(())
     }
 
@@ -105,7 +105,7 @@ impl Client {
             self.lower_level_client.delete_key(i.id).await?;
         }
 
-        self.save()?;
+        self.save_config()?;
         Ok(())
     }
 }

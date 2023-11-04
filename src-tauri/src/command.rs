@@ -9,7 +9,7 @@ use rnglib::{Language, RNG};
 use tauri::{Manager, Runtime, Size};
 
 pub async fn load_client(app: tauri::AppHandle) {
-    let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone())
+    let mut client = Client::load_config(global::CLIENT_INIT_CONFIG.clone())
         .await
         .unwrap();
     client.update_cryptos().await.unwrap();
@@ -54,7 +54,7 @@ pub async fn load_client(app: tauri::AppHandle) {
                 .await
                 .as_ref()
                 .unwrap()
-                .save()
+                .save_config()
                 .unwrap();
         }
     });
@@ -97,7 +97,7 @@ pub async fn registration(app: tauri::AppHandle, nickname: String) {
     let client = Client::registration(&nickname, global::CLIENT_INIT_CONFIG.clone())
         .await
         .unwrap();
-    client.save().unwrap();
+    client.save_config().unwrap();
 
     drop(client);
     load_client(app).await;
