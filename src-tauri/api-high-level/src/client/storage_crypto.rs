@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod error;
 
-#[derive(Serialize, Deserialize, Default, Clone, Debug)]
+#[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq)]
 pub struct StorageCrypto(pub HashMap<String, Aes>);
 
 impl StorageCrypto {

@@ -41,9 +41,11 @@ impl Client {
         let raw_client =
             LowerLevelClient::registration(nickname, init_config.address_to_server.clone()).await?;
 
-        let cache = init_config::
+        let cache = impl_config::client_init_config::get_cache(&init_config)
+            .await
+            .unwrap();
 
-        warn!(
+        info!(
             "new registration: {}",
             raw_client.data_for_autification.nickname
         );

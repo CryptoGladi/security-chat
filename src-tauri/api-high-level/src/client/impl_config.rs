@@ -34,14 +34,17 @@ impl Client {
         let config: ClientConfig = config_simple_load(&bincode_config)?;
         let api = LowerLevelClient::grpc_connect(init_config.address_to_server.clone()).await?;
 
-        if !LowerLevelClient::check_account_valid(
-            &config.client_data.nickname,
-            &config.client_data.auth_key,
-            init_config.address_to_server.clone(),
-        )
-        .await?
+        #[cfg(debug_assertions)]
         {
-            return Err(Error::AccoutIsInvalid);
+            if !LowerLevelClient::check_account_valid(
+                &config.client_data.nickname,
+                &config.client_data.auth_key,
+                init_config.address_to_server.clone(),
+            )
+            .await?
+            {
+                return Err(Error::AccoutIsInvalid);
+            }
         }
 
         let cache = client_init_config::get_cache(&init_config).await.unwrap();
@@ -94,5 +97,15 @@ mod tests {
                 .nickname,
             client_data.nickname
         );
+    }
+
+    #[test(tokio::test)]
+    #[should_panic(
+        expected = "called `Result::unwrap()` on an `Err` value: Config(IO(Os { code: 2, kind: NotFound, message: \"No such file or directory\" }))"
+    )]
+    async fn not_found_file() {
+        let (_, client_config, _) = get_client().await;
+
+        let _loaded_client = Client::load_config(client_config).await.unwrap();
     }
 }

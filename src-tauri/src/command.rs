@@ -169,6 +169,7 @@ pub async fn send_crypto(nickname: String) {
         .send_crypto(nickname)
         .await
         .unwrap();
+    client.as_mut().unwrap().save_config().unwrap();
 }
 
 #[tauri::command]
@@ -250,6 +251,8 @@ pub async fn add_crypto(nickname: String) {
     {
         key.accept(locked_client.as_mut().unwrap()).await.unwrap();
     }
+
+    locked_client.as_mut().unwrap().save_config().unwrap();
 }
 
 #[tauri::command]
@@ -268,6 +271,8 @@ pub async fn delete_crypto(nickname: String) {
     {
         key.delete(locked_client.as_mut().unwrap()).await.unwrap();
     }
+
+    locked_client.as_mut().unwrap().save_config().unwrap();
 }
 
 #[tauri::command]

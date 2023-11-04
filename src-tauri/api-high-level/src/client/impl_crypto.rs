@@ -5,7 +5,8 @@ pub use aes_key_for_accept::AesKeyForAccept;
 
 impl Client {
     pub async fn send_crypto(&mut self, nickname_from: String) -> Result<(), Error> {
-        info!("run send_crypto");
+        debug!("run send_crypto");
+
         if self.lower_level_client.data_for_autification.nickname == *nickname_from {
             return Err(Error::NicknameSame(nickname_from));
         }
@@ -19,12 +20,12 @@ impl Client {
         self.config
             .order_adding_crypto
             .insert(nickname_from, secret_def);
-        self.save_config()?;
+
         Ok(())
     }
 
     pub async fn get_cryptos_for_accept(&mut self) -> Result<Vec<AesKeyForAccept>, Error> {
-        info!("run get_cryptos_for_accept");
+        debug!("run get_cryptos_for_accept");
 
         let aes_info = self
             .lower_level_client
@@ -104,8 +105,6 @@ impl Client {
                 .unwrap();
             self.lower_level_client.delete_key(i.id).await?;
         }
-
-        self.save_config()?;
         Ok(())
     }
 }

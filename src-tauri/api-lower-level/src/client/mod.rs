@@ -16,7 +16,7 @@ pub mod impl_crypto;
 pub mod impl_message;
 pub mod max_size;
 
-#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+#[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq)]
 pub struct DataForAutification {
     pub nickname: String,
     pub auth_key: String,

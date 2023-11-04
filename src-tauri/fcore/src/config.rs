@@ -1,5 +1,6 @@
 //! Module for saving and loading data
 
+use log::trace;
 use serde::{de::DeserializeOwned, Serialize};
 use std::{fmt::Debug, path::PathBuf};
 use thiserror::Error;
@@ -37,18 +38,20 @@ pub trait Config {
 }
 
 /// Function for simple [`load`](crate::config::Config::load) data
-pub fn simple_load<T>(impl_config: &T) -> Result<T::Item, Error>
+pub fn config_simple_load<T>(impl_config: &T) -> Result<T::Item, Error>
 where
-    T: Config,
+    T: Config + Debug,
 {
+    trace!("run `simple_load` with impl_config: {:?}", impl_config);
     impl_config.load()
 }
 
 /// Function for simple [`save`](crate::config::Config::save) data
-pub fn simple_save<T>(impl_config: &T, data: &T::Item) -> Result<(), Error>
+pub fn config_simple_save<T>(impl_config: &T, data: &T::Item) -> Result<(), Error>
 where
-    T: Config,
+    T: Config + Debug,
 {
+    trace!("run `simple_save` with impl_config: {:?}", impl_config);
     impl_config.save(data)
 }
 
@@ -58,12 +61,12 @@ mod tests {
     use temp_dir::TempDir;
 
     #[test]
-    fn simple_load() {
+    fn config_simple_load() {
         let temp_dir = TempDir::new().unwrap();
         let temp_file = temp_dir.child("config.bin");
 
-        super::simple_save(&BincodeConfig::new(temp_file.clone()), &1).unwrap();
-        let value: i32 = super::simple_load(&BincodeConfig::new(temp_file)).unwrap();
+        super::config_simple_save(&BincodeConfig::new(temp_file.clone()), &1).unwrap();
+        let value: i32 = super::config_simple_load(&BincodeConfig::new(temp_file)).unwrap();
 
         assert_eq!(value, 1);
     }
@@ -72,17 +75,17 @@ mod tests {
     #[should_panic(
         expected = "called `Result::unwrap()` on an `Err` value: IO(Os { code: 2, kind: NotFound, message: \"No such file or directory\" })"
     )]
-    fn simple_load_with_error_file_not_found() {
-        let value: i32 = super::simple_load(&BincodeConfig::new("not_file.txt")).unwrap();
+    fn config_simple_load_with_error_file_not_found() {
+        let value: i32 = super::config_simple_load(&BincodeConfig::new("not_file.txt")).unwrap();
 
         assert_eq!(value, 404);
     }
 
     #[test]
-    fn simple_save() {
+    fn config_simple_save() {
         let temp_dir = TempDir::new().unwrap();
         let temp_file = temp_dir.child("config.bin");
 
-        super::simple_save(&BincodeConfig::new(temp_file), &1).unwrap();
+        super::config_simple_save(&BincodeConfig::new(temp_file), &1).unwrap();
     }
 }

@@ -21,6 +21,8 @@ impl Command<CommandError> for SendCrypto {
         };
 
         client.send_crypto((*nickname).to_string()).await?;
+        client.save_config().unwrap();
+
         Ok(())
     }
 }

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use api_high_level::prelude::*;
 use fcore::prelude::*;
 use once_cell::sync::Lazy;
@@ -13,9 +15,8 @@ fn get_client_init_config() -> ClientInitConfig {
 
     ClientInitConfig::new(
         dir.join("config.bin"),
-        dir.join("cache.db"),
         get_env_var("ADDRESS_SERVER"),
-        true,
+        Some(PathBuf::from("cache.db")),
     )
 }
 
