@@ -76,7 +76,7 @@ impl Client {
         debug!("run decrypt_message");
 
         let aes = storage_crypto.get(&nickname_from)?;
-        
+
         let decrypted_body = aes.decrypt(&EncryptedMessage {
             data: message.body,
             nonce: message.nonce.try_into().unwrap(),
@@ -108,12 +108,8 @@ impl Client {
                 };
 
                 (
-                    Client::decrypt_message(
-                        &storage_crypto,
-                        x.body.clone().unwrap(),
-                        nickname,
-                    )
-                    .unwrap(),
+                    Client::decrypt_message(&storage_crypto, x.body.clone().unwrap(), nickname)
+                        .unwrap(),
                     x,
                 )
             })
