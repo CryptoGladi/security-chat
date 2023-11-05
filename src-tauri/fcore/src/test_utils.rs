@@ -1,4 +1,26 @@
 //! Module for only testing!
+//!
+//! # Warning
+//!
+//! It is recommended to create a function `get_client`. It should look something like this:
+//!
+//! ```no_run
+//! pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
+//!     let paths = PathsForTest::get();
+//!
+//!     let client_config = ClientInitConfig::new(
+//!         paths.path_to_config_file.clone(),
+//!         paths.path_to_cache.clone(),
+//!         ADDRESS_SERVER,
+//!     );
+//!
+//!     let client = Client::registration(&get_rand_string(), client_config.clone())
+//!         .await
+//!         .unwrap();
+//!
+//!     (paths, client_config, client)
+//! }
+//! ```
 
 use rand::distributions::Alphanumeric;
 use rand::Rng;
@@ -7,10 +29,10 @@ use std::path::PathBuf;
 pub use temp_dir::TempDir;
 pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
 
-pub fn get_rand_string() -> String {
+pub fn get_rand_string(len: usize) -> String {
     rand::thread_rng()
         .sample_iter(&Alphanumeric)
-        .take(20)
+        .take(len)
         .map(char::from)
         .collect::<String>()
 }

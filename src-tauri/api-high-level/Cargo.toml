@@ -1,0 +1,25 @@
+[package]
+name = "api-high-level"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+api-lower-level = { path = "../api-lower-level" }
+thiserror.workspace = true
+serde.workspace = true
+http.workspace = true
+hashbrown.workspace = true
+bincode.workspace = true
+crate-proto = { path = "../crate-proto"}
+kanal = "0.1.0-pre8"
+tokio = "1.29.1"
+cache = { path = "../cache" }
+log.workspace = true
+fcore = { path = "../fcore" }
+
+[dev-dependencies]
+test-log = "0.2.12"
+env_logger = "0.10.0"
+tokio = { version = "1.29.1", features = ["full"] }
+fcore = { path = "../fcore" }
+serde_json.workspace = true

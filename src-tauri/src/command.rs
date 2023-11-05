@@ -1,10 +1,6 @@
-use crate::check_version::smart_check_version;
 use crate::global;
-use high_level::{
-    client::{
-        impl_message::{Message, MessageInfo},
-        storage_crypto::Nickname,
-    },
+use api_high_level::{
+    client::impl_message::{Message, MessageInfo},
     prelude::*,
 };
 use log::*;
@@ -13,10 +9,10 @@ use rnglib::{Language, RNG};
 use tauri::{Manager, Runtime, Size};
 
 pub async fn load_client(app: tauri::AppHandle) {
-    let mut client = Client::load(global::CLIENT_INIT_CONFIG.clone())
+    let mut client = Client::load_config(global::CLIENT_INIT_CONFIG.clone())
         .await
         .unwrap();
-    client.update_cryptos().await.unwrap();
+    client.refresh_cryptos().await.unwrap();
     *global::LOADED_CLIENT.write().await = Some(client);
 
     let recv = global::LOADED_CLIENT
@@ -45,7 +41,7 @@ pub async fn load_client(app: tauri::AppHandle) {
                         .await
                         .as_mut()
                         .unwrap()
-                        .update_cryptos()
+                        .refresh_cryptos()
                         .await
                         .unwrap();
                     // TODO
@@ -58,7 +54,7 @@ pub async fn load_client(app: tauri::AppHandle) {
                 .await
                 .as_ref()
                 .unwrap()
-                .save()
+                .save_config()
                 .unwrap();
         }
     });
@@ -101,7 +97,7 @@ pub async fn registration(app: tauri::AppHandle, nickname: String) {
     let client = Client::registration(&nickname, global::CLIENT_INIT_CONFIG.clone())
         .await
         .unwrap();
-    client.save().unwrap();
+    client.save_config().unwrap();
 
     drop(client);
     load_client(app).await;
@@ -117,7 +113,6 @@ pub async fn get_all_users() -> Vec<String> {
         .get_all_users()
         .unwrap()
         .into_iter()
-        .map(|x| x.0)
         .collect();
 
     debug!("get_all_users: {:?}", users);
@@ -129,10 +124,11 @@ pub async fn fuzzy_search_vim_command(command: String) -> Vec<String> {
     let result = global::VIM_RUNNER
         .lock()
         .await
-        .get_fuzzy_array(&command)
+        .fuzzy_search(&command)
         .into_iter()
         .map(|x| x.text)
         .collect();
+
     trace!("run `fuzzy_search_vim_command`: {:?}", result);
 
     result
@@ -170,14 +166,18 @@ pub async fn send_crypto(nickname: String) {
     client
         .as_mut()
         .unwrap()
-        .send_crypto(Nickname(nickname))
+        .send_crypto(nickname)
         .await
         .unwrap();
+    client.as_mut().unwrap().save_config().unwrap();
 }
 
 #[tauri::command]
 pub async fn get_messages_for_user(nickname_from: String) -> Vec<MessageInfo> {
-    debug!("run `get_messages_for_user` nickname_from: {}", nickname_from);
+    debug!(
+        "run `get_messages_for_user` nickname_from: {}",
+        nickname_from
+    );
 
     // TODO переделать сообщение!
     global::LOADED_CLIENT
@@ -185,7 +185,7 @@ pub async fn get_messages_for_user(nickname_from: String) -> Vec<MessageInfo> {
         .await
         .as_mut()
         .unwrap()
-        .get_messages_for_user(Nickname(nickname_from), 1_000)
+        .get_messages_for_user(nickname_from, 1_000)
         .await
         .unwrap()
 }
@@ -198,7 +198,6 @@ pub async fn get_nickname() -> String {
         .as_ref()
         .unwrap()
         .get_nickname()
-        .0
 }
 
 #[tauri::command]
@@ -209,7 +208,7 @@ pub async fn send_message(nickname: String, message: String) {
         .as_mut()
         .unwrap()
         .send_message(
-            Nickname(nickname),
+            nickname,
             Message {
                 text: message,
                 reply: None,
@@ -252,6 +251,8 @@ pub async fn add_crypto(nickname: String) {
     {
         key.accept(locked_client.as_mut().unwrap()).await.unwrap();
     }
+
+    locked_client.as_mut().unwrap().save_config().unwrap();
 }
 
 #[tauri::command]
@@ -270,13 +271,8 @@ pub async fn delete_crypto(nickname: String) {
     {
         key.delete(locked_client.as_mut().unwrap()).await.unwrap();
     }
-}
 
-#[tauri::command]
-pub async fn check_version() {
-    if !smart_check_version().await {
-        panic!("you have old version app. Please, update your app");
-    }
+    locked_client.as_mut().unwrap().save_config().unwrap();
 }
 
 #[tauri::command]

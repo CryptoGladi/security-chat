@@ -1,8 +1,8 @@
-# 0.1.0-alpha.3
+# 0.1.0-alpha.3 (pre-release?)
 
 - :white_check_mark: Add core crate (crate for testing and core functions)
 - :white_large_square: Ability to view ALL messages
-- :white_large_square: Refactoring and documentation client. Add SOLID
+- :white_check_mark: Refactoring and documentation client. Add SOLID
 - :white_check_mark: Beautiful UI for client
 - :white_large_square: Crate high-level to [tauri_command](https://tauri.app/v1/guides/features/command)
 - :white_large_square: Add cache
@@ -10,6 +10,7 @@
 - :white_check_mark: Add env config
 - :white_check_mark: SvelteKit to SolidJS
 - :white_large_square: Logging
+- :white_large_square: Server optimization
 
 # 0.1.0-alpha.2
 

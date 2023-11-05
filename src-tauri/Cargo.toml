@@ -37,7 +37,7 @@ debug-assertions = false
 overflow-checks = false
 
 [workspace]
-members = ["lower-level", "high-level", "crate-proto", "vim-like-command", "cache", "fcore"]
+members = ["api-lower-level", "api-high-level", "crate-proto", "vim-like-command", "cache", "fcore"]
 
 [workspace.dependencies]
 log = "0.4.19"
@@ -57,7 +57,7 @@ tauri = { version = "1.4.1", features = [ "global-shortcut-all", "shell-open"] }
 vim-like-command = { path = "vim-like-command" }
 serde.workspace = true
 serde_json.workspace = true
-high-level = { path = "high-level" }
+api-high-level = { path = "api-high-level" }
 open = "5.0.0"
 log.workspace = true
 dirs = "5.0.1"
@@ -72,6 +72,7 @@ reqwest = { version = "0.11.20", default-features = false, features = ["rustls-t
 const_format.workspace = true
 random_name_generator = "0.3.6"
 rand = "0.8.5"
+hashbrown.workspace = true
 
 [dev-dependencies]
 test-log = "0.2.12"

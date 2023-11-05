@@ -1,4 +1,4 @@
-use high_level::{prelude::*, client::{storage_crypto::Nickname, impl_message::Message}};
+use api_high_level::{prelude::*, client::{storage_crypto::Nickname, impl_message::Message}};
 use once_cell::sync::Lazy;
 use structopt::StructOpt;
 use simple_logger::SimpleLogger;

@@ -1,12 +1,12 @@
 //! Logger
 
+use hashbrown::HashSet;
 use log::{LevelFilter, SetLoggerError};
-use std::collections::HashSet;
 
 const ALL_WORKSPACE_CRATE: &[&str] = &[
     "vim_like_command",
-    "lower_level",
-    "high_level",
+    "api_lower_level",
+    "api_high_level",
     "fcore",
     "crate_proto",
     "cache",
@@ -81,9 +81,7 @@ pub fn init_logger() {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashSet;
-
-    use super::{CrateLevelFilter, Logger};
+    use super::{CrateLevelFilter, HashSet, Logger};
     use log::LevelFilter;
 
     #[test]

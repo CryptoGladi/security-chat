@@ -1,64 +1,22 @@
+//! Module for `ONLY` testing
+
 pub use crate::command::Command;
+use crate::command::CommandError;
 pub use crate::runner::builder::RunnerBuilder;
+pub use api_high_level::prelude::*;
 pub use async_trait::async_trait;
-pub use high_level::prelude::*;
-use rand::distributions::Alphanumeric;
-use rand::Rng;
-use std::path::PathBuf;
-use temp_dir::TempDir;
-
-pub const ADDRESS_SERVER: &str = "http://[::1]:2052";
-
-pub fn get_rand_string() -> String {
-    rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(20)
-        .map(char::from)
-        .collect::<String>()
-}
-
-pub struct PathsForTest {
-    _temp_dir: TempDir, // for lifetime
-    path_to_config_file: PathBuf,
-    path_to_cache: PathBuf,
-}
-
-impl PathsForTest {
-    fn get() -> Self {
-        let temp_dir = TempDir::new().unwrap();
-
-        Self {
-            path_to_config_file: temp_dir.child("config.bin"),
-            path_to_cache: temp_dir.child("cache.db"),
-            _temp_dir: temp_dir,
-        }
-    }
-}
-
-pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
-    let paths = PathsForTest::get();
-    let client_config = ClientInitConfig::new(
-        paths.path_to_config_file.clone(),
-        paths.path_to_cache.clone(),
-        ADDRESS_SERVER,
-    );
-    let client = Client::registration(&get_rand_string(), client_config.clone())
-        .await
-        .unwrap();
-
-    (paths, client_config, client)
-}
+use fcore::test_utils::*;
 
 #[derive(Debug, Default)]
 pub struct TestCommand;
 
 #[async_trait]
-impl Command<ClientError> for TestCommand {
+impl Command<CommandError> for TestCommand {
     fn get_id(&self) -> &'static str {
         "test_command"
     }
 
-    async fn run(&self, _client: &mut Client, _command: &[&str]) -> Result<(), ClientError> {
+    async fn run(&self, _client: &mut Client, _command: &[&str]) -> Result<(), CommandError> {
         Ok(())
     }
 }
@@ -67,12 +25,31 @@ impl Command<ClientError> for TestCommand {
 pub struct SameTestCommand;
 
 #[async_trait]
-impl Command<ClientError> for SameTestCommand {
+impl Command<CommandError> for SameTestCommand {
     fn get_id(&self) -> &'static str {
         "same_test_command"
     }
 
-    async fn run(&self, _client: &mut Client, _command: &[&str]) -> Result<(), ClientError> {
+    async fn run(&self, _client: &mut Client, _command: &[&str]) -> Result<(), CommandError> {
         Ok(())
     }
+}
+
+/// Get client for unit test
+///
+/// This function does:
+/// 1. Creating temporary folders
+/// 2. Register an account
+/// 3. Returning the ready client for testing
+pub async fn get_client() -> (PathsForTest, ClientInitArgs, Client) {
+    let paths = PathsForTest::get();
+
+    let client_config =
+        ClientInitArgs::new(paths.path_to_config_file.clone(), ADDRESS_SERVER, None);
+
+    let client = Client::registration(&get_rand_string(20), client_config.clone())
+        .await
+        .unwrap();
+
+    (paths, client_config, client)
 }

@@ -1,0 +1,24 @@
+[package]
+name = "api-lower-level"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+aes-gcm = "0.10.2"
+tonic.workspace = true
+thiserror.workspace = true
+log.workspace = true
+serde.workspace = true
+p384 = { version = "0.13.0", default-features = false, features = ["ecdh", "serde"] }
+http.workspace = true
+crate-proto = { path = "../crate-proto"}
+static_assertions = "1.1.0"
+fcore = { path = "../fcore" }
+
+[dev-dependencies]
+tokio = { version = "1.29.1", features = ["full"] }
+rand = "0.8.5"
+temp-dir = "0.1.11"
+fcore = { path = "../fcore" }
+totally-safe-transmute = "0.0.4"
+rand_chacha = "0.3.1"
