@@ -87,7 +87,7 @@ mod tests {
             .await
             .unwrap();
         client_from.accept_all_cryptos().await.unwrap();
-        client_to.update_cryptos().await.unwrap();
+        client_to.refresh_cryptos().await.unwrap();
 
         client_to
             .send_message(

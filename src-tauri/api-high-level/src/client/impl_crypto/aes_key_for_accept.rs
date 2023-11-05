@@ -16,6 +16,7 @@ impl AesKeyForAccept {
                 "key is already is accepted from nickname: {}",
                 self.0.nickname_from
             );
+
             return Err(Error::Crypto(CryptoError::KeyAlreadyAccepted(
                 self.0.nickname_from.clone(),
             )));
@@ -25,7 +26,7 @@ impl AesKeyForAccept {
     }
 
     pub async fn accept(&mut self, client: &mut Client) -> Result<(), Error> {
-        info!("run accept with id: {}", self.0.id);
+        debug!("run accept with id: {}", self.0.id);
         self.check_key_is_already_accepted()?;
 
         let secret = client.lower_level_client.set_aes_key(self.0.id).await?;
@@ -46,8 +47,8 @@ impl AesKeyForAccept {
 
     pub async fn delete(&mut self, client: &mut Client) -> Result<(), Error> {
         debug!("run delete with id: {}", self.0.id);
+        
         self.check_key_is_already_accepted()?;
-
         client.lower_level_client.delete_key(self.0.id).await?;
 
         Ok(())

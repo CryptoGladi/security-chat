@@ -1,3 +1,5 @@
+//! Module for sending/recving message
+
 use super::{storage_crypto::StorageCrypto, *};
 use api_lower_level::client::impl_crypto::aes::EncryptedMessage;
 use serde::{Deserialize, Serialize};
@@ -28,7 +30,7 @@ impl Client {
         nickname_from: String,
         message: Message,
     ) -> Result<(), Error> {
-        info!("run send_message");
+        debug!("run send_message");
 
         if self.get_nickname() == nickname_from {
             return Err(Error::SendMessageToYourself);
@@ -40,6 +42,7 @@ impl Client {
             .read()
             .unwrap()
             .get(&nickname_from)?;
+
         let bincode = bincode::serialize(&message)?;
         let encryptred_data = aes.encrypt(&bincode[..])?;
 
@@ -70,8 +73,10 @@ impl Client {
         message: crate_proto::Message,
         nickname_from: String,
     ) -> Result<Message, Error> {
-        info!("run decrypt_message");
+        debug!("run decrypt_message");
+
         let aes = storage_crypto.get(&nickname_from)?;
+        
         let decrypted_body = aes.decrypt(&EncryptedMessage {
             data: message.body,
             nonce: message.nonce.try_into().unwrap(),
@@ -91,11 +96,12 @@ impl Client {
             .get_latest_messages(nicknames, limit)
             .await?;
 
+        let storage_crypto = self.config.storage_crypto.read().unwrap();
         Ok(messages
             .messages
             .into_iter()
             .map(|x| {
-                let nickname = if x.sender_nickname == *self.get_nickname() {
+                let nickname = if x.sender_nickname == self.get_nickname() {
                     x.recipient_nickname.clone()
                 } else {
                     x.sender_nickname.clone()
@@ -103,7 +109,7 @@ impl Client {
 
                 (
                     Client::decrypt_message(
-                        &self.config.storage_crypto.read().unwrap(),
+                        &storage_crypto,
                         x.body.clone().unwrap(),
                         nickname,
                     )
@@ -120,7 +126,8 @@ impl Client {
     }
 
     pub async fn get_all_last_message(&mut self) -> Result<Vec<Message>, Error> {
-        info!("run `get_all_last_message`");
+        debug!("run `get_all_last_message`");
+
         let nicknames = self
             .config
             .storage_crypto
@@ -131,7 +138,6 @@ impl Client {
             .cloned()
             .collect();
 
-        // TODO
         Ok(self
             .raw_get_last_message(nicknames, 1)
             .await?
@@ -158,7 +164,7 @@ mod tests {
             .unwrap();
 
         client_from.accept_all_cryptos().await.unwrap();
-        client_to.update_cryptos().await.unwrap();
+        client_to.refresh_cryptos().await.unwrap();
 
         const TEXT_MESSAGE: &str = "MANY MESSAGES";
         const LEN: usize = 50;
@@ -190,12 +196,13 @@ mod tests {
             .unwrap();
 
         client_from.accept_all_cryptos().await.unwrap();
-        client_to.update_cryptos().await.unwrap();
+        client_to.refresh_cryptos().await.unwrap();
 
         println!(
             "nickname_to: {}",
             client_to.lower_level_client.data_for_autification.nickname
         );
+
         println!(
             "nickname_from: {}",
             client_from
@@ -236,7 +243,7 @@ mod tests {
             .unwrap();
 
         client_from.accept_all_cryptos().await.unwrap();
-        client_to.update_cryptos().await.unwrap();
+        client_to.refresh_cryptos().await.unwrap();
 
         client_to
             .send_message(client_from.get_nickname(), Message::new("ss".to_string()))
@@ -259,7 +266,7 @@ mod tests {
             .unwrap();
 
         client_from.accept_all_cryptos().await.unwrap();
-        client_to.update_cryptos().await.unwrap();
+        client_to.refresh_cryptos().await.unwrap();
 
         for (i, _) in (0..100).enumerate() {
             let text = format!("x: {}", i);
@@ -286,16 +293,18 @@ mod tests {
             .unwrap();
 
         client_from.accept_all_cryptos().await.unwrap();
-        client_to.update_cryptos().await.unwrap();
+        client_to.refresh_cryptos().await.unwrap();
 
         client_to
             .send_message(client_from.get_nickname(), Message::new("ss".to_string()))
             .await
             .unwrap();
+
         client_from
             .send_message(client_to.get_nickname(), Message::new("tttt".to_string()))
             .await
             .unwrap();
+
         let last_messages = client_from.get_all_last_message().await.unwrap();
 
         assert_eq!(last_messages[0].text, "tttt");
@@ -325,9 +334,10 @@ mod tests {
             .unwrap();
 
         client_from.accept_all_cryptos().await.unwrap();
-        client_to.update_cryptos().await.unwrap();
+        client_to.refresh_cryptos().await.unwrap();
 
         let mut sent_messages = vec![];
+        sent_messages.reserve(100);
         for _ in 0..100 {
             let new_message = Message::new("manyyy".to_string());
             sent_messages.push(new_message.clone());
@@ -364,7 +374,7 @@ mod tests {
             .unwrap();
 
         client_from.accept_all_cryptos().await.unwrap();
-        client_to.update_cryptos().await.unwrap();
+        client_to.refresh_cryptos().await.unwrap();
 
         client_to
             .send_message(
@@ -373,6 +383,7 @@ mod tests {
             )
             .await
             .unwrap();
+
         let id = client_to
             .get_messages_for_user(client_from.get_nickname(), 1)
             .await

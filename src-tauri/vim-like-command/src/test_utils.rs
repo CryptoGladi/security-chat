@@ -41,11 +41,11 @@ impl Command<CommandError> for SameTestCommand {
 /// 1. Creating temporary folders
 /// 2. Register an account
 /// 3. Returning the ready client for testing
-pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
+pub async fn get_client() -> (PathsForTest, ClientInitArgs, Client) {
     let paths = PathsForTest::get();
 
     let client_config =
-        ClientInitConfig::new(paths.path_to_config_file.clone(), ADDRESS_SERVER, None);
+        ClientInitArgs::new(paths.path_to_config_file.clone(), ADDRESS_SERVER, None);
 
     let client = Client::registration(&get_rand_string(20), client_config.clone())
         .await

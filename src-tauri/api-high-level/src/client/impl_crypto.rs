@@ -1,7 +1,9 @@
+//! Module for crypto
+
 pub mod aes_key_for_accept;
 
-use super::*;
 pub use aes_key_for_accept::AesKeyForAccept;
+use super::*;
 
 impl Client {
     pub async fn send_crypto(&mut self, nickname_from: String) -> Result<(), Error> {
@@ -10,6 +12,7 @@ impl Client {
         if self.lower_level_client.data_for_autification.nickname == *nickname_from {
             return Err(Error::NicknameSame(nickname_from));
         }
+
         if self.config.order_adding_crypto.contains_key(&nickname_from) {
             return Err(Error::NicknameSame(nickname_from));
         }
@@ -43,13 +46,14 @@ impl Client {
     }
 
     pub async fn get_order_adding_crypto(&self) -> impl Iterator<Item = String> + '_ {
-        info!("run `get_request_for_send_crypto`");
+        debug!("run `get_request_for_send_crypto`");
 
         self.config.order_adding_crypto.iter().map(|x| x.0.clone())
     }
 
     pub async fn accept_all_cryptos(&mut self) -> Result<(), Error> {
-        info!("run accept_all_cryptos");
+        debug!("run accept_all_cryptos");
+
         let mut aes_info = self.get_cryptos_for_accept().await?;
 
         for i in aes_info.iter_mut() {
@@ -59,27 +63,32 @@ impl Client {
         Ok(())
     }
 
-    pub async fn update_cryptos(&mut self) -> Result<(), Error> {
-        info!("run update_cryptos");
+    /// Auto adding crypto
+    pub async fn refresh_cryptos(&mut self) -> Result<(), Error> {
+        debug!("run refresh_cryptos");
+
         let keys_info = self.lower_level_client.get_aes_keys().await?;
 
-        for i in keys_info {
-            trace!("iter key_info: {:?}", i);
-            let nickname_from = i.nickname_from.clone();
+        for key_info in keys_info {
+            trace!("iter key_info: {:?}", key_info);
+
+            let nickname_from = key_info.nickname_from.clone();
             let (Some(nickname_from_public_key), Some(ephemeral_secret_def)) = (
-                &i.nickname_from_public_key,
+                &key_info.nickname_from_public_key,
                 self.config.order_adding_crypto.get(&nickname_from),
             ) else {
                 if cfg!(debug_assertions) {
-                    //panic!(
-                    //    "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
-                    //    i, self.config.order_adding_crypto, nickname_from
-                    //);
+                    panic!(
+                        "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
+                        key_info, self.config.order_adding_crypto, nickname_from
+                    );
                 } else {
                     error!(
                         "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
-                        i, self.config.order_adding_crypto, nickname_from
+                        key_info, self.config.order_adding_crypto, nickname_from
                     );
+                    
+                    self.lower_level_client.delete_key(key_info.id).await?;
                 }
 
                 continue;
@@ -103,8 +112,10 @@ impl Client {
                 .order_adding_crypto
                 .remove(&nickname_from)
                 .unwrap();
-            self.lower_level_client.delete_key(i.id).await?;
+
+            self.lower_level_client.delete_key(key_info.id).await?;
         }
+        
         Ok(())
     }
 }
@@ -170,7 +181,7 @@ mod tests {
             assert!(key.nickname_from_public_key.is_some());
             assert!(key_for_accept.0.nickname_from_public_key.is_none());
 
-            client_to.update_cryptos().await.unwrap();
+            client_to.refresh_cryptos().await.unwrap();
         } else {
             panic!();
         }
@@ -204,7 +215,7 @@ mod tests {
             .unwrap();
 
         client_from.accept_all_cryptos().await.unwrap();
-        client_to.update_cryptos().await.unwrap();
+        client_to.refresh_cryptos().await.unwrap();
 
         // Проверка ключей
         println!("nickname_to: {}", client_to.get_nickname());
@@ -240,7 +251,7 @@ mod tests {
             .unwrap();
 
         client_from.accept_all_cryptos().await.unwrap();
-        client_to.update_cryptos().await.unwrap();
+        client_to.refresh_cryptos().await.unwrap();
 
         assert_eq!(client_from.get_cryptos_for_accept().await.unwrap().len(), 0);
         assert_eq!(client_to.get_cryptos_for_accept().await.unwrap().len(), 0);

@@ -1,3 +1,5 @@
+//! Module for processing notifications
+
 use super::impl_crypto::AesKeyForAccept;
 use super::impl_message::MessageInfo;
 use super::{storage_crypto::StorageCrypto, *};

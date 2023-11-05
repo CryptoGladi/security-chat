@@ -1,3 +1,5 @@
+//! Module for `newtype` [`p384::ecdh::EphemeralSecret`]
+
 use crate::client::impl_crypto::ecdh::NistP384;
 use crate::client::impl_crypto::ecdh::NonZeroScalar;
 use crate::client::EphemeralSecret;
@@ -7,6 +9,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone)]
 pub struct EphemeralSecretDef {
     pub scalar: NonZeroScalar<NistP384>,
+}
+
+impl PartialEq for EphemeralSecretDef {
+    fn eq(&self, other: &Self) -> bool {
+        self.scalar.to_bytes() == other.scalar.to_bytes()
+    }
 }
 
 impl std::fmt::Debug for EphemeralSecretDef {
@@ -67,5 +75,21 @@ mod tests {
             alice_shared_secret.raw_secret_bytes(),
             bob_shared_secret.raw_secret_bytes()
         );
+    }
+
+    #[test]
+    fn impl_partial_eqq() {
+        let (alice_secret, _) = get_public_info().unwrap();
+        let (bob_secret, _) = get_public_info().unwrap();
+
+        let (alice_secret, bob_secret) = unsafe {
+            (
+                EphemeralSecretDef::from(alice_secret),
+                EphemeralSecretDef::from(bob_secret),
+            )
+        };
+
+        assert_eq!(alice_secret, alice_secret);
+        assert_ne!(alice_secret, bob_secret);
     }
 }

@@ -1,7 +1,9 @@
+//! Module for storage crypto keys
+
 use api_lower_level::client::impl_crypto::aes::Aes;
 use error::Error;
 use hashbrown::HashMap;
-use log::info;
+use log::debug;
 use serde::{Deserialize, Serialize};
 
 pub mod error;
@@ -11,7 +13,7 @@ pub struct StorageCrypto(pub HashMap<String, Aes>);
 
 impl StorageCrypto {
     pub fn add(&mut self, nickname: String, aes: Aes) -> Result<(), Error> {
-        info!("adding new key for {}", nickname);
+        debug!("adding new key for {}", nickname);
 
         if self.0.contains_key(&nickname) {
             return Err(Error::AlreadyExists);
@@ -22,6 +24,8 @@ impl StorageCrypto {
     }
 
     pub fn get(&self, nickname: &str) -> Result<&Aes, Error> {
+        debug!("get key for {}", nickname);
+
         match self.0.get(nickname) {
             Some(aes) => Ok(aes),
             None => Err(Error::NotFound),

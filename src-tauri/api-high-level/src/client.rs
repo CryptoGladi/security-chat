@@ -11,7 +11,7 @@ use api_lower_level::client::{
 use cache::prelude::*;
 use error::Error;
 use fcore::prelude::BincodeConfig;
-use impl_config::client_init_config::ClientInitConfig;
+use impl_config::client_init_config::ClientInitArgs;
 use impl_config::ClientConfig;
 use kanal::AsyncReceiver;
 use log::*;
@@ -34,16 +34,14 @@ pub struct Client {
 impl Client {
     pub async fn registration(
         nickname: &str,
-        init_config: ClientInitConfig,
+        init_args: ClientInitArgs,
     ) -> Result<Client, Error> {
         debug!("run registration...");
 
         let raw_client =
-            LowerLevelClient::registration(nickname, init_config.address_to_server.clone()).await?;
+            LowerLevelClient::registration(nickname, init_args.address_to_server.clone()).await?;
 
-        let cache = impl_config::client_init_config::get_cache(&init_config)
-            .await
-            .unwrap();
+        let cache = init_args.get_cache().await.unwrap();
 
         info!(
             "new registration: {}",
@@ -52,12 +50,12 @@ impl Client {
 
         Ok(Self {
             config: ClientConfig {
-                client_data: raw_client.data_for_autification.clone(),
+                data_for_autification: raw_client.data_for_autification.clone(),
                 ..Default::default()
             },
             _cache: cache,
             lower_level_client: raw_client,
-            bincode_config: BincodeConfig::new(init_config.path_to_config_file),
+            bincode_config: BincodeConfig::new(init_args.path_to_config_file),
         })
     }
 
@@ -66,12 +64,12 @@ impl Client {
         Ok(storage_crypto.0.keys().cloned().collect())
     }
 
-    pub fn have_account(init_config: &ClientInitConfig) -> Result<bool, Error> {
+    pub fn have_account(init_config: &ClientInitArgs) -> Result<bool, Error> {
         Ok(init_config.path_to_config_file.is_file())
     }
 
     pub fn get_nickname(&self) -> String {
-        self.config.client_data.nickname.clone()
+        self.config.data_for_autification.nickname.clone()
     }
 
     pub async fn subscribe(&mut self) -> Result<AsyncReceiver<Notification>, Error> {
@@ -96,7 +94,7 @@ impl Client {
     }
 
     pub async fn nickname_is_taken(
-        init_config: &ClientInitConfig,
+        init_config: &ClientInitArgs,
         nickname: &str,
     ) -> Result<bool, Error> {
         debug!("run nickname_is_taken");

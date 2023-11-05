@@ -12,7 +12,7 @@ pub async fn load_client(app: tauri::AppHandle) {
     let mut client = Client::load_config(global::CLIENT_INIT_CONFIG.clone())
         .await
         .unwrap();
-    client.update_cryptos().await.unwrap();
+    client.refresh_cryptos().await.unwrap();
     *global::LOADED_CLIENT.write().await = Some(client);
 
     let recv = global::LOADED_CLIENT
@@ -41,7 +41,7 @@ pub async fn load_client(app: tauri::AppHandle) {
                         .await
                         .as_mut()
                         .unwrap()
-                        .update_cryptos()
+                        .refresh_cryptos()
                         .await
                         .unwrap();
                     // TODO
