@@ -16,7 +16,7 @@ fn get_client_init_config() -> ClientInitArgs {
     ClientInitArgs::new(
         dir.join("config.bin"),
         get_env_var("ADDRESS_SERVER"),
-        Some(PathBuf::from("cache.db")),
+        Some(dir.join("cache.db")),
     )
 }
 
