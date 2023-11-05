@@ -4,7 +4,6 @@
 - :white_large_square: Ability to view ALL messages
 - :white_check_mark: Refactoring and documentation client. Add SOLID
 - :white_check_mark: Beautiful UI for client
-- :white_large_square: Crate high-level to [tauri_command](https://tauri.app/v1/guides/features/command)
 - :white_large_square: Add cache
 - :white_check_mark: Add check version after connection
 - :white_check_mark: Add env config
