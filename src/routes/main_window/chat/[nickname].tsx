@@ -31,7 +31,9 @@ const MessageBubble: Component<{ message: Message }> = (props) => {
 				'chat-end': props.message.type === TypeBubble.ChatEnd
 			}}
 		>
-			<div class="chat-bubble">{props.message.text}</div>
+			<div class="chat-bubble" style={'word-break: break-word;'}>
+				{props.message.text}
+			</div>
 		</div>
 	);
 };

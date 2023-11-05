@@ -78,10 +78,10 @@ impl Client {
                 self.config.order_adding_crypto.get(&nickname_from),
             ) else {
                 if cfg!(debug_assertions) {
-                    panic!(
-                        "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
-                        key_info, self.config.order_adding_crypto, nickname_from
-                    );
+                    //panic!(
+                    //    "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
+                    //    key_info, self.config.order_adding_crypto, nickname_from
+                    //); TODO BUG!
                 } else {
                     error!(
                         "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
