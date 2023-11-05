@@ -32,10 +32,7 @@ pub struct Client {
 }
 
 impl Client {
-    pub async fn registration(
-        nickname: &str,
-        init_args: ClientInitArgs,
-    ) -> Result<Client, Error> {
+    pub async fn registration(nickname: &str, init_args: ClientInitArgs) -> Result<Client, Error> {
         debug!("run registration...");
 
         let raw_client =

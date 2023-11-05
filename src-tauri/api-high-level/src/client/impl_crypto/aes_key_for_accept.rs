@@ -47,7 +47,7 @@ impl AesKeyForAccept {
 
     pub async fn delete(&mut self, client: &mut Client) -> Result<(), Error> {
         debug!("run delete with id: {}", self.0.id);
-        
+
         self.check_key_is_already_accepted()?;
         client.lower_level_client.delete_key(self.0.id).await?;
 

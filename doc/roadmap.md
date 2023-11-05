@@ -8,7 +8,7 @@
 - :white_check_mark: Add check version after connection
 - :white_check_mark: Add env config
 - :white_check_mark: SvelteKit to SolidJS
-- :white_large_square: Logging
+- :white_check_mark: Logging
 - :white_large_square: Server optimization
 
 # 0.1.0-alpha.2
