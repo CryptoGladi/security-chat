@@ -3,11 +3,10 @@
 
 use crate::check_version::smart_check_version;
 use fcore::prelude::*;
-use log::warn;
+use log::{warn, debug};
 
 pub mod check_version;
 pub mod command;
-pub mod env_config;
 pub mod global;
 pub mod logger;
 pub mod path;
@@ -25,7 +24,7 @@ fn main() {
     dotenv::dotenv().ok();
     logger::init_logger();
     warn!("running chat...");
-    warn!("env server address: {}", get_env_var("ADDRESS_SERVER"));
+    debug!("env server address: {}", get_env_var("ADDRESS_SERVER"));
 
     tauri::async_runtime::spawn(async {
         if !smart_check_version().await {

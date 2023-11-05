@@ -1,7 +1,7 @@
 //! [SQLite](https://www.sqlite.org/index.html) database engine
 
 use super::*;
-use log::{trace, warn};
+use log::{trace, debug};
 use sqlx::sqlite::{SqliteAutoVacuum, SqliteConnectOptions};
 use sqlx::{Pool, Row, Sqlite, SqlitePool};
 
@@ -46,7 +46,7 @@ impl DB for SQLite {
             .map_err(|x| Error::Db(x.into()))?;
 
         if !already_exists {
-            warn!("creating table!");
+            debug!("creating table!");
 
             sqlx::query(sql_command::CREATE_TABLE)
                 .execute(&db_connection)
