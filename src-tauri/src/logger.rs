@@ -142,6 +142,7 @@ mod tests {
 
     #[test]
     fn test_all_workspace_crate() {
-        let _crate_info_for_test = CrateLevelFilter::new(super::ALL_WORKSPACE_CRATE, LevelFilter::Warn);
+        let _crate_info_for_test =
+            CrateLevelFilter::new(super::ALL_WORKSPACE_CRATE, LevelFilter::Warn);
     }
 }

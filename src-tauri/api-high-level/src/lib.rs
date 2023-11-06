@@ -3,5 +3,5 @@
 pub mod client;
 pub mod prelude;
 
-#[cfg(test)]
+#[cfg(any(test, feature = "benchmarking"))]
 pub mod test_utils;

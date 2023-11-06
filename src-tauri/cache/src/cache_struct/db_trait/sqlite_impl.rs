@@ -1,7 +1,7 @@
 //! [SQLite](https://www.sqlite.org/index.html) database engine
 
 use super::*;
-use log::{trace, debug};
+use log::{debug, trace};
 use sqlx::sqlite::{SqliteAutoVacuum, SqliteConnectOptions};
 use sqlx::{Pool, Row, Sqlite, SqlitePool};
 

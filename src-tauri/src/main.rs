@@ -3,7 +3,7 @@
 
 use crate::check_version::smart_check_version;
 use fcore::prelude::*;
-use log::{warn, debug};
+use log::{debug, warn};
 
 pub mod check_version;
 pub mod command;

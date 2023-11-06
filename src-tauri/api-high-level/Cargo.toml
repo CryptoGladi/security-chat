@@ -23,3 +23,11 @@ env_logger = "0.10.0"
 tokio = { version = "1.29.1", features = ["full"] }
 fcore = { path = "../fcore" }
 serde_json.workspace = true
+criterion.workspace = true
+
+[features]
+benchmarking = []
+
+[[bench]]
+name = "api_client"
+harness = false
