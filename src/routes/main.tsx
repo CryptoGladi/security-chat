@@ -39,7 +39,7 @@ export default function Index() {
 						<h1 class="text-5xl font-bold">Security chat</h1>
 
 						<div class="py-6">
-							<p>Пользователь: {nickname.loading ? "LOADING..." : nickname()}</p>
+							<p>Пользователь: {nickname.loading ? 'LOADING...' : nickname()}</p>
 							<p>Версия: {version()}</p>
 							<p>
 								Made by <Link link="https://github.com/CryptoGladi">CryptoGladi</Link>

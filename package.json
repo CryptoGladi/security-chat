@@ -5,10 +5,14 @@
 		"build": "solid-start build",
 		"start": "solid-start start",
 		"tauri": "tauri",
-		"format": "prettier --write .",
+		"format": "prettier --write . && npm run rust:format",
 		"lint": "eslint './src/**/*'",
 		"test": "jest",
-		"audit": "better-npm-audit audit"
+		"audit": "better-npm-audit audit",
+		"rust:build": "cd src-tauri && cargo build",
+		"rust:check": "cd src-tauri && cargo check",
+		"rust:clippy": "cd src-tauri && cargo clippy --tests --all --benches --features benchmarking",
+		"rust:format": "cd src-tauri && cargo fmt --all"
 	},
 	"type": "module",
 	"devDependencies": {

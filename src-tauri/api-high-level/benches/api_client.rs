@@ -1,10 +1,10 @@
-use std::time::Instant;
-use api_high_level::{test_utils::get_client, client::impl_message::Message, prelude::Client};
+use api_high_level::{client::impl_message::Message, prelude::Client, test_utils::get_client};
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use std::time::Instant;
 
 struct PairClient {
     pub client_to: Client,
-    pub client_from: Client
+    pub client_from: Client,
 }
 
 async fn get_pair_client() -> PairClient {
@@ -20,7 +20,7 @@ async fn get_pair_client() -> PairClient {
 
     PairClient {
         client_to,
-        client_from
+        client_from,
     }
 }
 
@@ -28,34 +28,38 @@ fn criterion_benchmark(c: &mut Criterion) {
     let runtime = tokio::runtime::Runtime::new().unwrap();
 
     c.bench_function("registration", |b| {
-        b.to_async(&runtime).iter_custom(|iters| {
-            async move {
-                let init_args = get_client().await.1;
+        b.to_async(&runtime).iter_custom(|iters| async move {
+            let init_args = get_client().await.1;
 
-                let start = Instant::now();
-                for _i in 0..iters {
-                    let nickname = fcore::test_utils::get_rand_string(20);
-                    black_box(Client::registration(&nickname, init_args.clone()).await.unwrap());
-                }
-                start.elapsed()
+            let start = Instant::now();
+            for _i in 0..iters {
+                let nickname = fcore::test_utils::get_rand_string(20);
+                black_box(
+                    Client::registration(&nickname, init_args.clone())
+                        .await
+                        .unwrap(),
+                );
             }
+            start.elapsed()
         });
     });
 
     c.bench_function("send_message", |b| {
-        b.to_async(&runtime).iter_custom(|iters| {
-            async move {
-                let mut clients = get_pair_client().await;
+        b.to_async(&runtime).iter_custom(|iters| async move {
+            let mut clients = get_pair_client().await;
 
-                let start = Instant::now();
-                for _i in 0..iters {
-                    let nickname = clients.client_from.get_nickname();
-                    let message =  Message::new(fcore::test_utils::get_rand_string(160));
+            let start = Instant::now();
+            for _i in 0..iters {
+                let nickname = clients.client_from.get_nickname();
+                let message = Message::new(fcore::test_utils::get_rand_string(160));
 
-                    clients.client_to.send_message(nickname, message).await.unwrap();
-                }
-                start.elapsed()
+                clients
+                    .client_to
+                    .send_message(nickname, message)
+                    .await
+                    .unwrap();
             }
+            start.elapsed()
         });
     });
 }
