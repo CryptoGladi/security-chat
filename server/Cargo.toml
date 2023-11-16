@@ -25,6 +25,7 @@ mimalloc = { version = "0.1.37", default-features = false }
 tokio.workspace = true
 service = { path = "service" }
 tonic.workspace = true
+tower = "0.4.13"
 
 [profile.release]
 incremental = true

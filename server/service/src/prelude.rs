@@ -1,7 +1,8 @@
 use crate::database;
 use crate::service::SecurityChatService;
 use crate_proto::SecurityChatServer;
-use tokio::sync::broadcast;
+use std::collections::HashSet;
+use tokio::sync::{broadcast, Mutex};
 use tonic::codec::CompressionEncoding;
 
 pub async fn get_service(broadcast_capacity: usize) -> SecurityChatServer<SecurityChatService> {
@@ -12,6 +13,7 @@ pub async fn get_service(broadcast_capacity: usize) -> SecurityChatServer<Securi
         db_pool,
         producer,
         consumer,
+        storage_auth_tokens: Mutex::new(HashSet::default()),
     };
 
     SecurityChatServer::new(service)

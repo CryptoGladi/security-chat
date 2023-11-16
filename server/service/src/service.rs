@@ -9,9 +9,13 @@ use crate_proto::SecurityChat;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use log::{error, info};
+use std::collections::HashSet;
 use tokio::sync::mpsc;
+use tokio::sync::Mutex;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Request, Response, Status};
+
+pub mod authentication;
 
 type MessageProducer = tokio::sync::broadcast::Sender<Notification>;
 type MessageConsumer = tokio::sync::broadcast::Receiver<Notification>;
@@ -20,6 +24,7 @@ pub struct SecurityChatService {
     pub db_pool: DbPool,
     pub producer: MessageProducer,
     pub consumer: MessageConsumer,
+    pub storage_auth_tokens: Mutex<HashSet<String>>,
 }
 
 #[tonic::async_trait]
@@ -251,12 +256,10 @@ impl SecurityChat for SecurityChatService {
             .send(Notification {
                 nickname_from: request.get_ref().nickname_from.clone(),
                 by_nickname: user_for_check.nickname.clone(),
-                notice: Some(notification::Notice::NewMessage(
-                    MessageWithId {
-                        message: request.get_ref().clone().message,
-                        id: ids[0]
-                    }
-                )),
+                notice: Some(notification::Notice::NewMessage(MessageWithId {
+                    message: request.get_ref().clone().message,
+                    id: ids[0],
+                })),
             })
             .unwrap();
 
