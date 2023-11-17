@@ -1,11 +1,18 @@
 use crate::database;
+use crate::service::authentication::{intercept, self};
 use crate::service::SecurityChatService;
 use crate_proto::SecurityChatServer;
 use std::collections::HashSet;
-use tokio::sync::{broadcast, Mutex};
+use std::sync::Mutex;
+use tokio::sync::broadcast;
 use tonic::codec::CompressionEncoding;
+use tonic::service::interceptor::InterceptorLayer;
+use tonic::Request;
+use tonic::transport::Server;
+use std::time::Duration;
+use std::env;
 
-pub async fn get_service(broadcast_capacity: usize) -> SecurityChatServer<SecurityChatService> {
+pub async fn get_service<'a>(broadcast_capacity: usize) -> SecurityChatServer<SecurityChatService> {
     let db_pool = database::establish_pooled_connection().await;
 
     let (producer, consumer) = broadcast::channel(broadcast_capacity);
@@ -13,7 +20,6 @@ pub async fn get_service(broadcast_capacity: usize) -> SecurityChatServer<Securi
         db_pool,
         producer,
         consumer,
-        storage_auth_tokens: Mutex::new(HashSet::default()),
     };
 
     SecurityChatServer::new(service)

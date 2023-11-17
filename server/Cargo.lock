@@ -1271,10 +1271,12 @@ dependencies = [
  "diesel",
  "diesel-async",
  "log",
+ "once_cell",
  "rand",
  "tokio",
  "tokio-stream",
  "tonic",
+ "tower",
  "uuid",
 ]
 
