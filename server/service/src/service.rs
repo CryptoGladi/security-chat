@@ -9,13 +9,9 @@ use crate_proto::SecurityChat;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use log::{error, info};
-use std::collections::HashSet;
-use std::sync::Mutex;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Request, Response, Status};
-
-pub mod authentication;
 
 type MessageProducer = tokio::sync::broadcast::Sender<Notification>;
 type MessageConsumer = tokio::sync::broadcast::Receiver<Notification>;

@@ -68,10 +68,11 @@ impl Logger {
         let mut fern_config = fern::Dispatch::new()
             .format(move |out, message, record| {
                 out.finish(format_args!(
-                    "[{} {} {}] {}",
+                    "[{} {} {}:{}] {}",
                     chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
                     colors.color(record.level()),
                     record.target(),
+                    record.line().unwrap_or(0), // ZERO IN ERROR!
                     message
                 ));
             })

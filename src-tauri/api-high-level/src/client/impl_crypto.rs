@@ -4,6 +4,7 @@ pub mod aes_key_for_accept;
 
 use super::*;
 pub use aes_key_for_accept::AesKeyForAccept;
+use match_cfg::match_cfg;
 
 impl Client {
     pub async fn send_crypto(&mut self, nickname_from: String) -> Result<(), Error> {
@@ -77,20 +78,22 @@ impl Client {
                 &key_info.nickname_from_public_key,
                 self.config.order_adding_crypto.get(&nickname_from),
             ) else {
-                if cfg!(debug_assertions) {
+                match_cfg! {
+                    #[cfg(debug_assertions)] => {
                     //panic!(
                     //    "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
                     //    key_info, self.config.order_adding_crypto, nickname_from
                     //); TODO BUG!
-                } else {
-                    error!(
-                        "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
-                        key_info, self.config.order_adding_crypto, nickname_from
-                    );
-
-                    self.lower_level_client.delete_key(key_info.id).await?;
+                    }
+                    _ => {
+                        error!(
+                            "break update_cryptos! iter: {:?}, order_adding_crypto: {:?}, nickname_from: {}",
+                            key_info, self.config.order_adding_crypto, nickname_from
+                        );
+                    }
                 }
 
+                self.lower_level_client.delete_key(key_info.id).await?;
                 continue;
             };
 
