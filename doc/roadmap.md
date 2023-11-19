@@ -1,3 +1,7 @@
+# 0.1.0-alpha.4
+
+- :white_large_square: Make authorization in server
+
 # 0.1.0-alpha.3
 
 - :white_large_square: Add crate only for testing
