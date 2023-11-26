@@ -22,6 +22,7 @@ pub async fn raw_check_version(github_url: &str, app_version: &str) -> bool {
         .text()
         .await
         .unwrap();
+
     let dom = tl::parse(&body, tl::ParserOptions::default()).unwrap();
 
     let last_version: String = dom

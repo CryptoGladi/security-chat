@@ -332,8 +332,7 @@ mod tests {
         client_from.accept_all_cryptos().await.unwrap();
         client_to.refresh_cryptos().await.unwrap();
 
-        let mut sent_messages = vec![];
-        sent_messages.reserve(100);
+        let mut sent_messages = Vec::with_capacity(100);
         for _ in 0..100 {
             let new_message = Message::new("manyyy".to_string());
             sent_messages.push(new_message.clone());

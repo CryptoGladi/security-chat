@@ -15,5 +15,3 @@ uuid = { version = "1.4.1", features = ["v4"] }
 log.workspace = true
 crate-proto = { path = "../crate-proto" }
 rand = "0.8.5"
-tower = "0.4.13"
-once_cell = "1.18.0"

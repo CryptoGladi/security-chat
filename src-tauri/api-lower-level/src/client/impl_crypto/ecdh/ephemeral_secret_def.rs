@@ -1,4 +1,4 @@
-//! Module for `newtype` [`p384::ecdh::EphemeralSecret`]
+//! Module for `newtype` [`EphemeralSecret`]
 
 use crate::client::impl_crypto::ecdh::NistP384;
 use crate::client::impl_crypto::ecdh::NonZeroScalar;

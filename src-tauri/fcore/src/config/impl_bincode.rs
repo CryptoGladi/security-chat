@@ -1,4 +1,4 @@
-//! Implementation [bincode](https://github.com/bincode-org/bincode) for [`config interface`](crate::config::Config)
+//! Implementation [bincode](https://github.com/bincode-org/bincode) for [`config interface`](Config)
 //!
 //! # Warning
 //!

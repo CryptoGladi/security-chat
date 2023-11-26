@@ -92,7 +92,7 @@ mod tests {
             .is_empty());
     }
 
-    #[test[tokio::test]]
+    #[test(tokio::test)]
     async fn delete_with_panic_key_is_already_accepted() {
         let (_paths, _, mut client_to) = get_client().await;
         let (_paths, _, mut client_from) = get_client().await;

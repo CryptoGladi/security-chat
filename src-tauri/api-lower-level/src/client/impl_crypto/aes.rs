@@ -25,7 +25,7 @@ pub struct EncryptedMessage {
 }
 
 impl Aes {
-    /// Generate key by [`fcore::rand::get_crypto_rand`]
+    /// Generate key by [`get_crypto_rand`]
     pub fn generate() -> Self {
         trace!("generating key...");
 

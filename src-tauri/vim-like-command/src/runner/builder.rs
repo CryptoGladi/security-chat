@@ -2,7 +2,7 @@ use super::*;
 
 pub const DEFAULT_COMMANDS: &[&dyn Command] = crate::command::ALL_COMMANDS;
 
-/// Builder for [`crate::runner::Runner`]
+/// Builder for [`Runner`]
 #[derive(Debug)]
 pub struct RunnerBuilder<'a> {
     commands: Vec<&'a dyn Command>,

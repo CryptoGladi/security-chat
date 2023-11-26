@@ -16,7 +16,7 @@ type NameCommand<'a> = &'a str;
 
 /// Struct for run commands
 ///
-/// For initialization use [`crate::runner::builder::RunnerBuilder`]
+/// For initialization use [`builder::RunnerBuilder`]
 #[derive(Debug, Default)]
 pub struct Runner<'a> {
     /// All commands

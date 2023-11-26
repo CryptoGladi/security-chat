@@ -23,7 +23,7 @@ pub type Secret = EphemeralSecretDef;
 ///
 /// # Warning
 ///
-/// After **changing** the fields, please change [this](crate::client::impl_config::impl_serde)
+/// After **changing** the fields, please change [this](impl_serde)
 #[derive(Default, Clone, Debug)]
 pub struct ClientConfig {
     pub data_for_autification: DataForAutification,

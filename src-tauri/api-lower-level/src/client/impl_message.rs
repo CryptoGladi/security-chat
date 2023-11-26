@@ -143,7 +143,7 @@ mod tests {
     #[tokio::test]
     #[should_panic]
     async fn get_latest_messages_to_big_limit() {
-        const LIMIT: i64 = max_size::MAX_LIMIT_GET_MESSAGES + 100;
+        const LIMIT: i64 = MAX_LIMIT_GET_MESSAGES + 100;
         check_limit_for_get_latest_messages(LIMIT).await;
     }
 

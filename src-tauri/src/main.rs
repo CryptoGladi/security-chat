@@ -22,14 +22,15 @@ fn main() {
     }));
 
     dotenv::dotenv().ok();
-    logger::init_logger();
+    logger::init().expect("logger init");
     warn!("running chat...");
     debug!("env server address: {}", get_env_var("ADDRESS_SERVER"));
 
     tauri::async_runtime::spawn(async {
-        if !smart_check_version().await {
-            panic!("you have old version app. Please, update your app");
-        }
+        assert!(
+            (smart_check_version().await),
+            "you have old version app. Please, update your app"
+        );
     });
 
     if !crate::path::get_app_folder().is_dir() {

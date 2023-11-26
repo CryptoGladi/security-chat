@@ -152,7 +152,7 @@ mod tests {
         db.put("nickname", &120).await.unwrap();
         let error = db.get::<MessageBody>("nickname", 1).await.err().unwrap();
 
-        if let crate::cache_struct::error::Error::Bincode(_) = error {
+        if let error::Error::Bincode(_) = error {
             warn!("Done!");
         } else {
             panic!("crate::cache_struct::error::Error::Bincode != error");
