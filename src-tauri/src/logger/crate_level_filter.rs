@@ -2,7 +2,7 @@ use hashbrown::HashSet;
 use log::LevelFilter;
 use thiserror::Error;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, PartialEq)]
 pub enum Error {
     #[error("already have: {0}")]
     AlreadyHave(String)
@@ -32,12 +32,12 @@ impl CratesForLevelFilter {
 
         for name in names {
             let did_not_previously_contain = result.insert(CrateInfo {
-                name: name.to_string(),
+                name: (*name).to_string(),
                 level: level_standart
             });
 
             if !did_not_previously_contain {
-                return Err(Error::AlreadyHave(name.to_string()));
+                return Err(Error::AlreadyHave((*name).to_string()));
             }
         }
 
@@ -77,8 +77,8 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "already have crate level filter: test1")]
     fn panic_already_have_crate_level_filter() {
-        let _crate_info_for_test = CratesForLevelFilter::new(&["test1", "test1"], LevelFilter::Warn);
+        let result = CratesForLevelFilter::new(&["test1", "test1"], LevelFilter::Warn);
+        assert_eq!(result, Err(Error::AlreadyHave("test1".to_string())));
     }
 }

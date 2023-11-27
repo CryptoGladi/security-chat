@@ -74,7 +74,7 @@ impl Logger {
 pub fn init() -> LoggerResult<()> {
     let logger = Logger {
         standard_level_for_crate: LevelFilter::Error,
-        level_for_targets: CratesForLevelFilter::new(ALL_WORKSPACE_CRATE, LevelFilter::Trace).unwrap(),
+        level_for_targets: CratesForLevelFilter::new(ALL_WORKSPACE_CRATE, LevelFilter::Trace)?,
     };
 
     logger.init()
@@ -86,7 +86,7 @@ mod tests {
     use log::LevelFilter;
 
     #[test]
-    fn test_all_workspace_crate() {
+    fn all_workspace_crate() {
         CratesForLevelFilter::new(super::ALL_WORKSPACE_CRATE, LevelFilter::Warn).unwrap();
     }
 }

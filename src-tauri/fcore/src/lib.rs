@@ -1,5 +1,7 @@
 //! Core crate
 
+#![forbid(unsafe_code)]
+
 pub mod config;
 pub mod env;
 pub mod lock;

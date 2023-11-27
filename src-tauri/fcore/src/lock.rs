@@ -20,12 +20,10 @@ impl Lock {
             .try_lock_with_pid()
             .expect("problem in try_lock_with_pid()");
 
-        if !successful {
-            panic!(
+        assert!(successful,
                 "APP IS LOCKED. If is error you can delete {}",
                 path.as_ref().display()
             );
-        }
 
         Self { _file: file }
     }

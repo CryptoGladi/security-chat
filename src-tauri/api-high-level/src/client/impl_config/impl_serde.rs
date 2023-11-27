@@ -185,7 +185,7 @@ impl<'de> Deserialize<'de> for ClientConfig {
 #[cfg(test)]
 mod tests {
     use api_lower_level::client::impl_crypto::ecdh::{EphemeralSecret, EphemeralSecretDef};
-    use fcore::rand::get_crypto_rand;
+    use fcore::rand::get_crypto;
 
     use super::*;
 
@@ -196,7 +196,7 @@ mod tests {
         unsafe {
             test_data.order_adding_crypto.insert(
                 "test_nickname".to_string(),
-                EphemeralSecretDef::from(EphemeralSecret::random(&mut get_crypto_rand())),
+                EphemeralSecretDef::from(EphemeralSecret::random(&mut get_crypto())),
             );
         }
 

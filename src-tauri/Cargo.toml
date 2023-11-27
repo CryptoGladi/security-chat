@@ -60,10 +60,10 @@ anyhow = "1.0.75"
 async-trait = "0.1.73"
 const_format = "0.2.31"
 criterion = { version = "0.5.1", features = ["async_tokio"] }
-validator = { version = "0.16" }
 
 [workspace.lints.clippy]
 all = "warn"
+perf = "warn"
 pedantic = "warn"
 missing_errors_doc = "allow"
 
@@ -93,7 +93,6 @@ hashbrown.workspace = true
 fern = { version = "0.6.2", features = ["colored"] }
 chrono = "0.4.31"
 thiserror.workspace = true
-validator.workspace = true
 
 [dev-dependencies]
 test-log = "0.2.12"

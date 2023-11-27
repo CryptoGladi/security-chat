@@ -6,7 +6,7 @@
 //! So do a validation **every time**!
 
 use super::{Config, Error};
-use log::*;
+use log::trace;
 use serde::{de::DeserializeOwned, Serialize};
 use std::io::Write;
 use std::marker::PhantomData;

@@ -2,7 +2,7 @@
 
 use crate::client::impl_crypto::error::CryptoError;
 pub use ephemeral_secret_def::EphemeralSecretDef;
-use fcore::prelude::get_crypto_rand;
+use fcore::prelude::get_crypto;
 use log::debug;
 use p384::ecdh::SharedSecret;
 pub use p384::ecdh::{EphemeralSecret, SharedSecret as RawSharedSecter};
@@ -16,7 +16,7 @@ pub mod ephemeral_secret_def;
 pub fn get_public_info() -> Result<(EphemeralSecret, PublicKey), CryptoError> {
     debug!("run get_public_info");
 
-    let secret = EphemeralSecret::random(&mut get_crypto_rand());
+    let secret = EphemeralSecret::random(&mut get_crypto());
     let private_key = EncodedPoint::from(secret.public_key());
     let public_key = PublicKey::from_sec1_bytes(private_key.as_ref()).map_err(CryptoError::Ecdh)?;
 

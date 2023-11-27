@@ -4,7 +4,9 @@
 //!
 //! It is recommended to create a function `get_client`. It should look something like this:
 //!
-//! ```no_run
+//! ```no_compiler
+//! use fcore::test_utils::{ADDRESS_SERVER, PathsForTest};
+//!
 //! pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
 //!     let paths = PathsForTest::get();
 //!
@@ -44,6 +46,8 @@ pub struct PathsForTest {
 }
 
 impl PathsForTest {
+    #[must_use]
+    #[allow(clippy::missing_panics_doc)]
     pub fn get() -> Self {
         let temp_dir = TempDir::new().unwrap();
 

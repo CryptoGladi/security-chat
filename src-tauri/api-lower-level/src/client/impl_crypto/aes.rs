@@ -5,7 +5,7 @@ use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, Nonce},
     Aes256Gcm, Key,
 };
-use fcore::prelude::get_crypto_rand;
+use fcore::prelude::get_crypto;
 use log::{debug, trace};
 use p384::ecdh::SharedSecret;
 use serde::{Deserialize, Serialize};
@@ -25,11 +25,11 @@ pub struct EncryptedMessage {
 }
 
 impl Aes {
-    /// Generate key by [`get_crypto_rand`]
+    /// Generate key by [`get_crypto`]
     pub fn generate() -> Self {
         trace!("generating key...");
 
-        let key_array = Aes256Gcm::generate_key(get_crypto_rand());
+        let key_array = Aes256Gcm::generate_key(get_crypto());
         let key: [u8; SIZE_KEY] = key_array.try_into().unwrap();
 
         Self { key }
@@ -50,7 +50,7 @@ impl Aes {
 
         let key = Key::<Aes256Gcm>::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
-        let nonce = Aes256Gcm::generate_nonce(&mut get_crypto_rand());
+        let nonce = Aes256Gcm::generate_nonce(&mut get_crypto());
 
         let data = cipher.encrypt(&nonce, message).map_err(CryptoError::Aes)?;
 

@@ -9,8 +9,13 @@ const VERSION_APP: &str = env!("CARGO_PKG_VERSION");
 
 /// Raw function check version
 ///
-/// Use only [`smart_check_version`]
-pub async fn raw_check_version(github_url: &str, app_version: &str) -> bool {
+/// Use only [`smart`]
+///
+/// # Panics
+///
+/// If you are not connected to the Internet, there will be panic
+#[deprecated(note = "use check_version::smart()")]
+pub async fn raw(github_url: &str, app_version: &str) -> bool {
     debug!(
         "run check_version with url: {}; app_version: {}",
         github_url, app_version
@@ -41,27 +46,34 @@ pub async fn raw_check_version(github_url: &str, app_version: &str) -> bool {
 }
 
 /// Check app version
-pub async fn smart_check_version() -> bool {
-    raw_check_version(GITHUB_URL, VERSION_APP).await
+///
+/// # Panics
+///
+/// If you are not connected to the Internet, there will be panic
+pub async fn smart() -> bool {
+    #[allow(deprecated)]
+    raw(GITHUB_URL, VERSION_APP).await
 }
 
 #[cfg(test)]
 mod tests {
     use test_log::test;
 
+    #[allow(deprecated)]
     #[test(tokio::test)]
     async fn raw_check_version() {
-        assert!(super::raw_check_version(super::GITHUB_URL, super::VERSION_APP).await);
+        assert!(super::raw(super::GITHUB_URL, super::VERSION_APP).await);
     }
 
     #[test(tokio::test)]
     async fn smart_check_version() {
-        assert!(super::smart_check_version().await);
+        assert!(super::smart().await);
     }
 
     #[test(tokio::test)]
     #[should_panic]
+    #[allow(deprecated)]
     async fn raw_check_version_with_break_url() {
-        assert!(super::raw_check_version("INCORRECT URL!", super::VERSION_APP).await);
+        assert!(super::raw("INCORRECT URL!", super::VERSION_APP).await);
     }
 }

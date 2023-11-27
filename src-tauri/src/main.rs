@@ -1,15 +1,18 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![forbid(unsafe_code)]
 
-use crate::check_version::smart_check_version;
+use crate::check_version::smart as check_version_smart;
 use fcore::prelude::*;
 use log::{debug, warn};
 
 pub mod check_version;
-pub mod command;
 pub mod global;
 pub mod logger;
 pub mod path;
+
+#[allow(clippy::missing_panics_doc)]
+pub mod command;
 
 fn main() {
     color_backtrace::install();
@@ -28,7 +31,7 @@ fn main() {
 
     tauri::async_runtime::spawn(async {
         assert!(
-            (smart_check_version().await),
+            check_version_smart().await,
             "you have old version app. Please, update your app"
         );
     });
