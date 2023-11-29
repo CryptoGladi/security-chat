@@ -8,7 +8,7 @@ use fcore::test_utils::*;
 ///
 /// # Panics
 ///
-/// TODO
+/// If [`ADDRESS_SERVER`] is wrong
 pub async fn get_client() -> Result<Client, Error> {
     let nickname = get_rand_string(20);
     Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap()).await

@@ -100,11 +100,12 @@ mod tests {
         let encrypted_message = crypto.encrypt(message_for_crypto).unwrap();
         let decrypted_message = crypto.decrypt(&encrypted_message).unwrap();
 
-        println!(
+        log::trace!(
             "MESSAGE_FOR_CRYPTO: {}",
             String::from_utf8(message_for_crypto.to_vec()).unwrap()
         );
-        println!(
+
+        log::trace!(
             "decrypted_message: {}",
             String::from_utf8(decrypted_message.clone()).unwrap()
         );

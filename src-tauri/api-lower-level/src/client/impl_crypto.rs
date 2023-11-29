@@ -134,7 +134,7 @@ mod tests {
             Client::registration(&get_rand_string(20), ADDRESS_SERVER.parse().unwrap())
                 .await
                 .unwrap();
-        println!("client_to data: {:?}", client_to.data_for_autification);
+        log::info!("client_to data: {:?}", client_to.data_for_autification);
 
         let secret_to = client_to
             .send_aes_key(&client_from.data_for_autification.nickname)
@@ -142,11 +142,11 @@ mod tests {
             .unwrap();
         let keys = client_from.get_aes_keys().await.unwrap();
 
-        println!("keys: {keys:?}");
+        log::info!("keys: {keys:?}");
 
         let secter_from = client_from.set_aes_key(keys[0].id).await.unwrap();
         let new_keys = client_from.get_aes_keys().await.unwrap();
-        println!("new_keys: {new_keys:?}");
+        log::info!("new_keys: {new_keys:?}");
 
         let public_from =
             PublicKey::from_sec1_bytes(&new_keys[0].nickname_from_public_key.clone().unwrap()[..])

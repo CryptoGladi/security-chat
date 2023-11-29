@@ -8,6 +8,7 @@ use log::info;
 ///
 /// If the env value has not been set, there will be a panic
 #[must_use]
+#[allow(clippy::panic)]
 pub fn get_env_var(key: &str) -> String {
     let env = std::env::var(key).unwrap_or_else(|_| panic!("{key} env value must be set"));
     info!("get var from env. {} = {}", key, env);

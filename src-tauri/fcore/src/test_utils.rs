@@ -40,7 +40,7 @@ pub fn get_rand_string(len: usize) -> String {
 }
 
 pub struct PathsForTest {
-    _temp_dir: TempDir, // for lifetime
+    pub _temp_dir: TempDir, // for lifetime
     pub path_to_config_file: PathBuf,
     pub path_to_cache: PathBuf,
 }

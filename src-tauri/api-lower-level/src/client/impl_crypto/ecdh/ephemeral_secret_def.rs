@@ -19,8 +19,8 @@ impl PartialEq for EphemeralSecretDef {
 }
 
 impl std::fmt::Debug for EphemeralSecretDef {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "EphemeralSecretDef")
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(formatter, "EphemeralSecretDef")
     }
 }
 

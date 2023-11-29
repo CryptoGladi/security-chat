@@ -92,6 +92,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[allow(clippy::panic)]
     async fn send_message_and_subscribe() {
         let mut client_to = get_client().await.unwrap();
         let mut client_from = get_client().await.unwrap();
@@ -117,13 +118,16 @@ mod tests {
             panic!("wrong notification");
         };
 
-        println!("new_message: {new_message:?}");
-        println!("nickname_from: {}", notify.nickname_from);
-        println!(
+        log::info!("new_message: {new_message:?}");
+        log::info!("nickname_from: {}", notify.nickname_from);
+
+        log::info!(
             "client_from: {}",
             client_from.data_for_autification.nickname
         );
-        println!("client_to: {}", client_to.data_for_autification.nickname);
+
+        log::info!("client_to: {}", client_to.data_for_autification.nickname);
+
         assert_eq!(new_message.message.unwrap().body, test_message);
         assert_eq!(
             client_from.data_for_autification.nickname,

@@ -146,6 +146,7 @@ mod tests {
     }
 
     #[test(tokio::test)]
+    #[allow(clippy::panic)]
     async fn check_error_bincode() {
         let (_temp_dir, mut db) = create_cache().await;
 

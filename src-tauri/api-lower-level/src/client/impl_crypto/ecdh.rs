@@ -40,9 +40,9 @@ mod tests {
         let alice_shared_secret = get_shared_secret(&alice_secret, &bob_public_key);
         let bob_shared_secret = get_shared_secret(&bob_secret, &alice_public_key);
 
-        println!("secret: {:?}", alice_shared_secret.raw_secret_bytes());
+        log::info!("secret: {:?}", alice_shared_secret.raw_secret_bytes());
 
-        println!(
+        log::info!(
             "secter len: {}",
             alice_shared_secret.raw_secret_bytes().len()
         );
