@@ -12,7 +12,7 @@ pub enum Error {
     IO(#[from] std::io::Error),
 
     #[error("problem in level filtering: {0}")]
-    LevelFilter(#[from] crate::logger::crate_level_filter::Error)
+    LevelFilter(#[from] crate::logger::crate_level_filter::Error),
 }
 
 pub type LoggerResult<T> = Result<T, Error>;

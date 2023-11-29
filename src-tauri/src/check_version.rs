@@ -71,7 +71,9 @@ mod tests {
     }
 
     #[test(tokio::test)]
-    #[should_panic]
+    #[should_panic(
+        expected = "called `Result::unwrap()` on an `Err` value: reqwest::Error { kind: Builder, source: RelativeUrlWithoutBase }"
+    )]
     #[allow(deprecated)]
     async fn raw_check_version_with_break_url() {
         assert!(super::raw("INCORRECT URL!", super::VERSION_APP).await);

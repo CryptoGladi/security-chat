@@ -12,6 +12,10 @@ pub struct Lock {
 
 impl Lock {
     /// Locking app
+    ///
+    /// # Panics
+    ///
+    /// Problems are IO, lock api and etc
     pub fn new(path: impl AsRef<Path> + Clone) -> Self {
         debug!("new with path: {}", path.as_ref().display());
 
@@ -20,10 +24,11 @@ impl Lock {
             .try_lock_with_pid()
             .expect("problem in try_lock_with_pid()");
 
-        assert!(successful,
-                "APP IS LOCKED. If is error you can delete {}",
-                path.as_ref().display()
-            );
+        assert!(
+            successful,
+            "APP IS LOCKED. If is error you can delete {}",
+            path.as_ref().display()
+        );
 
         Self { _file: file }
     }

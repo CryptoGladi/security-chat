@@ -6,6 +6,7 @@ use crate::client::EphemeralSecret;
 use log::debug;
 use serde::{Deserialize, Serialize};
 
+#[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Serialize, Deserialize, Clone)]
 pub struct EphemeralSecretDef {
     pub scalar: NonZeroScalar<NistP384>,
@@ -31,6 +32,7 @@ impl EphemeralSecretDef {
     /// # Safety
     ///
     /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
+    #[must_use]
     pub unsafe fn from(x: EphemeralSecret) -> Self {
         debug!("from");
 
@@ -40,6 +42,7 @@ impl EphemeralSecretDef {
     /// # Safety
     ///
     /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
+    #[must_use]
     pub unsafe fn get(self) -> EphemeralSecret {
         debug!("get");
 

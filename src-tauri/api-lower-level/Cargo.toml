@@ -22,3 +22,6 @@ temp-dir = "0.1.11"
 fcore = { path = "../fcore" }
 totally-safe-transmute = "0.0.4"
 rand_chacha = "0.3.1"
+
+[lints]
+workspace = true

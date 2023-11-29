@@ -1,10 +1,11 @@
-use super::*;
+use super::{trace, Runner};
 use ngrammatic::{CorpusBuilder, Pad, SearchResult};
 
 const THRESHOLD: f32 = 0.1;
 
 impl<'a> Runner<'a> {
     /// Searching command by [fuzzy](https://en.wikipedia.org/wiki/Approximate_string_matching)
+    #[must_use]
     pub fn fuzzy_search(&self, command: &str) -> Vec<SearchResult> {
         if command.is_empty() {
             return vec![];
@@ -12,7 +13,9 @@ impl<'a> Runner<'a> {
 
         let mut corpus = CorpusBuilder::new().pad_full(Pad::Auto).finish();
         self.commands.keys().for_each(|&x| corpus.add_text(x));
-        let id = command.split_whitespace().next().unwrap();
+        let Some(id) = command.split_whitespace().next() else {
+            return vec![];
+        };
 
         let result = corpus.search(id, THRESHOLD);
 

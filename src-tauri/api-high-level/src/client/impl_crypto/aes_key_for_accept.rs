@@ -1,5 +1,6 @@
 use super::*;
-use api_lower_level::client::impl_crypto::error::CryptoError;
+use crate::client::error::Error;
+use api_lower_level::client::impl_crypto::error::Error as CryptoError;
 use crate_proto::AesKeyInfo;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -33,7 +34,7 @@ impl AesKeyForAccept {
         let public_key =
             PublicKey::from_sec1_bytes(&self.0.nickname_to_public_key.clone()[..]).unwrap();
         let shared = get_shared_secret(&secret, &public_key);
-        let aes = Aes::with_shared_key(shared);
+        let aes = Aes::with_shared_key(&shared);
 
         client
             .config
@@ -57,11 +58,10 @@ impl AesKeyForAccept {
 
 #[cfg(test)]
 mod tests {
-    use super::AesKeyForAccept;
+    use super::{AesKeyForAccept, CryptoError};
     use crate::client::error::Error;
     use crate::client::Client;
     use crate::test_utils::get_client;
-    use api_lower_level::client::impl_crypto::error::CryptoError;
     use test_log::test;
 
     async fn iter_function(

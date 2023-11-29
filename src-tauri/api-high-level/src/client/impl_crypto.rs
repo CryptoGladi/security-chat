@@ -103,7 +103,7 @@ impl Client {
                 &secret,
                 &PublicKey::from_sec1_bytes(&nickname_from_public_key[..]).unwrap(),
             );
-            let aes = Aes::with_shared_key(shared_secret);
+            let aes = Aes::with_shared_key(&shared_secret);
 
             self.config
                 .storage_crypto

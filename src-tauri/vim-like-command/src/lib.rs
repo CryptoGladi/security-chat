@@ -6,6 +6,8 @@
 //!
 //! Main module is [`runner`]
 
+#![forbid(unsafe_code)]
+
 pub mod command;
 pub mod prelude;
 pub mod runner;

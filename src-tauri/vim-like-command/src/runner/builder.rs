@@ -1,9 +1,10 @@
-use super::*;
+use super::{error, trace, Command, Debug, HashMap, Runner, VimResult};
 
 pub const DEFAULT_COMMANDS: &[&dyn Command] = crate::command::ALL_COMMANDS;
 
 /// Builder for [`Runner`]
 #[derive(Debug)]
+#[allow(clippy::module_name_repetitions)]
 pub struct RunnerBuilder<'a> {
     commands: Vec<&'a dyn Command>,
     limit_for_fuzzy_search: usize,
@@ -50,12 +51,12 @@ impl<'a> RunnerBuilder<'a> {
 
     impl_setter!(limit_for_fuzzy_search, usize, limit_for_fuzzy_search >= 1);
 
-    pub fn build(self) -> VimError<Runner<'a>> {
+    pub fn build(self) -> VimResult<Runner<'a>> {
         trace!("run `build`");
 
         let mut parsed_commands = HashMap::new();
 
-        for i in self.commands.iter() {
+        for i in &self.commands {
             if parsed_commands.insert(i.get_id(), *i).is_some() {
                 return Err(error::Error::IdenticalId);
             }
@@ -110,7 +111,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "assertion failed: limit_for_fuzzy_search >= 1")]
     fn limit_fuzzy_panic() {
         let _runner = RunnerBuilder::new()
             .limit_for_fuzzy_search(0)

@@ -26,7 +26,7 @@ pub struct Logger {
     pub standard_level_for_crate: LevelFilter,
 
     /// [`log::LevelFilter`] for **specific** crate
-    pub level_for_targets: CratesForLevelFilter
+    pub level_for_targets: CratesForLevelFilter,
 }
 
 impl Logger {

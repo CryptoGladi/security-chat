@@ -63,7 +63,6 @@ criterion = { version = "0.5.1", features = ["async_tokio"] }
 
 [workspace.lints.clippy]
 all = "warn"
-perf = "warn"
 pedantic = "warn"
 missing_errors_doc = "allow"
 

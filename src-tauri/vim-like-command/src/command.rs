@@ -4,7 +4,8 @@
 
 use api_high_level::prelude::*;
 use async_trait::async_trait;
-use std::{error::Error, fmt::Debug};
+use std::error::Error as TraitError;
+use std::fmt::Debug;
 use thiserror::Error;
 
 pub mod send_crypto;
@@ -12,7 +13,7 @@ pub mod send_crypto;
 pub const ALL_COMMANDS: &[&dyn Command] = &[&send_crypto::SendCrypto];
 
 #[derive(Debug, Error)]
-pub enum CommandError {
+pub enum Error {
     #[error("problem in API client")]
     API(#[from] ClientError),
 
@@ -22,9 +23,9 @@ pub enum CommandError {
 
 /// Interface for commands
 #[async_trait]
-pub trait Command<ErrorType = CommandError>: Debug + Send + Sync
+pub trait Command<ErrorType = Error>: Debug + Send + Sync
 where
-    ErrorType: Error,
+    ErrorType: TraitError,
 {
     /// Return a unique identifier for your command
     fn get_id(&self) -> &'static str;

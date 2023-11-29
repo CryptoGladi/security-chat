@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq)]
-pub enum CryptoError {
+pub enum Error {
     #[error("AES problem: {0}")]
     Aes(aes_gcm::Error),
 

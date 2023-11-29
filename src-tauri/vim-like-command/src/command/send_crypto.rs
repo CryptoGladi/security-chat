@@ -4,20 +4,20 @@
 //!
 //! `send_crypto test_nickname`
 
-use super::*;
+use super::{async_trait, Client, Command, Debug, Error};
 
 #[derive(Debug)]
 pub struct SendCrypto;
 
 #[async_trait]
-impl Command<CommandError> for SendCrypto {
+impl Command<Error> for SendCrypto {
     fn get_id(&self) -> &'static str {
         "send_crypto"
     }
 
-    async fn run(&self, client: &mut Client, args: &[&str]) -> Result<(), CommandError> {
+    async fn run(&self, client: &mut Client, args: &[&str]) -> Result<(), Error> {
         let Some(nickname) = args.get(1) else {
-            return Err(CommandError::Other("nickname is invalid"));
+            return Err(Error::Other("nickname is invalid"));
         };
 
         client.send_crypto((*nickname).to_string()).await?;
@@ -72,7 +72,7 @@ mod tests {
     async fn run_via_runner() {
         let (_temp_dir, _, mut client_to) = get_client().await;
         let (_temp_dir, _, mut client_from) = get_client().await;
-        const TEST_MESSAGE: &str = "testing message";
+        let test_message = "testing message";
 
         let mut runner = RunnerBuilder::new()
             .commands(vec![&SendCrypto])
@@ -92,7 +92,7 @@ mod tests {
         client_to
             .send_message(
                 client_from.get_nickname(),
-                Message::new(TEST_MESSAGE.to_string()),
+                Message::new(test_message.to_string()),
             )
             .await
             .unwrap();
@@ -103,7 +103,7 @@ mod tests {
                 .unwrap()[0]
                 .body
                 .text,
-            TEST_MESSAGE
+            test_message
         );
     }
 }

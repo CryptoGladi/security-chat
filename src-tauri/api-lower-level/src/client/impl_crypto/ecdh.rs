@@ -1,6 +1,6 @@
 //! Module for [ECDH](https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman)
 
-use crate::client::impl_crypto::error::CryptoError;
+use crate::client::impl_crypto::error::Error;
 pub use ephemeral_secret_def::EphemeralSecretDef;
 use fcore::prelude::get_crypto;
 use log::debug;
@@ -13,16 +13,17 @@ pub use p384::{EncodedPoint, PublicKey};
 
 pub mod ephemeral_secret_def;
 
-pub fn get_public_info() -> Result<(EphemeralSecret, PublicKey), CryptoError> {
+pub fn get_public_info() -> Result<(EphemeralSecret, PublicKey), Error> {
     debug!("run get_public_info");
 
     let secret = EphemeralSecret::random(&mut get_crypto());
     let private_key = EncodedPoint::from(secret.public_key());
-    let public_key = PublicKey::from_sec1_bytes(private_key.as_ref()).map_err(CryptoError::Ecdh)?;
+    let public_key = PublicKey::from_sec1_bytes(private_key.as_ref()).map_err(Error::Ecdh)?;
 
     Ok((secret, public_key))
 }
 
+#[must_use]
 pub fn get_shared_secret(secret: &EphemeralSecret, public_key: &PublicKey) -> SharedSecret {
     debug!("run get_shared_secret");
     secret.diffie_hellman(public_key)

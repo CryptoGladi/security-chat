@@ -5,7 +5,7 @@ use thiserror::Error;
 #[derive(Debug, Error, PartialEq)]
 pub enum Error {
     #[error("already have: {0}")]
-    AlreadyHave(String)
+    AlreadyHave(String),
 }
 
 #[derive(Debug, Hash, PartialEq, Eq)]
@@ -33,7 +33,7 @@ impl CratesForLevelFilter {
         for name in names {
             let did_not_previously_contain = result.insert(CrateInfo {
                 name: (*name).to_string(),
-                level: level_standart
+                level: level_standart,
             });
 
             if !did_not_previously_contain {
@@ -41,9 +41,7 @@ impl CratesForLevelFilter {
             }
         }
 
-        Ok(Self {
-            crates: result
-        })
+        Ok(Self { crates: result })
     }
 }
 
@@ -53,7 +51,8 @@ mod tests {
 
     #[test]
     fn new_for_crate_level_filter() {
-        let crate_info_for_test = CratesForLevelFilter::new(&["test1", "test2"], LevelFilter::Warn).unwrap();
+        let crate_info_for_test =
+            CratesForLevelFilter::new(&["test1", "test2"], LevelFilter::Warn).unwrap();
 
         let crate_info_eq = {
             let mut result = HashSet::new();
@@ -68,9 +67,7 @@ mod tests {
                 level: LevelFilter::Warn,
             });
 
-            CratesForLevelFilter {
-                crates: result
-            }
+            CratesForLevelFilter { crates: result }
         };
 
         assert_eq!(crate_info_for_test, crate_info_eq);
