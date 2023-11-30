@@ -148,21 +148,27 @@ mod tests {
     }
 
     #[tokio::test]
-    #[should_panic(expected = "ss")]
+    #[should_panic(
+        expected = "called `Result::unwrap()` on an `Err` value: InvalidArgument(\"limit > MAX_LIMIT_GET_MESSAGES\")"
+    )]
     async fn get_latest_messages_to_big_limit() {
         const LIMIT: i64 = MAX_LIMIT_GET_MESSAGES + 100;
         check_limit_for_get_latest_messages(LIMIT).await;
     }
 
     #[tokio::test]
-    #[should_panic(expected = "ss")]
+    #[should_panic(
+        expected = "called `Result::unwrap()` on an `Err` value: InvalidArgument(\"limit <= 0\")"
+    )]
     async fn get_latest_messages_to_zero_limit() {
         const LIMIT: i64 = 0;
         check_limit_for_get_latest_messages(LIMIT).await;
     }
 
     #[tokio::test]
-    #[should_panic(expected = "ss")]
+    #[should_panic(
+        expected = "called `Result::unwrap()` on an `Err` value: InvalidArgument(\"limit <= 0\")"
+    )]
     async fn get_latest_messages_to_negative_limit() {
         const LIMIT: i64 = -1;
         check_limit_for_get_latest_messages(LIMIT).await;

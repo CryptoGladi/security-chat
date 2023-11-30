@@ -4,8 +4,8 @@ use self::client_init_config::ClientInitArgs;
 use super::storage_crypto::StorageCrypto;
 use super::Error;
 use super::{Client, LowerLevelClient};
-use api_lower_level::client::impl_crypto::ecdh::EphemeralSecretDef;
 use api_lower_level::client::DataForAutification;
+use crate_unsafe::safe_impl::crypto::ephemeral_secret_def::UnsafeEphemeralSecretDef;
 use fcore::prelude::BincodeConfig;
 use fcore::prelude::{simple_load, simple_save};
 use hashbrown::HashMap;
@@ -17,7 +17,7 @@ pub mod client_init_config;
 pub mod impl_serde;
 
 pub type NicknameFrom = String;
-pub type Secret = EphemeralSecretDef;
+pub type Secret = UnsafeEphemeralSecretDef;
 
 /// All data for client
 ///

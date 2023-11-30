@@ -1,7 +1,7 @@
 //! Module for `ONLY` testing
 
 use crate::prelude::*;
-use fcore::test_utils::*;
+use fcore::test_utils::{get_rand_string, PathsForTest, ADDRESS_SERVER};
 
 pub async fn get_client() -> (PathsForTest, ClientInitArgs, Client) {
     let paths = PathsForTest::get();

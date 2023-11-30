@@ -7,6 +7,7 @@ struct PairClient {
     pub client_from: Client,
 }
 
+#[allow(clippy::single_call_fn)]
 async fn get_pair_client() -> PairClient {
     let (_, _, mut client_to) = get_client().await;
     let (_, _, mut client_from) = get_client().await;
@@ -24,11 +25,11 @@ async fn get_pair_client() -> PairClient {
     }
 }
 
-fn criterion_benchmark(c: &mut Criterion) {
+fn criterion_benchmark(criterion: &mut Criterion) {
     let runtime = tokio::runtime::Runtime::new().unwrap();
 
-    c.bench_function("registration", |b| {
-        b.to_async(&runtime).iter_custom(|iters| async move {
+    criterion.bench_function("registration", |bencher| {
+        bencher.to_async(&runtime).iter_custom(|iters| async move {
             let init_args = get_client().await.1;
 
             let start = Instant::now();
@@ -44,8 +45,8 @@ fn criterion_benchmark(c: &mut Criterion) {
         });
     });
 
-    c.bench_function("send_message", |b| {
-        b.to_async(&runtime).iter_custom(|iters| async move {
+    criterion.bench_function("send_message", |bencher| {
+        bencher.to_async(&runtime).iter_custom(|iters| async move {
             let mut clients = get_pair_client().await;
 
             let start = Instant::now();

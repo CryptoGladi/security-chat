@@ -1,17 +1,12 @@
 //! Module for [ECDH](https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman)
 
 use crate::client::impl_crypto::error::Error;
-pub use ephemeral_secret_def::EphemeralSecretDef;
 use fcore::prelude::get_crypto;
 use log::debug;
 use p384::ecdh::SharedSecret;
 pub use p384::ecdh::{EphemeralSecret, SharedSecret as RawSharedSecter};
 pub use p384::elliptic_curve::sec1::ToEncodedPoint;
-use p384::elliptic_curve::NonZeroScalar;
-use p384::NistP384;
 pub use p384::{EncodedPoint, PublicKey};
-
-pub mod ephemeral_secret_def;
 
 pub fn get_public_info() -> Result<(EphemeralSecret, PublicKey), Error> {
     debug!("run get_public_info");

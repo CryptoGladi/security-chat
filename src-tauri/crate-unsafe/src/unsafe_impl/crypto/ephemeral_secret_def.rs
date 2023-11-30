@@ -1,9 +1,9 @@
 //! Module for `newtype` [`EphemeralSecret`]
 
-use crate::client::impl_crypto::ecdh::NistP384;
-use crate::client::impl_crypto::ecdh::NonZeroScalar;
-use crate::client::EphemeralSecret;
 use log::debug;
+use p384::ecdh::EphemeralSecret;
+use p384::elliptic_curve::NonZeroScalar;
+use p384::NistP384;
 use serde::{Deserialize, Serialize};
 
 #[allow(clippy::unsafe_derive_deserialize)]
@@ -53,7 +53,7 @@ impl EphemeralSecretDef {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::client::impl_crypto::ecdh::{get_public_info, get_shared_secret};
+    use api_lower_level::client::impl_crypto::ecdh::{get_public_info, get_shared_secret};
     use fcore::prelude::{BincodeConfig, Config};
     use temp_dir::TempDir;
 
@@ -61,6 +61,8 @@ mod tests {
     fn test_ecdh_with_ephemeral_secret_def() {
         let (alice_secret, alice_public_key) = get_public_info().unwrap();
 
+        // SAFETY:
+        // See [`EphemeralSecretDef`] doc
         let alice_secret = unsafe {
             let temp_dir = TempDir::new().unwrap();
             let config = BincodeConfig::new(temp_dir.child("secter.temp"));
@@ -81,10 +83,12 @@ mod tests {
     }
 
     #[test]
-    fn impl_partial_eqq() {
+    fn impl_partial_eq() {
         let (alice_secret, _) = get_public_info().unwrap();
         let (bob_secret, _) = get_public_info().unwrap();
 
+        // SAFETY:
+        // See [`EphemeralSecretDef`] doc
         let (alice_secret, bob_secret) = unsafe {
             (
                 EphemeralSecretDef::from(alice_secret),

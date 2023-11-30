@@ -1,4 +1,4 @@
-use super::*;
+use super::{debug, error, get_shared_secret, Aes, Client, PublicKey};
 use crate::client::error::Error;
 use api_lower_level::client::impl_crypto::error::Error as CryptoError;
 use crate_proto::AesKeyInfo;
@@ -104,7 +104,7 @@ mod tests {
         let mut iter = client_from.get_cryptos_for_accept().await.unwrap();
         assert!(!iter.is_empty());
 
-        for key in iter.iter_mut() {
+        for key in &mut iter {
             let _nickname = client_to.get_nickname();
             assert!(matches!(
                 key.delete(&mut client_from).await,
@@ -122,12 +122,7 @@ mod tests {
             .send_crypto(client_from.get_nickname())
             .await
             .unwrap();
-        for x in client_from
-            .get_cryptos_for_accept()
-            .await
-            .unwrap()
-            .iter_mut()
-        {
+        for x in &mut client_from.get_cryptos_for_accept().await.unwrap() {
             x.accept(&mut client_from).await.unwrap();
         }
 

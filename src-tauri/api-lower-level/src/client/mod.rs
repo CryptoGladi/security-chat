@@ -141,7 +141,7 @@ mod tests {
             .await
             .unwrap();
 
-        println!("client info: {client:?}");
+        log::info!("client info: {client:?}");
         assert!(!client.data_for_autification.auth_key.is_empty());
     }
 

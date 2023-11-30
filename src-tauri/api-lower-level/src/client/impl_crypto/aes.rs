@@ -61,6 +61,7 @@ impl Aes {
     /// # Panics
     ///
     /// **Impossible**, but only if the constants have the correct `SIZE_KEY` value
+    #[allow(clippy::unwrap_in_result)]
     pub fn encrypt(&self, message: &[u8]) -> Result<EncryptedMessage, Error> {
         debug!("encypting message...");
 

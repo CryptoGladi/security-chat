@@ -4,6 +4,7 @@ pub mod aes_key_for_accept;
 
 use super::*;
 pub use aes_key_for_accept::AesKeyForAccept;
+use crate_unsafe::safe_impl::crypto::ephemeral_secret_def;
 use match_cfg::match_cfg;
 
 impl Client {
@@ -19,7 +20,7 @@ impl Client {
         }
 
         let secret = self.lower_level_client.send_aes_key(&nickname_from).await?;
-        let secret_def = unsafe { EphemeralSecretDef::from(secret) };
+        let secret_def = ephemeral_secret_def::from(secret);
 
         self.config
             .order_adding_crypto
@@ -74,7 +75,7 @@ impl Client {
             trace!("iter key_info: {:?}", key_info);
 
             let nickname_from = key_info.nickname_from.clone();
-            let (Some(nickname_from_public_key), Some(ephemeral_secret_def)) = (
+            let (Some(nickname_from_public_key), Some(ephemeral_secret)) = (
                 &key_info.nickname_from_public_key,
                 self.config.order_adding_crypto.get(&nickname_from),
             ) else {
@@ -97,7 +98,7 @@ impl Client {
                 continue;
             };
 
-            let secret = unsafe { ephemeral_secret_def.clone().get() };
+            let secret = ephemeral_secret_def::get(ephemeral_secret.clone());
 
             let shared_secret = get_shared_secret(
                 &secret,

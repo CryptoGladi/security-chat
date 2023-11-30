@@ -184,7 +184,8 @@ impl<'de> Deserialize<'de> for ClientConfig {
 
 #[cfg(test)]
 mod tests {
-    use api_lower_level::client::impl_crypto::ecdh::{EphemeralSecret, EphemeralSecretDef};
+    use api_lower_level::client::impl_crypto::ecdh::EphemeralSecret;
+    use crate_unsafe::safe_impl::crypto::ephemeral_secret_def;
     use fcore::rand::get_crypto;
 
     use super::*;
@@ -193,12 +194,10 @@ mod tests {
     fn deserialize() {
         let mut test_data = ClientConfig::default();
 
-        unsafe {
-            test_data.order_adding_crypto.insert(
-                "test_nickname".to_string(),
-                EphemeralSecretDef::from(EphemeralSecret::random(&mut get_crypto())),
-            );
-        }
+        test_data.order_adding_crypto.insert(
+            "test_nickname".to_string(),
+            ephemeral_secret_def::from(EphemeralSecret::random(&mut get_crypto())),
+        );
 
         let json = serde_json::to_string_pretty(&test_data).unwrap();
 

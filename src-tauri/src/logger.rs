@@ -16,6 +16,7 @@ const ALL_WORKSPACE_CRATE: &[&str] = &[
     "crate_proto",
     "cache",
     "security_chat",
+    "crate_unsafe",
 ];
 
 /// Raw logger

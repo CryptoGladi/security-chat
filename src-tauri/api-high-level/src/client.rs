@@ -4,7 +4,7 @@ use self::notification::Notification;
 use api_lower_level::client::{
     impl_crypto::{
         aes::Aes,
-        ecdh::{get_shared_secret, EphemeralSecretDef, PublicKey},
+        ecdh::{get_shared_secret, PublicKey},
     },
     Client as LowerLevelClient,
 };
@@ -14,7 +14,7 @@ use fcore::prelude::BincodeConfig;
 use impl_config::client_init_config::ClientInitArgs;
 use impl_config::ClientConfig;
 use kanal::AsyncReceiver;
-use log::*;
+use log::{debug, error, info, trace};
 
 pub mod error;
 pub mod impl_config;
@@ -38,7 +38,7 @@ impl Client {
         let raw_client =
             LowerLevelClient::registration(nickname, init_args.address_to_server.clone()).await?;
 
-        let cache = init_args.get_cache().await.unwrap();
+        let cache = init_args.get_cache().await?;
 
         info!(
             "new registration: {}",

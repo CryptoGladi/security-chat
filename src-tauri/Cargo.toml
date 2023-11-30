@@ -45,7 +45,7 @@ debug-assertions = false
 overflow-checks = false
 
 [workspace]
-members = ["api-lower-level", "api-high-level", "crate-proto", "vim-like-command", "cache", "fcore"]
+members = ["api-lower-level", "api-high-level", "crate-proto", "vim-like-command", "cache", "fcore", "crate-unsafe"]
 
 [workspace.dependencies]
 log = "0.4.19"
@@ -60,6 +60,7 @@ anyhow = "1.0.75"
 async-trait = "0.1.73"
 const_format = "0.2.31"
 criterion = { version = "0.5.1", features = ["async_tokio"] }
+p384 = { version = "0.13.0", default-features = false, features = ["ecdh", "serde"] }
 
 [workspace.lints.clippy]
 all = "warn"
