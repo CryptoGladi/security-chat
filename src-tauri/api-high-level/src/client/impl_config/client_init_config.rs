@@ -15,19 +15,19 @@ impl ClientInitArgs {
         path_to_config_file: P,
         address_to_server: impl TryInto<http::Uri>,
         path_to_cache: Option<PathBuf>,
-    ) -> Self
+    ) -> Option<Self>
     where
         P: AsRef<Path>,
     {
         let Ok(address_to_server) = address_to_server.try_into() else {
-            panic!("address_to_server.try_into() error");
+            return None;
         };
 
-        Self {
+        Some(Self {
             path_to_config_file: path_to_config_file.as_ref().into(),
             address_to_server,
             path_to_cache,
-        }
+        })
     }
 
     pub async fn get_cache(&self) -> Result<Option<CacheSQLite>, Error> {

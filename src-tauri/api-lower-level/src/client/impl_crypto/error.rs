@@ -10,4 +10,7 @@ pub enum Error {
 
     #[error("key has already been accepted from user: {0}")]
     KeyAlreadyAccepted(String),
+
+    #[error("key is invalid")]
+    InvalidKey,
 }

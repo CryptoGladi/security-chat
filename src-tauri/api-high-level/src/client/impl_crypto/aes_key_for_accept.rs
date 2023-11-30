@@ -1,6 +1,7 @@
 use super::{debug, error, get_shared_secret, Aes, Client, PublicKey};
 use crate::client::error::Error;
 use api_lower_level::client::impl_crypto::error::Error as CryptoError;
+use api_lower_level::client::impl_crypto::error::Error::InvalidKey;
 use crate_proto::AesKeyInfo;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -26,13 +27,20 @@ impl AesKeyForAccept {
         Ok(())
     }
 
+    /// Accept
+    ///
+    /// # Panics
+    ///
+    /// If [`std::sync::RwLock`] in broken
     pub async fn accept(&mut self, client: &mut Client) -> Result<(), Error> {
         debug!("run accept with id: {}", self.0.id);
         self.check_key_is_already_accepted()?;
 
         let secret = client.lower_level_client.set_aes_key(self.0.id).await?;
-        let public_key =
-            PublicKey::from_sec1_bytes(&self.0.nickname_to_public_key.clone()[..]).unwrap();
+
+        let public_key = PublicKey::from_sec1_bytes(&self.0.nickname_to_public_key.clone()[..])
+            .map_err(|_| Error::Crypto(InvalidKey))?;
+
         let shared = get_shared_secret(&secret, &public_key);
         let aes = Aes::with_shared_key(&shared);
 

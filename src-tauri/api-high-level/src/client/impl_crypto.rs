@@ -2,8 +2,9 @@
 
 pub mod aes_key_for_accept;
 
-use super::*;
+use super::{debug, error, get_shared_secret, trace, Aes, Client, Error, PublicKey};
 pub use aes_key_for_accept::AesKeyForAccept;
+use api_lower_level::client::impl_crypto::error::Error::InvalidKey;
 use crate_unsafe::safe_impl::crypto::ephemeral_secret_def;
 use match_cfg::match_cfg;
 
@@ -47,7 +48,7 @@ impl Client {
         Ok(aes_info.map(AesKeyForAccept).collect())
     }
 
-    pub async fn get_order_adding_crypto(&self) -> impl Iterator<Item = String> + '_ {
+    pub fn get_order_adding_crypto(&self) -> impl Iterator<Item = String> + '_ {
         debug!("run `get_request_for_send_crypto`");
 
         self.config.order_adding_crypto.iter().map(|x| x.0.clone())
@@ -58,7 +59,7 @@ impl Client {
 
         let mut aes_info = self.get_cryptos_for_accept().await?;
 
-        for i in aes_info.iter_mut() {
+        for i in &mut aes_info {
             i.accept(self).await?;
         }
 
@@ -66,6 +67,10 @@ impl Client {
     }
 
     /// Auto adding crypto
+    ///
+    /// # Panics
+    ///
+    /// If [`std::sync::RwLock`] is broken
     pub async fn refresh_cryptos(&mut self) -> Result<(), Error> {
         debug!("run refresh_cryptos");
 
@@ -102,7 +107,8 @@ impl Client {
 
             let shared_secret = get_shared_secret(
                 &secret,
-                &PublicKey::from_sec1_bytes(&nickname_from_public_key[..]).unwrap(),
+                &PublicKey::from_sec1_bytes(&nickname_from_public_key[..])
+                    .map_err(|_| Error::Crypto(InvalidKey))?,
             );
             let aes = Aes::with_shared_key(&shared_secret);
 
@@ -125,9 +131,10 @@ impl Client {
 }
 
 #[cfg(test)]
+#[allow(clippy::panic)]
 mod tests {
-    use super::*;
     use crate::client::impl_message::Message;
+    use crate::prelude::Event;
     use crate::test_utils::get_client;
     use test_log::test;
 
@@ -140,7 +147,8 @@ mod tests {
             .send_crypto(client_from.get_nickname())
             .await
             .unwrap();
-        let a: Vec<String> = client_from
+
+        let cryptos_for_accept: Vec<String> = client_from
             .get_cryptos_for_accept()
             .await
             .unwrap()
@@ -148,7 +156,7 @@ mod tests {
             .map(|x| x.0.nickname_to.clone())
             .collect();
 
-        assert_eq!(a, vec![client_to.get_nickname()]);
+        assert_eq!(cryptos_for_accept, vec![client_to.get_nickname()]);
     }
 
     #[test(tokio::test)]
@@ -166,15 +174,14 @@ mod tests {
 
         let notification = recv_from.recv().await.unwrap();
 
-        let notification::Event::NewSentAcceptAesKey(mut key_for_accept) = notification.event
-        else {
+        let Event::NewSentAcceptAesKey(mut key_for_accept) = notification.event else {
             panic!();
         };
         key_for_accept.accept(&mut client_from).await.unwrap();
 
         let notification = recv_to.recv().await.unwrap();
 
-        if let notification::Event::NewAcceptAesKey(key) = notification.event {
+        if let Event::NewAcceptAesKey(key) = notification.event {
             assert_eq!(key_for_accept.0.id, key.id);
             assert_eq!(key_for_accept.0.nickname_from, key.nickname_from);
             assert_eq!(key_for_accept.0.nickname_to, key.nickname_to);
@@ -190,19 +197,19 @@ mod tests {
             panic!();
         }
 
-        const TEXT_MESSAGE: &str = "MESSAGE";
+        let test_message = "MESSAGE";
 
         client_to
             .send_message(
                 client_from.get_nickname(),
-                Message::new(TEXT_MESSAGE.to_string()),
+                Message::new(test_message.to_string()),
             )
             .await
             .unwrap();
 
         let notification = recv_from.recv().await.unwrap();
-        if let notification::Event::NewMessage(message) = notification.event {
-            assert_eq!(message.body.text, TEXT_MESSAGE);
+        if let Event::NewMessage(message) = notification.event {
+            assert_eq!(message.body.text, test_message);
         } else {
             panic!()
         }
@@ -221,11 +228,12 @@ mod tests {
         client_from.accept_all_cryptos().await.unwrap();
         client_to.refresh_cryptos().await.unwrap();
 
-        // Проверка ключей
-        println!("nickname_to: {}", client_to.get_nickname());
-        println!("client_to: {:?}", client_to.config.storage_crypto);
-        println!("nickname_from: {}", client_from.get_nickname());
-        println!("client_from: {:?}", client_from.config.storage_crypto);
+        // Check keys
+        log::info!("nickname_to: {}", client_to.get_nickname());
+        log::info!("client_to: {:?}", client_to.config.storage_crypto);
+        log::info!("nickname_from: {}", client_from.get_nickname());
+        log::info!("client_from: {:?}", client_from.config.storage_crypto);
+
         assert_eq!(
             client_to
                 .config
@@ -271,10 +279,7 @@ mod tests {
             .await
             .unwrap();
 
-        let order_adding_crypto = client_to
-            .get_order_adding_crypto()
-            .await
-            .collect::<Vec<String>>();
+        let order_adding_crypto = client_to.get_order_adding_crypto().collect::<Vec<String>>();
         assert_eq!(order_adding_crypto, vec![client_from.get_nickname()]);
     }
 }

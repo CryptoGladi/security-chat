@@ -306,6 +306,5 @@ pub async fn get_order_adding_crypto() -> Vec<String> {
         .as_ref()
         .unwrap()
         .get_order_adding_crypto()
-        .await
         .collect()
 }

@@ -12,6 +12,7 @@ pub static CLIENT_INIT_CONFIG: Lazy<ClientInitArgs> = Lazy::new(|| {
         get_env_var("ADDRESS_SERVER"),
         Some(dir.join("cache.db")),
     )
+    .unwrap()
 });
 
 pub static VIM_RUNNER: Lazy<Mutex<Runner<'_>>> =

@@ -7,7 +7,6 @@ struct PairClient {
     pub client_from: Client,
 }
 
-#[allow(clippy::single_call_fn)]
 async fn get_pair_client() -> PairClient {
     let (_, _, mut client_to) = get_client().await;
     let (_, _, mut client_from) = get_client().await;

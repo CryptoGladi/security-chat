@@ -60,7 +60,7 @@ impl Client {
             }
         }
 
-        let cache = init_args.get_cache().await.unwrap();
+        let cache = init_args.get_cache().await?;
 
         Ok(Self {
             lower_level_client: LowerLevelClient {
@@ -76,7 +76,7 @@ impl Client {
     pub fn save_config(&self) -> Result<(), Error> {
         debug!("run save_config");
 
-        simple_save(&self.bincode_config, &self.config).unwrap();
+        simple_save(&self.bincode_config, &self.config)?;
         Ok(())
     }
 }
@@ -97,11 +97,11 @@ mod tests {
 
         let loaded_client = Client::load_config(client_config).await.unwrap();
 
-        println!(
+        log::info!(
             "loaded_client data: {:#?}",
             loaded_client.lower_level_client.data_for_autification
         );
-        println!("client data: {:#?}", client_data);
+        log::info!("client data: {:#?}", client_data);
 
         assert_eq!(
             loaded_client

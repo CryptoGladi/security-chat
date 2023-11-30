@@ -3,11 +3,12 @@
 use crate::prelude::*;
 use fcore::test_utils::{get_rand_string, PathsForTest, ADDRESS_SERVER};
 
+#[allow(clippy::missing_panics_doc)]
 pub async fn get_client() -> (PathsForTest, ClientInitArgs, Client) {
     let paths = PathsForTest::get();
 
     let client_config =
-        ClientInitArgs::new(paths.path_to_config_file.clone(), ADDRESS_SERVER, None);
+        ClientInitArgs::new(paths.path_to_config_file.clone(), ADDRESS_SERVER, None).unwrap();
 
     let client = Client::registration(&get_rand_string(20), client_config.clone())
         .await

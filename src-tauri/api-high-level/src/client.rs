@@ -56,6 +56,12 @@ impl Client {
         })
     }
 
+    /// Get all users
+    ///
+    /// # Panics
+    ///
+    /// If [`std::sync::RwLock`] is broken
+    #[allow(clippy::unwrap_in_result)]
     pub fn get_all_users(&self) -> Result<Vec<String>, Error> {
         let storage_crypto = self.config.storage_crypto.read().unwrap();
         Ok(storage_crypto.0.keys().cloned().collect())
@@ -69,6 +75,9 @@ impl Client {
         self.config.data_for_autification.nickname.clone()
     }
 
+    /// # Panics
+    ///
+    /// If your network in very bad
     pub async fn subscribe(&mut self) -> Result<AsyncReceiver<Notification>, Error> {
         debug!("run subscribe");
         let mut subscribe = self.lower_level_client.subscribe_to_notifications().await?;

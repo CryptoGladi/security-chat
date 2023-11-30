@@ -24,6 +24,7 @@ mod const_names {
 }
 
 impl Serialize for ClientConfig {
+    #[allow(clippy::unwrap_in_result)]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -47,6 +48,7 @@ impl Serialize for ClientConfig {
 
 use const_names::Field;
 
+#[allow(clippy::too_many_lines)]
 impl<'de> Deserialize<'de> for ClientConfig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
