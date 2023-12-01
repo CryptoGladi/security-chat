@@ -7,6 +7,7 @@ use fcore::prelude::*;
 use log::{debug, warn};
 
 pub mod check_version;
+pub mod fix;
 pub mod global;
 pub mod logger;
 pub mod path;
@@ -15,6 +16,8 @@ pub mod path;
 pub mod command;
 
 fn main() {
+    fix::all();
+
     color_backtrace::install();
     let panic_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {

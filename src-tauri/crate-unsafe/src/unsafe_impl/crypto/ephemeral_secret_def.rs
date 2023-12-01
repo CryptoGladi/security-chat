@@ -1,4 +1,4 @@
-//! Module for `newtype` [`EphemeralSecret`]
+//! Module for `newtype` [`EphemeralSecret`]. For
 
 use log::debug;
 use p384::ecdh::EphemeralSecret;
@@ -27,6 +27,9 @@ impl std::fmt::Debug for EphemeralSecretDef {
 static_assertions::assert_eq_size!(EphemeralSecret, EphemeralSecretDef);
 static_assertions::assert_eq_align!(EphemeralSecret, EphemeralSecretDef);
 static_assertions::assert_fields!(EphemeralSecretDef: scalar);
+
+// ERROR: private field
+//static_assertions::assert_fields!(EphemeralSecret: scalar);
 
 impl EphemeralSecretDef {
     /// # Safety
