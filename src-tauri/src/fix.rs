@@ -1,5 +1,7 @@
 //! Module for fixing other problems
 
+use log::{debug, warn};
+
 /// Fix `WebKit` error for nvidia drivers
 ///
 /// # Explanation
@@ -19,10 +21,15 @@
 /// My personal message to Nvidia. [Link](https://youtu.be/JbovJbKALzA?si=LEMMk1Wp1fw8ggOH)
 fn webkit() {
     #[cfg(target_family = "unix")]
-    std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+    {
+        std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+        warn!("if program dont start, please, add 'nvidia_drm.modeset=1' in the kernel parameters");
+    }
 }
 
 pub fn all() {
+    debug!("running all fix");
+
     webkit();
 }
 
@@ -32,5 +39,10 @@ mod tests {
     #[cfg(target_family = "unix")]
     fn webkit() {
         super::webkit();
+    }
+
+    #[test]
+    fn all() {
+        super::all();
     }
 }

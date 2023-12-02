@@ -16,8 +16,6 @@ pub mod path;
 pub mod command;
 
 fn main() {
-    fix::all();
-
     color_backtrace::install();
     let panic_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
@@ -31,6 +29,8 @@ fn main() {
     logger::init().expect("logger init");
     warn!("running chat...");
     debug!("env server address: {}", get_env_var("ADDRESS_SERVER"));
+
+    fix::all();
 
     tauri::async_runtime::spawn(async {
         assert!(
