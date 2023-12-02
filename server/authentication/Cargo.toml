@@ -1,0 +1,17 @@
+[package]
+name = "authentication"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+jsonwebtoken = "9.2.0"
+tonic.workspace = true
+database = { path = "../database" }
+crate-proto = { path = "../crate-proto" }
+log.workspace = true
+diesel.workspace = true
+bb8.workspace = true
+diesel-async.workspace = true
+uuid = { version = "1.4.1", features = ["v4"] }
+serde.workspace = true
+serde_json.workspace = true

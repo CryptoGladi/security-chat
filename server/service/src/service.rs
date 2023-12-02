@@ -1,11 +1,12 @@
-use crate::database::{self, get_user_by_id, get_user_by_nickname, DbPool};
-use crate::models::{Message as DbMessage, *};
-use crate::schema;
-use crate::schema::chat_messages::dsl::{chat_messages, created_at, recipient_id, sender_id};
-use crate::schema::order_add_keys::dsl::*;
-use crate::schema::users::dsl::{nickname, users};
 use crate_proto::security_chat::*;
 use crate_proto::SecurityChat;
+use database::models::{Message as DbMessage, *};
+use database::schema;
+use database::schema::chat_messages::dsl::{chat_messages, created_at, recipient_id, sender_id};
+use database::schema::order_add_keys::dsl::*;
+use database::schema::users::dsl::{nickname, users};
+use database::DbPool;
+use database::{get_user_by_id, get_user_by_nickname};
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use log::{error, info};

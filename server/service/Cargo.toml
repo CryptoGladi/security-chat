@@ -4,10 +4,6 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-diesel = { version = "2.1.0", features = ["chrono"] }
-diesel-async = { version = "0.3.1", features = ["postgres", "bb8"] }
-bb8 = "0.8.1"
-chrono = "0.4.26"
 tokio.workspace = true
 tokio-stream = "0.1.14"
 tonic.workspace = true
@@ -15,3 +11,7 @@ uuid = { version = "1.4.1", features = ["v4"] }
 log.workspace = true
 crate-proto = { path = "../crate-proto" }
 rand = "0.8.5"
+database = { path = "../database" }
+diesel.workspace = true
+bb8.workspace = true
+diesel-async.workspace = true

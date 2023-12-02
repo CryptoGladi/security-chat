@@ -7,6 +7,9 @@ use diesel_async::AsyncPgConnection;
 use diesel_async::RunQueryDsl;
 use std::env;
 
+pub mod models;
+pub mod schema;
+
 pub type DbPool = Pool<AsyncDieselConnectionManager<AsyncPgConnection>>;
 pub type PoolledDb<'a> = bb8::PooledConnection<
     'a,

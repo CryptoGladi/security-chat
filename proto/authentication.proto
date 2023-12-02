@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package authentication;
+
+service Authentication {
+  rpc Registration(RegistrationRequest) returns (JWTReply);
+
+  rpc Login(LoginRequest) returns (JWTReply);
+}
+
+message RegistrationRequest { string nickname = 1; }
+
+message LoginRequest {
+  string nickname = 1;
+  string auth_key = 2;
+  string jwt = 3;
+};
+
+message JWTReply {
+  string jwt = 1;
+}

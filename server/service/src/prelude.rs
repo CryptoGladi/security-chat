@@ -1,4 +1,3 @@
-use crate::database;
 use crate::service::SecurityChatService;
 use crate_proto::SecurityChatServer;
 use tokio::sync::broadcast;

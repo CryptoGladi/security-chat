@@ -1,0 +1,11 @@
+[package]
+name = "database"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+bb8.workspace = true
+diesel.workspace = true
+diesel-async.workspace = true
+chrono.workspace = true
+tonic.workspace = true
