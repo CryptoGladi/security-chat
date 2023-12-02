@@ -3,10 +3,11 @@ use api_high_level::{
     client::impl_message::{Message, MessageInfo},
     prelude::*,
 };
-use log::*;
+use log::{debug, error, info, trace};
 use rand::Rng;
 use rnglib::{Language, RNG};
 use tauri::{Manager, Runtime, Size};
+use Event::{NewAcceptAesKey, NewMessage, NewSentAcceptAesKey};
 
 pub async fn load_client(app: tauri::AppHandle) {
     let mut client = Client::load_config(global::CLIENT_INIT_CONFIG.clone())
@@ -29,7 +30,6 @@ pub async fn load_client(app: tauri::AppHandle) {
             let nofity = recv.recv().await.unwrap();
             info!("new nofity: {:?}", nofity);
 
-            use Event::*;
             match nofity.event {
                 NewMessage(message) => {
                     app.emit_all("new-message", message).unwrap();
@@ -120,6 +120,7 @@ pub async fn get_all_users() -> Vec<String> {
 }
 
 #[tauri::command]
+#[allow(clippy::module_name_repetitions)]
 pub async fn fuzzy_search_vim_command(command: String) -> Vec<String> {
     let result = global::VIM_RUNNER
         .lock()
@@ -144,6 +145,7 @@ pub async fn change_window_for_main_page<R: Runtime>(window: tauri::Window<R>) {
 }
 
 #[tauri::command]
+#[allow(clippy::module_name_repetitions)]
 pub async fn run_command(command: String) {
     let mut client = global::LOADED_CLIENT.write().await;
 
@@ -304,6 +306,5 @@ pub async fn get_order_adding_crypto() -> Vec<String> {
         .as_ref()
         .unwrap()
         .get_order_adding_crypto()
-        .await
         .collect()
 }

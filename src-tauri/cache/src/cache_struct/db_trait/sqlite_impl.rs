@@ -1,7 +1,7 @@
 //! [SQLite](https://www.sqlite.org/index.html) database engine
 
-use super::*;
-use log::{trace, debug};
+use super::{async_trait, CacheResult, DBOptions, Error, DB};
+use log::{debug, trace};
 use sqlx::sqlite::{SqliteAutoVacuum, SqliteConnectOptions};
 use sqlx::{Pool, Row, Sqlite, SqlitePool};
 
@@ -157,14 +157,14 @@ mod tests {
     #[test(tokio::test)]
     async fn get_check_limit() {
         let (_temp_dir, mut sqlite) = create_database().await;
-        const LIMIT_DESC: usize = 10;
+        let limit_desc: usize = 10;
 
         for _ in 0..100 {
             sqlite.put("ke", b"many_values".to_vec()).await.unwrap();
         }
 
-        let data = sqlite.get("ke", LIMIT_DESC).await.unwrap();
-        assert_eq!(data.len(), LIMIT_DESC);
+        let data = sqlite.get("ke", limit_desc).await.unwrap();
+        assert_eq!(data.len(), limit_desc);
     }
 
     #[test(tokio::test)]

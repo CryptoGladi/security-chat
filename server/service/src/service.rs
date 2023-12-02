@@ -16,6 +16,7 @@ use tonic::{Request, Response, Status};
 type MessageProducer = tokio::sync::broadcast::Sender<Notification>;
 type MessageConsumer = tokio::sync::broadcast::Receiver<Notification>;
 
+#[derive(Debug)]
 pub struct SecurityChatService {
     pub db_pool: DbPool,
     pub producer: MessageProducer,
@@ -251,12 +252,10 @@ impl SecurityChat for SecurityChatService {
             .send(Notification {
                 nickname_from: request.get_ref().nickname_from.clone(),
                 by_nickname: user_for_check.nickname.clone(),
-                notice: Some(notification::Notice::NewMessage(
-                    MessageWithId {
-                        message: request.get_ref().clone().message,
-                        id: ids[0]
-                    }
-                )),
+                notice: Some(notification::Notice::NewMessage(MessageWithId {
+                    message: request.get_ref().clone().message,
+                    id: ids[0],
+                })),
             })
             .unwrap();
 

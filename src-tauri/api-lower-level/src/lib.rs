@@ -4,6 +4,8 @@
 //! 1. A wrapper for [gRPC](https://grpc.io/) calls
 //! 2. tools for data encryption decryption
 
+#![forbid(unsafe_code)]
+
 pub mod client;
 
 #[cfg(test)]

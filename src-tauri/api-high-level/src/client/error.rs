@@ -1,4 +1,3 @@
-use api_lower_level::client::impl_crypto::error::CryptoError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -22,7 +21,7 @@ pub enum Error {
     StorageCrypto(#[from] crate::client::storage_crypto::error::Error),
 
     #[error("cryptography problem: `{0}`")]
-    Crypto(#[from] CryptoError),
+    Crypto(#[from] api_lower_level::client::impl_crypto::error::Error),
 
     #[error("problem in bincode: `{0}`")]
     Bincode(#[from] bincode::Error),

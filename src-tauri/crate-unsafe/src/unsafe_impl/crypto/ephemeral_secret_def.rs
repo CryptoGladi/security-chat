@@ -1,11 +1,12 @@
-//! Module for `newtype` [`p384::ecdh::EphemeralSecret`]
+//! Module for `newtype` [`EphemeralSecret`]. For
 
-use crate::client::impl_crypto::ecdh::NistP384;
-use crate::client::impl_crypto::ecdh::NonZeroScalar;
-use crate::client::EphemeralSecret;
 use log::debug;
+use p384::ecdh::EphemeralSecret;
+use p384::elliptic_curve::NonZeroScalar;
+use p384::NistP384;
 use serde::{Deserialize, Serialize};
 
+#[allow(clippy::unsafe_derive_deserialize)]
 #[derive(Serialize, Deserialize, Clone)]
 pub struct EphemeralSecretDef {
     pub scalar: NonZeroScalar<NistP384>,
@@ -18,8 +19,8 @@ impl PartialEq for EphemeralSecretDef {
 }
 
 impl std::fmt::Debug for EphemeralSecretDef {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "EphemeralSecretDef")
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(formatter, "EphemeralSecretDef")
     }
 }
 
@@ -27,10 +28,14 @@ static_assertions::assert_eq_size!(EphemeralSecret, EphemeralSecretDef);
 static_assertions::assert_eq_align!(EphemeralSecret, EphemeralSecretDef);
 static_assertions::assert_fields!(EphemeralSecretDef: scalar);
 
+// ERROR: private field
+//static_assertions::assert_fields!(EphemeralSecret: scalar);
+
 impl EphemeralSecretDef {
     /// # Safety
     ///
     /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
+    #[must_use]
     pub unsafe fn from(x: EphemeralSecret) -> Self {
         debug!("from");
 
@@ -40,6 +45,7 @@ impl EphemeralSecretDef {
     /// # Safety
     ///
     /// For a safe conversion, the structs must be the same. Therefore, do not upgrade the [`p384`] crate without a good reason
+    #[must_use]
     pub unsafe fn get(self) -> EphemeralSecret {
         debug!("get");
 
@@ -50,7 +56,7 @@ impl EphemeralSecretDef {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::client::impl_crypto::ecdh::{get_public_info, get_shared_secret};
+    use api_lower_level::client::impl_crypto::ecdh::{get_public_info, get_shared_secret};
     use fcore::prelude::{BincodeConfig, Config};
     use temp_dir::TempDir;
 
@@ -58,6 +64,8 @@ mod tests {
     fn test_ecdh_with_ephemeral_secret_def() {
         let (alice_secret, alice_public_key) = get_public_info().unwrap();
 
+        // SAFETY:
+        // See [`EphemeralSecretDef`] doc
         let alice_secret = unsafe {
             let temp_dir = TempDir::new().unwrap();
             let config = BincodeConfig::new(temp_dir.child("secter.temp"));
@@ -78,10 +86,12 @@ mod tests {
     }
 
     #[test]
-    fn impl_partial_eqq() {
+    fn impl_partial_eq() {
         let (alice_secret, _) = get_public_info().unwrap();
         let (bob_secret, _) = get_public_info().unwrap();
 
+        // SAFETY:
+        // See [`EphemeralSecretDef`] doc
         let (alice_secret, bob_secret) = unsafe {
             (
                 EphemeralSecretDef::from(alice_secret),

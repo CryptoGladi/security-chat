@@ -1,5 +1,7 @@
-use super::*;
-use api_lower_level::client::impl_crypto::error::CryptoError;
+use super::{debug, error, get_shared_secret, Aes, Client, PublicKey};
+use crate::client::error::Error;
+use api_lower_level::client::impl_crypto::error::Error as CryptoError;
+use api_lower_level::client::impl_crypto::error::Error::InvalidKey;
 use crate_proto::AesKeyInfo;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -25,15 +27,22 @@ impl AesKeyForAccept {
         Ok(())
     }
 
+    /// Accept
+    ///
+    /// # Panics
+    ///
+    /// If [`std::sync::RwLock`] in broken
     pub async fn accept(&mut self, client: &mut Client) -> Result<(), Error> {
         debug!("run accept with id: {}", self.0.id);
         self.check_key_is_already_accepted()?;
 
         let secret = client.lower_level_client.set_aes_key(self.0.id).await?;
-        let public_key =
-            PublicKey::from_sec1_bytes(&self.0.nickname_to_public_key.clone()[..]).unwrap();
+
+        let public_key = PublicKey::from_sec1_bytes(&self.0.nickname_to_public_key.clone()[..])
+            .map_err(|_| Error::Crypto(InvalidKey))?;
+
         let shared = get_shared_secret(&secret, &public_key);
-        let aes = Aes::with_shared_key(shared);
+        let aes = Aes::with_shared_key(&shared);
 
         client
             .config
@@ -57,11 +66,10 @@ impl AesKeyForAccept {
 
 #[cfg(test)]
 mod tests {
-    use super::AesKeyForAccept;
+    use super::{AesKeyForAccept, CryptoError};
     use crate::client::error::Error;
     use crate::client::Client;
     use crate::test_utils::get_client;
-    use api_lower_level::client::impl_crypto::error::CryptoError;
     use test_log::test;
 
     async fn iter_function(
@@ -92,7 +100,7 @@ mod tests {
             .is_empty());
     }
 
-    #[test[tokio::test]]
+    #[test(tokio::test)]
     async fn delete_with_panic_key_is_already_accepted() {
         let (_paths, _, mut client_to) = get_client().await;
         let (_paths, _, mut client_from) = get_client().await;
@@ -104,7 +112,7 @@ mod tests {
         let mut iter = client_from.get_cryptos_for_accept().await.unwrap();
         assert!(!iter.is_empty());
 
-        for key in iter.iter_mut() {
+        for key in &mut iter {
             let _nickname = client_to.get_nickname();
             assert!(matches!(
                 key.delete(&mut client_from).await,
@@ -122,12 +130,7 @@ mod tests {
             .send_crypto(client_from.get_nickname())
             .await
             .unwrap();
-        for x in client_from
-            .get_cryptos_for_accept()
-            .await
-            .unwrap()
-            .iter_mut()
-        {
+        for x in &mut client_from.get_cryptos_for_accept().await.unwrap() {
             x.accept(&mut client_from).await.unwrap();
         }
 

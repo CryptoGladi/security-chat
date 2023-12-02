@@ -1,11 +1,16 @@
 //! Main module for API
 
 use crate::client::impl_crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
-use crate_proto::*;
+use crate_proto::{
+    AesKeyInfo, Check, CheckValidRequest, DeleteAesKeyRequest, GetAesKeyRequest,
+    GetLatestMessagesReply, GetLatestMessagesRequest, Message, NicknameIsTakenRequest,
+    Notification, RegistrationRequest, SecurityChatClient, SendAesKeyRequest, SendMessageRequest,
+    SetUserFromAesKeyRequest,
+};
 use error::Error;
 use http::uri::Uri;
-use log::*;
-use max_size::*;
+use log::{debug, trace};
+use max_size::{MAX_LEN_MESSAGE, MAX_LIMIT_GET_MESSAGES};
 use serde::{Deserialize, Serialize};
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
@@ -135,8 +140,8 @@ mod tests {
         let client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
-        println!("client info: {:?}", client);
 
+        log::info!("client info: {client:?}");
         assert!(!client.data_for_autification.auth_key.is_empty());
     }
 

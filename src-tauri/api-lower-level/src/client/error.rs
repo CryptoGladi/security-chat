@@ -1,10 +1,9 @@
-use crate::client::impl_crypto::error::CryptoError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("cryptography problem: `{0}`")]
-    Crypto(#[from] CryptoError),
+    Crypto(#[from] crate::client::impl_crypto::error::Error),
 
     #[error("transport problem: `{0}`")]
     Transport(#[from] tonic::transport::Error),

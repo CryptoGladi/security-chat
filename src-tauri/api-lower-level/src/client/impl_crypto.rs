@@ -32,7 +32,10 @@ pub mod aes;
 pub mod ecdh;
 pub mod error;
 
-use super::*;
+use super::{
+    debug, impl_crypto, AesKeyInfo, Check, Client, DeleteAesKeyRequest, EphemeralSecret, Error,
+    GetAesKeyRequest, SendAesKeyRequest, SetUserFromAesKeyRequest, ToEncodedPoint,
+};
 
 impl Client {
     /// Delete key for **server**
@@ -53,6 +56,10 @@ impl Client {
     }
 
     /// Generate and send key to **server**
+    ///
+    /// # Panics
+    ///
+    /// Can't send to yourself
     pub async fn send_aes_key(&mut self, nickname_form: &str) -> Result<EphemeralSecret, Error> {
         debug!("run `send_aes_key` by nickname_from: {}", nickname_form);
 
@@ -106,7 +113,7 @@ impl Client {
             public_key: public_key.to_encoded_point(true).as_bytes().to_vec(),
         });
 
-        self.grpc.set_user_from_aes_key(request).await.unwrap();
+        self.grpc.set_user_from_aes_key(request).await?;
         Ok(secret)
     }
 }
@@ -127,7 +134,7 @@ mod tests {
             Client::registration(&get_rand_string(20), ADDRESS_SERVER.parse().unwrap())
                 .await
                 .unwrap();
-        println!("client_to data: {:?}", client_to.data_for_autification);
+        log::info!("client_to data: {:?}", client_to.data_for_autification);
 
         let secret_to = client_to
             .send_aes_key(&client_from.data_for_autification.nickname)
@@ -135,11 +142,11 @@ mod tests {
             .unwrap();
         let keys = client_from.get_aes_keys().await.unwrap();
 
-        println!("keys: {:?}", keys);
+        log::info!("keys: {keys:?}");
 
         let secter_from = client_from.set_aes_key(keys[0].id).await.unwrap();
         let new_keys = client_from.get_aes_keys().await.unwrap();
-        println!("new_keys: {:?}", new_keys);
+        log::info!("new_keys: {new_keys:?}");
 
         let public_from =
             PublicKey::from_sec1_bytes(&new_keys[0].nickname_from_public_key.clone().unwrap()[..])

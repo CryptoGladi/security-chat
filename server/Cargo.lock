@@ -1270,6 +1270,7 @@ dependencies = [
  "diesel",
  "diesel-async",
  "log",
+ "rand",
  "tokio",
  "tokio-stream",
  "tonic",

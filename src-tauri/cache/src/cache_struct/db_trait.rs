@@ -23,7 +23,7 @@ impl DBOptions {
 
 /// Database engine
 ///
-/// For error handling use [crate::cache_struct::error::Error::Db]
+/// For error handling use [Error::Db]
 #[async_trait]
 pub trait DB
 where

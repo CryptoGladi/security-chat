@@ -2,3 +2,4 @@ disallowed-types = [
     { path = "std::collections::HashMap", reason = "HashMap in std is slow. Use HashMap from hashbrown" },
     { path = "std::collections::HashSet", reason = "HashSet in std is slow. Use HashSet from hashbrown" },
 ]
+allowed-scripts = ["Latin"]

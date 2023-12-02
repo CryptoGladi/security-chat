@@ -2,7 +2,7 @@
 
 use super::impl_crypto::AesKeyForAccept;
 use super::impl_message::MessageInfo;
-use super::{storage_crypto::StorageCrypto, *};
+use super::{storage_crypto::StorageCrypto, Client, Error};
 use crate_proto::AesKeyInfo;
 use crate_proto::Notice::{NewAcceptAesKey, NewMessage, NewSendAesKey};
 use crate_proto::Notification as RawNotification;
@@ -21,6 +21,10 @@ pub struct Notification {
 }
 
 impl Client {
+    /// # Panics
+    ///
+    /// If [`RawNotification`] is broken
+    #[allow(clippy::unwrap_in_result)]
     pub(crate) fn nofity(
         storage_crypto: &StorageCrypto,
         raw: RawNotification,
@@ -30,7 +34,7 @@ impl Client {
                 body: Client::decrypt_message(
                     storage_crypto,
                     message.message.unwrap(),
-                    raw.by_nickname.clone(),
+                    &raw.by_nickname.clone(),
                 )?,
                 sender: raw.by_nickname.clone(),
                 id: message.id,

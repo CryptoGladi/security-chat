@@ -1,17 +1,23 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![forbid(unsafe_code)]
 
-use crate::check_version::smart_check_version;
+use crate::check_version::smart as check_version_smart;
 use fcore::prelude::*;
-use log::{warn, debug};
+use log::{debug, warn};
 
 pub mod check_version;
-pub mod command;
+pub mod fix;
 pub mod global;
 pub mod logger;
 pub mod path;
 
+#[allow(clippy::missing_panics_doc)]
+pub mod command;
+
 fn main() {
+    fix::all();
+
     color_backtrace::install();
     let panic_hook = std::panic::take_hook();
     std::panic::set_hook(Box::new(move |info| {
@@ -22,14 +28,15 @@ fn main() {
     }));
 
     dotenv::dotenv().ok();
-    logger::init_logger();
+    logger::init().expect("logger init");
     warn!("running chat...");
     debug!("env server address: {}", get_env_var("ADDRESS_SERVER"));
 
     tauri::async_runtime::spawn(async {
-        if !smart_check_version().await {
-            panic!("you have old version app. Please, update your app");
-        }
+        assert!(
+            check_version_smart().await,
+            "you have old version app. Please, update your app"
+        );
     });
 
     if !crate::path::get_app_folder().is_dir() {

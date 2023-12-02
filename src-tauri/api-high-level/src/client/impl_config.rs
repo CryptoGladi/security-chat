@@ -4,10 +4,10 @@ use self::client_init_config::ClientInitArgs;
 use super::storage_crypto::StorageCrypto;
 use super::Error;
 use super::{Client, LowerLevelClient};
-use api_lower_level::client::impl_crypto::ecdh::EphemeralSecretDef;
 use api_lower_level::client::DataForAutification;
+use crate_unsafe::safe_impl::crypto::ephemeral_secret_def::UnsafeEphemeralSecretDef;
 use fcore::prelude::BincodeConfig;
-use fcore::prelude::{config_simple_load, config_simple_save};
+use fcore::prelude::{simple_load, simple_save};
 use hashbrown::HashMap;
 use log::debug;
 use std::fmt::Debug;
@@ -17,13 +17,13 @@ pub mod client_init_config;
 pub mod impl_serde;
 
 pub type NicknameFrom = String;
-pub type Secret = EphemeralSecretDef;
+pub type Secret = UnsafeEphemeralSecretDef;
 
 /// All data for client
 ///
 /// # Warning
 ///
-/// After **changing** the fields, please change [this](crate::client::impl_config::impl_serde)
+/// After **changing** the fields, please change [this](impl_serde)
 #[derive(Default, Clone, Debug)]
 pub struct ClientConfig {
     pub data_for_autification: DataForAutification,
@@ -44,7 +44,7 @@ impl Client {
         debug!("run `load_config`");
 
         let bincode_config = BincodeConfig::new(init_args.path_to_config_file.clone());
-        let config: ClientConfig = config_simple_load(&bincode_config)?;
+        let config: ClientConfig = simple_load(&bincode_config)?;
         let api = LowerLevelClient::grpc_connect(init_args.address_to_server.clone()).await?;
 
         #[cfg(debug_assertions)]
@@ -60,7 +60,7 @@ impl Client {
             }
         }
 
-        let cache = init_args.get_cache().await.unwrap();
+        let cache = init_args.get_cache().await?;
 
         Ok(Self {
             lower_level_client: LowerLevelClient {
@@ -76,7 +76,7 @@ impl Client {
     pub fn save_config(&self) -> Result<(), Error> {
         debug!("run save_config");
 
-        config_simple_save(&self.bincode_config, &self.config).unwrap();
+        simple_save(&self.bincode_config, &self.config)?;
         Ok(())
     }
 }
@@ -97,11 +97,11 @@ mod tests {
 
         let loaded_client = Client::load_config(client_config).await.unwrap();
 
-        println!(
+        log::info!(
             "loaded_client data: {:#?}",
             loaded_client.lower_level_client.data_for_autification
         );
-        println!("client data: {:#?}", client_data);
+        log::info!("client data: {:#?}", client_data);
 
         assert_eq!(
             loaded_client

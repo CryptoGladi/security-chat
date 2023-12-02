@@ -16,6 +16,8 @@ tokio = "1.29.1"
 cache = { path = "../cache" }
 log.workspace = true
 fcore = { path = "../fcore" }
+match_cfg = "0.1.0"
+crate-unsafe = { path = "../crate-unsafe" }
 
 [dev-dependencies]
 test-log = "0.2.12"
@@ -23,3 +25,14 @@ env_logger = "0.10.0"
 tokio = { version = "1.29.1", features = ["full"] }
 fcore = { path = "../fcore" }
 serde_json.workspace = true
+criterion.workspace = true
+
+[features]
+benchmarking = []
+
+[lints]
+workspace = true
+
+[[bench]]
+name = "api_client"
+harness = false

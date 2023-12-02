@@ -4,7 +4,9 @@
 //!
 //! It is recommended to create a function `get_client`. It should look something like this:
 //!
-//! ```no_run
+//! ```no_compiler
+//! use fcore::test_utils::{ADDRESS_SERVER, PathsForTest};
+//!
 //! pub async fn get_client() -> (PathsForTest, ClientInitConfig, Client) {
 //!     let paths = PathsForTest::get();
 //!
@@ -38,12 +40,14 @@ pub fn get_rand_string(len: usize) -> String {
 }
 
 pub struct PathsForTest {
-    _temp_dir: TempDir, // for lifetime
+    pub _temp_dir: TempDir, // for lifetime
     pub path_to_config_file: PathBuf,
     pub path_to_cache: PathBuf,
 }
 
 impl PathsForTest {
+    #[must_use]
+    #[allow(clippy::missing_panics_doc)]
     pub fn get() -> Self {
         let temp_dir = TempDir::new().unwrap();
 

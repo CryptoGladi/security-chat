@@ -1,4 +1,4 @@
-//! Implementation [bincode](https://github.com/bincode-org/bincode) for [`config interface`](crate::config::Config)
+//! Implementation [bincode](https://github.com/bincode-org/bincode) for [`config interface`](Config)
 //!
 //! # Warning
 //!
@@ -6,7 +6,7 @@
 //! So do a validation **every time**!
 
 use super::{Config, Error};
-use log::*;
+use log::trace;
 use serde::{de::DeserializeOwned, Serialize};
 use std::io::Write;
 use std::marker::PhantomData;

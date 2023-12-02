@@ -9,10 +9,9 @@ tonic.workspace = true
 thiserror.workspace = true
 log.workspace = true
 serde.workspace = true
-p384 = { version = "0.13.0", default-features = false, features = ["ecdh", "serde"] }
+p384.workspace = true
 http.workspace = true
 crate-proto = { path = "../crate-proto"}
-static_assertions = "1.1.0"
 fcore = { path = "../fcore" }
 
 [dev-dependencies]
@@ -22,3 +21,6 @@ temp-dir = "0.1.11"
 fcore = { path = "../fcore" }
 totally-safe-transmute = "0.0.4"
 rand_chacha = "0.3.1"
+
+[lints]
+workspace = true

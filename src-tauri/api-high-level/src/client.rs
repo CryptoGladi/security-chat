@@ -4,7 +4,7 @@ use self::notification::Notification;
 use api_lower_level::client::{
     impl_crypto::{
         aes::Aes,
-        ecdh::{get_shared_secret, EphemeralSecretDef, PublicKey},
+        ecdh::{get_shared_secret, PublicKey},
     },
     Client as LowerLevelClient,
 };
@@ -14,7 +14,7 @@ use fcore::prelude::BincodeConfig;
 use impl_config::client_init_config::ClientInitArgs;
 use impl_config::ClientConfig;
 use kanal::AsyncReceiver;
-use log::*;
+use log::{debug, error, info, trace};
 
 pub mod error;
 pub mod impl_config;
@@ -38,7 +38,7 @@ impl Client {
         let raw_client =
             LowerLevelClient::registration(nickname, init_args.address_to_server.clone()).await?;
 
-        let cache = init_args.get_cache().await.unwrap();
+        let cache = init_args.get_cache().await?;
 
         info!(
             "new registration: {}",
@@ -56,6 +56,12 @@ impl Client {
         })
     }
 
+    /// Get all users
+    ///
+    /// # Panics
+    ///
+    /// If [`std::sync::RwLock`] is broken
+    #[allow(clippy::unwrap_in_result)]
     pub fn get_all_users(&self) -> Result<Vec<String>, Error> {
         let storage_crypto = self.config.storage_crypto.read().unwrap();
         Ok(storage_crypto.0.keys().cloned().collect())
@@ -69,6 +75,9 @@ impl Client {
         self.config.data_for_autification.nickname.clone()
     }
 
+    /// # Panics
+    ///
+    /// If your network in very bad
     pub async fn subscribe(&mut self) -> Result<AsyncReceiver<Notification>, Error> {
         debug!("run subscribe");
         let mut subscribe = self.lower_level_client.subscribe_to_notifications().await?;

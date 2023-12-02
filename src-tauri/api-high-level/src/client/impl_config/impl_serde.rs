@@ -24,6 +24,7 @@ mod const_names {
 }
 
 impl Serialize for ClientConfig {
+    #[allow(clippy::unwrap_in_result)]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -47,6 +48,7 @@ impl Serialize for ClientConfig {
 
 use const_names::Field;
 
+#[allow(clippy::too_many_lines)]
 impl<'de> Deserialize<'de> for ClientConfig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -184,8 +186,9 @@ impl<'de> Deserialize<'de> for ClientConfig {
 
 #[cfg(test)]
 mod tests {
-    use api_lower_level::client::impl_crypto::ecdh::{EphemeralSecret, EphemeralSecretDef};
-    use fcore::rand::get_crypto_rand;
+    use api_lower_level::client::impl_crypto::ecdh::EphemeralSecret;
+    use crate_unsafe::safe_impl::crypto::ephemeral_secret_def;
+    use fcore::rand::get_crypto;
 
     use super::*;
 
@@ -193,12 +196,10 @@ mod tests {
     fn deserialize() {
         let mut test_data = ClientConfig::default();
 
-        unsafe {
-            test_data.order_adding_crypto.insert(
-                "test_nickname".to_string(),
-                EphemeralSecretDef::from(EphemeralSecret::random(&mut get_crypto_rand())),
-            );
-        }
+        test_data.order_adding_crypto.insert(
+            "test_nickname".to_string(),
+            ephemeral_secret_def::from(EphemeralSecret::random(&mut get_crypto())),
+        );
 
         let json = serde_json::to_string_pretty(&test_data).unwrap();
 

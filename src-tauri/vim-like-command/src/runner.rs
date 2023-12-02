@@ -1,9 +1,9 @@
 //! Module for running commands
 
 use api_high_level::prelude::Client;
-use error::VimError;
+use error::VimResult;
 use hashbrown::HashMap;
-use log::*;
+use log::{debug, trace};
 use std::fmt::Debug;
 
 use crate::command::Command;
@@ -16,7 +16,7 @@ type NameCommand<'a> = &'a str;
 
 /// Struct for run commands
 ///
-/// For initialization use [`crate::runner::builder::RunnerBuilder`]
+/// For initialization use [`builder::RunnerBuilder`]
 #[derive(Debug, Default)]
 pub struct Runner<'a> {
     /// All commands
@@ -41,7 +41,7 @@ impl<'a> Runner<'a> {
     /// `test_command` `test_argument`
     ///
     /// `send_crypto` `nickname_my_friend`
-    pub async fn run(&mut self, client: &mut Client, command: &str) -> VimError<()> {
+    pub async fn run(&mut self, client: &mut Client, command: &str) -> VimResult<()> {
         debug!("run `command`: {}", command);
         let args: Vec<&str> = command.split_whitespace().collect();
 

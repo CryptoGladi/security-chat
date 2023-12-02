@@ -1,7 +1,7 @@
 //! Module for `ONLY` testing
 
 pub use crate::command::Command;
-use crate::command::CommandError;
+use crate::command::Error;
 pub use crate::runner::builder::RunnerBuilder;
 pub use api_high_level::prelude::*;
 pub use async_trait::async_trait;
@@ -11,12 +11,12 @@ use fcore::test_utils::*;
 pub struct TestCommand;
 
 #[async_trait]
-impl Command<CommandError> for TestCommand {
+impl Command<Error> for TestCommand {
     fn get_id(&self) -> &'static str {
         "test_command"
     }
 
-    async fn run(&self, _client: &mut Client, _command: &[&str]) -> Result<(), CommandError> {
+    async fn run(&self, _client: &mut Client, _command: &[&str]) -> Result<(), Error> {
         Ok(())
     }
 }
@@ -25,12 +25,12 @@ impl Command<CommandError> for TestCommand {
 pub struct SameTestCommand;
 
 #[async_trait]
-impl Command<CommandError> for SameTestCommand {
+impl Command<Error> for SameTestCommand {
     fn get_id(&self) -> &'static str {
         "same_test_command"
     }
 
-    async fn run(&self, _client: &mut Client, _command: &[&str]) -> Result<(), CommandError> {
+    async fn run(&self, _client: &mut Client, _command: &[&str]) -> Result<(), Error> {
         Ok(())
     }
 }
@@ -45,7 +45,7 @@ pub async fn get_client() -> (PathsForTest, ClientInitArgs, Client) {
     let paths = PathsForTest::get();
 
     let client_config =
-        ClientInitArgs::new(paths.path_to_config_file.clone(), ADDRESS_SERVER, None);
+        ClientInitArgs::new(paths.path_to_config_file.clone(), ADDRESS_SERVER, None).unwrap();
 
     let client = Client::registration(&get_rand_string(20), client_config.clone())
         .await

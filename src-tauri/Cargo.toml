@@ -36,8 +36,16 @@ strip = true
 debug-assertions = false
 overflow-checks = false
 
+[profile.max-release.package."*"]
+debug = false
+codegen-units = 1
+opt-level = 3
+strip = true
+debug-assertions = false
+overflow-checks = false
+
 [workspace]
-members = ["api-lower-level", "api-high-level", "crate-proto", "vim-like-command", "cache", "fcore"]
+members = ["api-lower-level", "api-high-level", "crate-proto", "vim-like-command", "cache", "fcore", "crate-unsafe"]
 
 [workspace.dependencies]
 log = "0.4.19"
@@ -51,6 +59,56 @@ hashbrown = { version = "0.14.0", features = ["serde"] }
 anyhow = "1.0.75"
 async-trait = "0.1.73"
 const_format = "0.2.31"
+criterion = { version = "0.5.1", features = ["async_tokio"] }
+p384 = { version = "0.13.0", default-features = false, features = ["ecdh", "serde"] }
+
+[workspace.lints.clippy]
+all = "warn"
+pedantic = "warn"
+missing_errors_doc = "allow"
+mem_forget = "deny"
+todo = "warn"
+as_conversions = "warn"
+create_dir = "warn"
+dbg_macro = "warn"
+decimal_literal_representation = "warn"
+disallowed_types = "warn"
+disallowed_script_idents = "warn"
+empty_drop = "warn"
+empty_structs_with_brackets = "warn"
+exit = "warn"
+filetype_is_file = "warn"
+format_push_string = "warn"
+large_include_file = "warn"
+min_ident_chars = "warn"
+missing_assert_message = "warn"
+missing_asserts_for_indexing = "warn"
+mixed_read_write_in_expression = "warn"
+mutex_atomic = "warn"
+needless_raw_strings = "warn"
+panic = "warn"
+panic_in_result_fn = "warn"
+partial_pub_fields = "warn"
+print_stderr = "warn"
+print_stdout = "warn"
+same_name_method = "warn"
+shadow_same = "warn"
+string_lit_chars_any = "warn"
+string_to_string = "warn"
+tests_outside_test_module = "warn"
+undocumented_unsafe_blocks = "warn"
+unimplemented = "warn"
+unnecessary_safety_comment = "warn"
+unnecessary_safety_doc = "warn"
+unnecessary_self_imports = "warn"
+unneeded_field_pattern = "warn"
+unreachable = "warn"
+unseparated_literal_suffix = "warn"
+unwrap_in_result = "warn"
+wildcard_enum_match_arm = "warn"
+
+[lints]
+workspace = true
 
 [dependencies]
 tauri = { version = "1.4.1", features = [ "global-shortcut-all", "shell-open"] }
@@ -74,6 +132,7 @@ rand = "0.8.5"
 hashbrown.workspace = true
 fern = { version = "0.6.2", features = ["colored"] }
 chrono = "0.4.31"
+thiserror.workspace = true
 
 [dev-dependencies]
 test-log = "0.2.12"

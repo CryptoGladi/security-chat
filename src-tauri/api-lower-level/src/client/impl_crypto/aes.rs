@@ -1,11 +1,11 @@
 //! Module for [AES-256-GCM](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
 
-use crate::client::impl_crypto::error::CryptoError;
+use crate::client::impl_crypto::error::Error;
 use aes_gcm::{
     aead::{Aead, AeadCore, KeyInit, Nonce},
     Aes256Gcm, Key,
 };
-use fcore::prelude::get_crypto_rand;
+use fcore::prelude::get_crypto;
 use log::{debug, trace};
 use p384::ecdh::SharedSecret;
 use serde::{Deserialize, Serialize};
@@ -25,17 +25,28 @@ pub struct EncryptedMessage {
 }
 
 impl Aes {
-    /// Generate key by [`fcore::rand::get_crypto_rand`]
+    /// Generate key by [`get_crypto`]
+    ///
+    /// # Panics
+    ///
+    /// **Impossible**, but only if the constants have the correct `SIZE_KEY` value
+    #[must_use]
     pub fn generate() -> Self {
         trace!("generating key...");
 
-        let key_array = Aes256Gcm::generate_key(get_crypto_rand());
+        let key_array = Aes256Gcm::generate_key(get_crypto());
         let key: [u8; SIZE_KEY] = key_array.try_into().unwrap();
 
         Self { key }
     }
 
-    pub fn with_shared_key(shared_secret: SharedSecret) -> Self {
+    /// Import key by [`SharedSecret`]
+    ///
+    /// # Panics
+    ///
+    /// If the [`SharedSecret`] is incorrect or corrupted, there will be a panic
+    #[must_use]
+    pub fn with_shared_key(shared_secret: &SharedSecret) -> Self {
         trace!("with_shared_key");
 
         let key: [u8; 32] = shared_secret.raw_secret_bytes()[..SIZE_KEY]
@@ -45,14 +56,20 @@ impl Aes {
         Self { key }
     }
 
-    pub fn encrypt(&self, message: &[u8]) -> Result<EncryptedMessage, CryptoError> {
+    /// Encrypting message
+    ///
+    /// # Panics
+    ///
+    /// **Impossible**, but only if the constants have the correct `SIZE_KEY` value
+    #[allow(clippy::unwrap_in_result)]
+    pub fn encrypt(&self, message: &[u8]) -> Result<EncryptedMessage, Error> {
         debug!("encypting message...");
 
         let key = Key::<Aes256Gcm>::from_slice(&self.key);
         let cipher = Aes256Gcm::new(key);
-        let nonce = Aes256Gcm::generate_nonce(&mut get_crypto_rand());
+        let nonce = Aes256Gcm::generate_nonce(&mut get_crypto());
 
-        let data = cipher.encrypt(&nonce, message).map_err(CryptoError::Aes)?;
+        let data = cipher.encrypt(&nonce, message).map_err(Error::Aes)?;
 
         Ok(EncryptedMessage {
             data,
@@ -60,7 +77,7 @@ impl Aes {
         })
     }
 
-    pub fn decrypt(&self, message: &EncryptedMessage) -> Result<Vec<u8>, CryptoError> {
+    pub fn decrypt(&self, message: &EncryptedMessage) -> Result<Vec<u8>, Error> {
         debug!("decrypting message...");
 
         let key = Key::<Aes256Gcm>::from_slice(&self.key);
@@ -69,7 +86,7 @@ impl Aes {
 
         let data = cipher
             .decrypt(&nonce, message.data.as_ref())
-            .map_err(CryptoError::Aes)?;
+            .map_err(Error::Aes)?;
 
         Ok(data)
     }
@@ -84,11 +101,12 @@ mod tests {
         let encrypted_message = crypto.encrypt(message_for_crypto).unwrap();
         let decrypted_message = crypto.decrypt(&encrypted_message).unwrap();
 
-        println!(
+        log::trace!(
             "MESSAGE_FOR_CRYPTO: {}",
             String::from_utf8(message_for_crypto.to_vec()).unwrap()
         );
-        println!(
+
+        log::trace!(
             "decrypted_message: {}",
             String::from_utf8(decrypted_message.clone()).unwrap()
         );
@@ -114,7 +132,7 @@ mod tests {
 
         let shared_secret = get_shared_secret(&alice_secret, &bob_public_key);
 
-        let crypto = Aes::with_shared_key(shared_secret);
+        let crypto = Aes::with_shared_key(&shared_secret);
         let decrypted_message = decrypt(&crypto, MESSAGE_FOR_CRYPTO);
 
         assert_eq!(MESSAGE_FOR_CRYPTO, decrypted_message);

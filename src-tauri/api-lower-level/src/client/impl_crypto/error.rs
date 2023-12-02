@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Debug, Error, PartialEq)]
-pub enum CryptoError {
+pub enum Error {
     #[error("AES problem: {0}")]
     Aes(aes_gcm::Error),
 
@@ -10,4 +10,7 @@ pub enum CryptoError {
 
     #[error("key has already been accepted from user: {0}")]
     KeyAlreadyAccepted(String),
+
+    #[error("key is invalid")]
+    InvalidKey,
 }

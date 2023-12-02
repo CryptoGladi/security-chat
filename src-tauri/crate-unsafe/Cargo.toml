@@ -1,0 +1,19 @@
+[package]
+name = "crate-unsafe"
+version = "0.0.0"
+edition = "2021"
+description = "crate for only unsafe"
+
+[dependencies]
+p384.workspace = true
+log.workspace = true
+serde.workspace = true
+static_assertions = "1.1.0"
+
+[dev-dependencies]
+fcore = { path = "../fcore" }
+temp-dir = "0.1.11"
+api-lower-level = { path = "../api-lower-level" }
+
+[lints]
+workspace = true

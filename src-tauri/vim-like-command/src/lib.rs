@@ -4,7 +4,9 @@
 //!
 //! Allows you to save time and not use the mouse. Inspired by the [VIM hotkeys](`https://vim.rtorr.com/`)
 //!
-//! Main module is [`crate::runner`]
+//! Main module is [`runner`]
+
+#![forbid(unsafe_code)]
 
 pub mod command;
 pub mod prelude;

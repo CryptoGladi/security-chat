@@ -1,6 +1,6 @@
 //! Module for sending/recving message
 
-use super::{storage_crypto::StorageCrypto, *};
+use super::{debug, storage_crypto::StorageCrypto, Client, Error};
 use api_lower_level::client::impl_crypto::aes::EncryptedMessage;
 use serde::{Deserialize, Serialize};
 
@@ -12,6 +12,7 @@ pub struct Message {
 }
 
 impl Message {
+    #[must_use]
     pub fn new(text: String) -> Self {
         Message { text, reply: None }
     }
@@ -25,6 +26,11 @@ pub struct MessageInfo {
 }
 
 impl Client {
+    /// Send message
+    ///
+    /// # Panics
+    ///
+    /// If [`crate_proto::Message`] is broken
     pub async fn send_message(
         &mut self,
         nickname_from: String,
@@ -68,14 +74,20 @@ impl Client {
         self.raw_get_last_message(vec![nickname], limit).await
     }
 
+    /// Decrypt message
+    ///
+    /// # Panics
+    ///
+    /// If [`crate_proto::Message`] is broken
+    #[allow(clippy::unwrap_in_result)]
     pub(crate) fn decrypt_message(
         storage_crypto: &StorageCrypto,
         message: crate_proto::Message,
-        nickname_from: String,
+        nickname_from: &str,
     ) -> Result<Message, Error> {
         debug!("run decrypt_message");
 
-        let aes = storage_crypto.get(&nickname_from)?;
+        let aes = storage_crypto.get(nickname_from)?;
 
         let decrypted_body = aes.decrypt(&EncryptedMessage {
             data: message.body,
@@ -108,7 +120,7 @@ impl Client {
                 };
 
                 (
-                    Client::decrypt_message(&storage_crypto, x.body.clone().unwrap(), nickname)
+                    Client::decrypt_message(&storage_crypto, x.body.clone().unwrap(), &nickname)
                         .unwrap(),
                     x,
                 )
@@ -121,6 +133,11 @@ impl Client {
             .collect::<Vec<MessageInfo>>())
     }
 
+    /// Get all last message
+    ///
+    /// # Panics
+    ///
+    /// If [`std::sync::RwLock`] is broken
     pub async fn get_all_last_message(&mut self) -> Result<Vec<Message>, Error> {
         debug!("run `get_all_last_message`");
 
@@ -147,6 +164,7 @@ impl Client {
 mod tests {
     use super::*;
     use crate::client::impl_message::Message;
+    use crate::prelude::Event;
     use crate::test_utils::get_client;
     use test_log::test;
 
@@ -154,6 +172,7 @@ mod tests {
     async fn send_many_message_with_subscribe() {
         let (_paths, _, mut client_to) = get_client().await;
         let (_paths, _, mut client_from) = get_client().await;
+
         client_to
             .send_crypto(client_from.get_nickname())
             .await
@@ -162,26 +181,27 @@ mod tests {
         client_from.accept_all_cryptos().await.unwrap();
         client_to.refresh_cryptos().await.unwrap();
 
-        const TEXT_MESSAGE: &str = "MANY MESSAGES";
-        const LEN: usize = 50;
+        let test_message: &str = "MANY MESSAGES";
+        let len: usize = 50;
 
         let recv = client_from.subscribe().await.unwrap();
 
-        for _ in 0..LEN {
+        for _ in 0..len {
             client_to
                 .send_message(
                     client_from.get_nickname(),
-                    Message::new(TEXT_MESSAGE.to_string()),
+                    Message::new(test_message.to_string()),
                 )
                 .await
                 .unwrap();
 
             let new_event = recv.recv().await.unwrap();
-            println!("new event: {:?}", new_event);
+            log::info!("new event: {new_event:?}");
         }
     }
 
     #[test(tokio::test)]
+    #[allow(clippy::panic)]
     async fn send_message_with_subscribe() {
         let (_paths, _, mut client_to) = get_client().await;
         let (_paths, _, mut client_from) = get_client().await;
@@ -194,12 +214,12 @@ mod tests {
         client_from.accept_all_cryptos().await.unwrap();
         client_to.refresh_cryptos().await.unwrap();
 
-        println!(
+        log::info!(
             "nickname_to: {}",
             client_to.lower_level_client.data_for_autification.nickname
         );
 
-        println!(
+        log::info!(
             "nickname_from: {}",
             client_from
                 .lower_level_client
@@ -207,24 +227,24 @@ mod tests {
                 .nickname
         );
 
-        const TEST_MESSAGE: &str = "Фёдор, я тебя очень сильно люблю";
+        let test_message = "Фёдор, я тебя очень сильно люблю";
 
         let recv = client_from.subscribe().await.unwrap();
 
         client_to
             .send_message(
                 client_from.get_nickname(),
-                Message::new(TEST_MESSAGE.to_string()),
+                Message::new(test_message.to_string()),
             )
             .await
             .unwrap();
 
         let new_event = recv.recv().await.unwrap();
-        println!("new event: {:?}", new_event);
+        log::info!("new event: {new_event:?}");
 
         match new_event.event {
-            notification::Event::NewMessage(message) => assert_eq!(message.body.text, TEST_MESSAGE),
-            _ => panic!("event is invalid"),
+            Event::NewMessage(message) => assert_eq!(message.body.text, test_message),
+            Event::NewSentAcceptAesKey(_) | Event::NewAcceptAesKey(_) => panic!("event is invalid"),
         }
     }
 
@@ -265,7 +285,7 @@ mod tests {
         client_to.refresh_cryptos().await.unwrap();
 
         for (i, _) in (0..100).enumerate() {
-            let text = format!("x: {}", i);
+            let text = format!("x: {i}");
             client_to
                 .send_message(client_from.get_nickname(), Message::new(text))
                 .await
@@ -332,8 +352,7 @@ mod tests {
         client_from.accept_all_cryptos().await.unwrap();
         client_to.refresh_cryptos().await.unwrap();
 
-        let mut sent_messages = vec![];
-        sent_messages.reserve(100);
+        let mut sent_messages = Vec::with_capacity(100);
         for _ in 0..100 {
             let new_message = Message::new("manyyy".to_string());
             sent_messages.push(new_message.clone());

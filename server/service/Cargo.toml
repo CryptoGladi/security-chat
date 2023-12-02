@@ -14,3 +14,4 @@ tonic.workspace = true
 uuid = { version = "1.4.1", features = ["v4"] }
 log.workspace = true
 crate-proto = { path = "../crate-proto" }
+rand = "0.8.5"
