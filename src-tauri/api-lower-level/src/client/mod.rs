@@ -12,7 +12,6 @@ use http::uri::Uri;
 use log::{debug, trace};
 use max_size::{MAX_LEN_MESSAGE, MAX_LIMIT_GET_MESSAGES};
 use serde::{Deserialize, Serialize};
-use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
 use tonic::{Response, Streaming};
 
@@ -39,10 +38,7 @@ impl Client {
         trace!("run `grpc_connect` to address: {}", address);
 
         let channel = Channel::builder(address).connect().await?;
-
-        let api = SecurityChatClient::new(channel)
-            .send_compressed(CompressionEncoding::Gzip)
-            .accept_compressed(CompressionEncoding::Gzip);
+        let api = SecurityChatClient::new(channel);
 
         Ok(api)
     }

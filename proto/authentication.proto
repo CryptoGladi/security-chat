@@ -3,18 +3,25 @@ syntax = "proto3";
 package authentication;
 
 service Authentication {
-  rpc Registration(RegistrationRequest) returns (JWTReply);
+  rpc Registration(RegistrationRequest) returns (RegistrationResponse);
 
-  rpc Login(LoginRequest) returns (JWTReply);
+  rpc Login(LoginRequest) returns (LoginResponse);
 }
 
-message RegistrationRequest { string nickname = 1; }
+message RegistrationRequest {
+  string nickname = 1;
+}
+
+message RegistrationResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
 
 message LoginRequest {
   string nickname = 1;
   string refresh_token = 2;
 };
 
-message JWTReply {
+message LoginResponse {
   string access_token = 1;
 }

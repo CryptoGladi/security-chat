@@ -32,6 +32,7 @@ tokio.workspace = true
 service = { path = "service" }
 tonic.workspace = true
 authentication = { path = "authentication" }
+rand = { version = "0.8.5", features = [] }
 
 [profile.release]
 incremental = true

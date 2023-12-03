@@ -1379,6 +1379,7 @@ dependencies = [
  "log",
  "log4rs",
  "mimalloc",
+ "rand",
  "service",
  "tokio",
  "tonic",

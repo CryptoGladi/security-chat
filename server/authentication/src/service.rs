@@ -1,4 +1,6 @@
-use crate_proto::authentication::{JwtReply, LoginRequest, RegistrationRequest};
+use crate_proto::authentication::{
+    LoginRequest, LoginResponse, RegistrationRequest, RegistrationResponse,
+};
 use crate_proto::Authentication;
 use database::check_user;
 use database::models::NewUser;
@@ -6,7 +8,7 @@ use database::schema::users::dsl::users;
 use database::DbPool;
 use diesel_async::RunQueryDsl;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
-use log::debug;
+use log::info;
 use rand::{distributions::Alphanumeric, Rng};
 use serde::{Deserialize, Serialize};
 use tonic::metadata::{Ascii, MetadataValue};
@@ -18,9 +20,9 @@ pub struct Claims {
 }
 
 #[derive(Debug)]
-pub struct AuthenticationServer<'a> {
+pub struct AuthenticationService {
     pub db_pool: DbPool,
-    pub secret: &'a [u8],
+    pub secret: Vec<u8>,
 }
 
 pub fn get_new_access_token(claims: Claims, secret: &[u8]) -> Result<String, Status> {
@@ -48,13 +50,13 @@ fn get_from_metadata<'a>(
     Ok(value)
 }
 
-pub fn grpc_intercept(request: Request<()>) -> Result<Request<()>, Status> {
+pub fn grpc_intercept(request: Request<()>, secret: &[u8]) -> Result<Request<()>, Status> {
     let access_token = get_from_metadata(&request, "access_token")?;
 
     if jsonwebtoken::decode::<Claims>(
         access_token.to_str().unwrap(),
-        &DecodingKey::from_secret("secret".as_ref()), // TODO get secret
-        &Validation::new(Algorithm::HS256),
+        &DecodingKey::from_secret(secret),
+        &Validation::new(Algorithm::HS256), // TODO change algorithm
     )
     .is_err()
     {
@@ -65,12 +67,12 @@ pub fn grpc_intercept(request: Request<()>) -> Result<Request<()>, Status> {
 }
 
 #[tonic::async_trait]
-impl Authentication for AuthenticationServer<'static> {
+impl Authentication for AuthenticationService {
     async fn registration(
         &self,
         request: Request<RegistrationRequest>,
-    ) -> Result<Response<JwtReply>, Status> {
-        debug!("Got a request for `registration`: {:?}", request.get_ref());
+    ) -> Result<Response<RegistrationResponse>, Status> {
+        info!("Got a request for `registration`: {:?}", request.get_ref());
         let mut db = self.db_pool.get().await.unwrap();
 
         let refresh_token: String = rand::thread_rng()
@@ -94,12 +96,18 @@ impl Authentication for AuthenticationServer<'static> {
             nickname: request.get_ref().nickname.clone(),
         };
 
-        let access_token = get_new_access_token(claims, self.secret)?;
-        Ok(Response::new(JwtReply { access_token }))
+        let access_token = get_new_access_token(claims, &self.secret)?;
+        Ok(Response::new(RegistrationResponse {
+            access_token,
+            refresh_token,
+        }))
     }
 
-    async fn login(&self, request: Request<LoginRequest>) -> Result<Response<JwtReply>, Status> {
-        debug!("Got a request for `login`: {:?}", request.get_ref());
+    async fn login(
+        &self,
+        request: Request<LoginRequest>,
+    ) -> Result<Response<LoginResponse>, Status> {
+        info!("Got a request for `login`: {:?}", request.get_ref());
         let mut db = self.db_pool.get().await.unwrap();
 
         check_user(
@@ -113,7 +121,7 @@ impl Authentication for AuthenticationServer<'static> {
             nickname: request.get_ref().nickname.clone(),
         };
 
-        let access_token = get_new_access_token(claims, self.secret)?;
-        Ok(Response::new(JwtReply { access_token }))
+        let access_token = get_new_access_token(claims, &self.secret)?;
+        Ok(Response::new(LoginResponse { access_token }))
     }
 }

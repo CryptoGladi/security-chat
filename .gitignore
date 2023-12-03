@@ -28,3 +28,4 @@ examples/simple-client/target
 
 dist
 .solid
+/server/SECRET.txt

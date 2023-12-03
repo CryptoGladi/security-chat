@@ -6,6 +6,7 @@
 
 #![forbid(unsafe_code)]
 
+pub mod authentication;
 pub mod client;
 
 #[cfg(test)]
