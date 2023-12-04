@@ -13,6 +13,7 @@ use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use log::info;
 use rand::{distributions::Alphanumeric, Rng};
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use tonic::metadata::{Ascii, MetadataValue};
 use tonic::{Request, Response, Status};
 
@@ -58,11 +59,15 @@ fn get_from_metadata<'a, T>(
 }
 
 fn check_token(access_token: &str, secret: &[u8]) -> Result<(), Status> {
-    let Ok(token_data) = jsonwebtoken::decode::<Claims>(
-        access_token,
-        &DecodingKey::from_secret(secret),
-        &Validation::new(Algorithm::HS256), // TODO change algorithm
-    ) else {
+    let Ok(token_data) =
+        jsonwebtoken::decode::<Claims>(access_token, &DecodingKey::from_secret(secret), &{
+            let mut validation = Validation::new(Algorithm::HS256); // TODO change algorithm
+            validation.validate_exp = false;
+            validation.required_spec_claims = HashSet::new();
+
+            validation
+        })
+    else {
         return Err(Status::permission_denied("YOUR TOKEN IS INVALID"));
     };
 
@@ -146,8 +151,6 @@ impl Authentication for AuthenticationService {
         request: Request<CheckTokenRequest>,
     ) -> Result<Response<CheckTokenResponse>, Status> {
         info!("Got a request for `check_token`: {:?}", request.get_ref());
-
-        check_token(&request.get_ref().access_token, &self.secret).unwrap();
 
         return Ok(Response::new(CheckTokenResponse {
             is_valid: check_token(&request.get_ref().access_token, &self.secret).is_ok(),
