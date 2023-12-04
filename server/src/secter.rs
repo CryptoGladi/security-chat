@@ -5,7 +5,7 @@ use std::fs::{read_to_string, File};
 use std::io::Write;
 use std::path::PathBuf;
 
-const LEN_SECRET: usize = 256;
+const LEN_SECRET: usize = 256 / 8;
 
 pub struct Secret(pub Vec<u8>);
 

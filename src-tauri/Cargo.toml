@@ -61,7 +61,7 @@ async-trait = "0.1.73"
 const_format = "0.2.31"
 criterion = { version = "0.5.1", features = ["async_tokio"] }
 p384 = { version = "0.13.0", default-features = false, features = ["ecdh", "serde"] }
-educe = "0.4.23"
+derivative = "2.2.0"
 
 [workspace.lints.clippy]
 all = "warn"

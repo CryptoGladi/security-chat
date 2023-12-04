@@ -1,5 +1,7 @@
+use chrono::Local;
 use crate_proto::authentication::{
-    LoginRequest, LoginResponse, RegistrationRequest, RegistrationResponse,
+    CheckTokenRequest, CheckTokenResponse, LoginRequest, LoginResponse, RegistrationRequest,
+    RegistrationResponse,
 };
 use crate_proto::Authentication;
 use database::check_user;
@@ -17,12 +19,17 @@ use tonic::{Request, Response, Status};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub nickname: String,
+
+    /// Expiration Time
+    pub exp: chrono::DateTime<Local>,
 }
 
 #[derive(Debug)]
 pub struct AuthenticationService {
     pub db_pool: DbPool,
     pub secret: Vec<u8>,
+    pub lifetime_for_tokens: chrono::Duration,
+    pub len_for_access_token: usize,
 }
 
 pub fn get_new_access_token(claims: Claims, secret: &[u8]) -> Result<String, Status> {
@@ -37,8 +44,8 @@ pub fn get_new_access_token(claims: Claims, secret: &[u8]) -> Result<String, Sta
     Ok(access_token)
 }
 
-fn get_from_metadata<'a>(
-    request: &'a Request<()>,
+fn get_from_metadata<'a, T>(
+    request: &'a Request<T>,
     key: &'a str,
 ) -> Result<&'a MetadataValue<Ascii>, Status> {
     let Some(value) = request.metadata().get(key) else {
@@ -50,18 +57,25 @@ fn get_from_metadata<'a>(
     Ok(value)
 }
 
-pub fn grpc_intercept(request: Request<()>, secret: &[u8]) -> Result<Request<()>, Status> {
-    let access_token = get_from_metadata(&request, "access_token")?;
-
-    if jsonwebtoken::decode::<Claims>(
-        access_token.to_str().unwrap(),
+fn check_token(access_token: &str, secret: &[u8]) -> Result<(), Status> {
+    let Ok(token_data) = jsonwebtoken::decode::<Claims>(
+        access_token,
         &DecodingKey::from_secret(secret),
         &Validation::new(Algorithm::HS256), // TODO change algorithm
-    )
-    .is_err()
-    {
+    ) else {
         return Err(Status::permission_denied("YOUR TOKEN IS INVALID"));
+    };
+
+    if Local::now() >= token_data.claims.exp {
+        return Err(Status::permission_denied("your token is out of date"));
     }
+
+    Ok(())
+}
+
+pub fn grpc_intercept<T>(request: Request<T>, secret: &[u8]) -> Result<Request<T>, Status> {
+    let access_token = get_from_metadata(&request, "access_token")?;
+    check_token(access_token.to_str().unwrap(), secret)?;
 
     Ok(request)
 }
@@ -77,7 +91,7 @@ impl Authentication for AuthenticationService {
 
         let refresh_token: String = rand::thread_rng()
             .sample_iter(&Alphanumeric)
-            .take(40)
+            .take(self.len_for_access_token)
             .map(char::from)
             .collect();
 
@@ -90,10 +104,11 @@ impl Authentication for AuthenticationService {
             .values(&new_user)
             .execute(&mut db)
             .await
-            .unwrap();
+            .map_err(|_| Status::already_exists("this nickname already exists"))?;
 
         let claims = Claims {
             nickname: request.get_ref().nickname.clone(),
+            exp: Local::now() + self.lifetime_for_tokens,
         };
 
         let access_token = get_new_access_token(claims, &self.secret)?;
@@ -119,9 +134,23 @@ impl Authentication for AuthenticationService {
 
         let claims = Claims {
             nickname: request.get_ref().nickname.clone(),
+            exp: Local::now() + self.lifetime_for_tokens,
         };
 
         let access_token = get_new_access_token(claims, &self.secret)?;
         Ok(Response::new(LoginResponse { access_token }))
+    }
+
+    async fn check_token(
+        &self,
+        request: Request<CheckTokenRequest>,
+    ) -> Result<Response<CheckTokenResponse>, Status> {
+        info!("Got a request for `check_token`: {:?}", request.get_ref());
+
+        check_token(&request.get_ref().access_token, &self.secret).unwrap();
+
+        return Ok(Response::new(CheckTokenResponse {
+            is_valid: check_token(&request.get_ref().access_token, &self.secret).is_ok(),
+        }));
     }
 }

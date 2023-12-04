@@ -69,6 +69,7 @@ name = "authentication"
 version = "0.0.0"
 dependencies = [
  "bb8",
+ "chrono",
  "crate-proto",
  "database",
  "diesel",
@@ -231,6 +232,7 @@ dependencies = [
  "iana-time-zone",
  "js-sys",
  "num-traits",
+ "serde",
  "time 0.1.45",
  "wasm-bindgen",
  "windows-targets",

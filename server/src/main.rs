@@ -7,10 +7,10 @@ use std::env;
 use std::path::PathBuf;
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Server;
+use tonic::IntoRequest;
 
 #[cfg(not(debug_assertions))]
 use mimalloc::MiMalloc;
-use tonic::IntoRequest;
 
 #[cfg(not(debug_assertions))]
 #[global_allocator]
