@@ -1,5 +1,6 @@
 //! Main module for API
 
+use crate::authentication::tokens::AccessToken;
 use crate::client::impl_crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
 use crate_proto::{
     AesKeyInfo, Check, CheckValidRequest, DeleteAesKeyRequest, GetAesKeyRequest,
@@ -12,6 +13,7 @@ use http::uri::Uri;
 use log::{debug, trace};
 use max_size::{MAX_LEN_MESSAGE, MAX_LIMIT_GET_MESSAGES};
 use serde::{Deserialize, Serialize};
+use tonic::codegen::InterceptedService;
 use tonic::transport::Channel;
 use tonic::{Response, Streaming};
 
@@ -33,12 +35,40 @@ pub struct Client {
 }
 
 impl Client {
+    fn interceptor(
+        mut request: tonic::Request<()>,
+        access_token: AccessToken,
+    ) -> Result<tonic::Request<()>, tonic::Status> {
+        request.metadata_mut().insert(
+            "access_token",
+            tonic::metadata::MetadataValue::from_str(&access_token.0).unwrap(),
+        );
+
+        Ok(request)
+    }
+
     /// Init [gRPC](https://grpc.io/) connect and enable compression
-    pub async fn grpc_connect(address: Uri) -> Result<SecurityChatClient<Channel>, Error> {
+    pub async fn grpc_connect(
+        address: Uri,
+        access_token: AccessToken,
+    ) -> Result<
+        SecurityChatClient<
+            InterceptedService<
+                Channel,
+                Box<dyn FnOnce(tonic::Request<()>) -> Result<tonic::Request<()>, tonic::Status>>,
+            >,
+        >,
+        Error,
+    > {
         trace!("run `grpc_connect` to address: {}", address);
 
         let channel = Channel::builder(address).connect().await?;
-        let api = SecurityChatClient::new(channel);
+        let api = SecurityChatClient::with_interceptor(
+            channel,
+            Box::new(move |mut request: tonic::Request<()>| {
+                Self::interceptor(request, access_token)
+            }),
+        );
 
         Ok(api)
     }
