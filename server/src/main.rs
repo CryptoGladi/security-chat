@@ -7,7 +7,6 @@ use std::env;
 use std::path::PathBuf;
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Server;
-use tonic::IntoRequest;
 
 #[cfg(not(debug_assertions))]
 use mimalloc::MiMalloc;
@@ -35,10 +34,9 @@ async fn main() -> color_eyre::eyre::Result<()> {
         .send_compressed(CompressionEncoding::Gzip)
         .accept_compressed(CompressionEncoding::Gzip);
 
-    let app_service = get_main_service(100_000).await;
+    let app_service = get_main_service(100_000, secret.0.clone()).await;
     let app_server = SecurityChatServer::with_interceptor(app_service, move |request| {
-        //authentication_intercept(request, &secret.0)
-        Ok(request)
+        authentication_intercept(request, &secret.0)
     });
 
     warn!("running server by addr: {}", addr);

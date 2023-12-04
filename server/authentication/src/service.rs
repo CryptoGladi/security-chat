@@ -1,7 +1,7 @@
 use chrono::Local;
 use crate_proto::authentication::{
-    CheckTokenRequest, CheckTokenResponse, LoginRequest, LoginResponse, RegistrationRequest,
-    RegistrationResponse,
+    CheckTokenRequest, CheckTokenResponse, LoginRequest, LoginResponse, NicknameIsTakenRequest,
+    NicknameIsTakenResponse, RegistrationRequest, RegistrationResponse,
 };
 use crate_proto::Authentication;
 use database::check_user;
@@ -155,5 +155,22 @@ impl Authentication for AuthenticationService {
         return Ok(Response::new(CheckTokenResponse {
             is_valid: check_token(&request.get_ref().access_token, &self.secret).is_ok(),
         }));
+    }
+
+    async fn nickname_is_taken(
+        &self,
+        request: Request<NicknameIsTakenRequest>,
+    ) -> Result<Response<NicknameIsTakenResponse>, Status> {
+        info!(
+            "Got a request for `nickname_is_taken`: {:?}",
+            request.get_ref()
+        );
+        let mut db = self.db_pool.get().await.unwrap();
+
+        Ok(Response::new(NicknameIsTakenResponse {
+            is_taken: !database::get_user_by_nickname(&mut db, &request.get_ref().nickname)
+                .await
+                .is_empty(),
+        }))
     }
 }

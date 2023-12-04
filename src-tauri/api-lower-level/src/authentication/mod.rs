@@ -1,14 +1,17 @@
 //! Module that is responsible **ONLY** for authentication
 
-use crate::client::error::Error;
-use crate_proto::authentication::{CheckTokenRequest, LoginRequest, RegistrationRequest};
+use crate_proto::authentication::{
+    CheckTokenRequest, LoginRequest, NicknameIsTakenRequest, RegistrationRequest,
+};
 use crate_proto::AuthenticationClient as GRPCAuthenticationClient;
+use error::Error;
 use http::Uri;
 use log::trace;
 use tokens::{AccessToken, RefreshToken, Tokens};
 use tonic::codec::CompressionEncoding;
 use tonic::transport::Channel;
 
+pub mod error;
 pub mod tokens;
 
 const COMPRESSION_ENCODING: CompressionEncoding = CompressionEncoding::Gzip;
@@ -31,7 +34,7 @@ impl AuthenticationClient {
         Ok(Self { grpc_api })
     }
 
-    pub async fn registration(&mut self, nickname: String) -> Result<Tokens, tonic::Status> {
+    pub async fn registration(&mut self, nickname: String) -> Result<Tokens, Error> {
         trace!("run `registration` for nickname: {nickname}");
 
         let request = RegistrationRequest { nickname };
@@ -47,7 +50,7 @@ impl AuthenticationClient {
         &mut self,
         nickname: String,
         refresh_token: RefreshToken,
-    ) -> Result<AccessToken, tonic::Status> {
+    ) -> Result<AccessToken, Error> {
         trace!("run `login` for nickname: {nickname}");
 
         let request = LoginRequest {
@@ -60,15 +63,25 @@ impl AuthenticationClient {
         Ok(AccessToken(response.get_ref().access_token.clone()))
     }
 
-    pub async fn check_valid(&mut self, access_token: AccessToken) -> Result<bool, tonic::Status> {
+    pub async fn check_valid(&mut self, access_token: AccessToken) -> Result<bool, Error> {
         trace!("run `check_valid`");
 
         let request = CheckTokenRequest {
             access_token: access_token.0,
         };
-        let response = self.grpc_api.check_token(request).await?;
 
+        let response = self.grpc_api.check_token(request).await?;
         Ok(response.get_ref().is_valid)
+    }
+
+    pub async fn nickname_is_taken(address: Uri, nickname: String) -> Result<bool, Error> {
+        trace!("run `nickname_is_taken` for nickname: {nickname}");
+        let mut client = Self::connect(address).await?;
+
+        let request = NicknameIsTakenRequest { nickname };
+        let response = client.grpc_api.nickname_is_taken(request).await?;
+
+        Ok(response.get_ref().is_taken)
     }
 }
 
@@ -160,5 +173,29 @@ mod tests {
             .login(random_nickname, "INVALID_TOKEN".to_string())
             .await
             .is_err());
+    }
+
+    #[tokio::test]
+    async fn nickname_is_taken() {
+        let mut client = AuthenticationClient::connect(ADDRESS_SERVER.parse().unwrap())
+            .await
+            .unwrap();
+
+        let random_nickname = get_rand_string(20);
+        let _tokens = client.registration(random_nickname.clone()).await.unwrap();
+
+        assert!(AuthenticationClient::nickname_is_taken(
+            ADDRESS_SERVER.parse().unwrap(),
+            random_nickname
+        )
+        .await
+        .unwrap());
+
+        assert!(!AuthenticationClient::nickname_is_taken(
+            ADDRESS_SERVER.parse().unwrap(),
+            get_rand_string(20)
+        )
+        .await
+        .unwrap());
     }
 }

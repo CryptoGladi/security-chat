@@ -8,6 +8,16 @@ service Authentication {
   rpc Login(LoginRequest) returns (LoginResponse);
 
   rpc CheckToken(CheckTokenRequest) returns (CheckTokenResponse);
+
+  rpc NicknameIsTaken(NicknameIsTakenRequest) returns (NicknameIsTakenResponse);
+}
+
+message NicknameIsTakenRequest {
+  string nickname = 1;
+}
+
+message NicknameIsTakenResponse {
+  bool is_taken = 1;
 }
 
 message CheckTokenRequest {

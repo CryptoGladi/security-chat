@@ -33,8 +33,8 @@ pub mod ecdh;
 pub mod error;
 
 use super::{
-    debug, impl_crypto, AesKeyInfo, Check, Client, DeleteAesKeyRequest, EphemeralSecret, Error,
-    GetAesKeyRequest, SendAesKeyRequest, SetUserFromAesKeyRequest, ToEncodedPoint,
+    debug, impl_crypto, AesKeyInfo, Client, DeleteAesKeyRequest, EphemeralSecret, Error,
+    SendAesKeyRequest, SetUserFromAesKeyRequest, ToEncodedPoint,
 };
 
 impl Client {
@@ -42,15 +42,11 @@ impl Client {
     pub async fn delete_key(&mut self, id: i64) -> Result<(), Error> {
         debug!("run `delete_key` by id: {}", id);
 
-        let request = tonic::Request::new(DeleteAesKeyRequest {
-            nickname: Some(Check {
-                nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.tokens.refresh_token.clone(),
-            }),
-            id,
-        });
+        let request = tonic::Request::new(DeleteAesKeyRequest { id });
 
-        self.grpc.delete_aes_key(request).await?;
+        self.grpc
+            .delete_aes_key(self.add_access_token_to_metadata(request))
+            .await?;
 
         Ok(())
     }
@@ -71,15 +67,13 @@ impl Client {
         let (secret, public_key) = impl_crypto::ecdh::get_public_info()?;
 
         let request = tonic::Request::new(SendAesKeyRequest {
-            nickname_to: Some(Check {
-                nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.tokens.refresh_token.clone(),
-            }),
             nickname_from: nickname_form.to_string(),
             public_key: public_key.to_encoded_point(true).as_bytes().to_vec(),
         });
 
-        self.grpc.send_aes_key(request).await?;
+        self.grpc
+            .send_aes_key(self.add_access_token_to_metadata(request))
+            .await?;
 
         Ok(secret)
     }
@@ -88,14 +82,12 @@ impl Client {
     pub async fn get_aes_keys(&mut self) -> Result<Vec<AesKeyInfo>, Error> {
         debug!("run `get_aes_key`");
 
-        let request = tonic::Request::new(GetAesKeyRequest {
-            nickname: Some(Check {
-                nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.tokens.refresh_token.clone(),
-            }),
-        });
+        let request = tonic::Request::new(());
+        let info = self
+            .grpc
+            .get_aes_key(self.add_access_token_to_metadata(request))
+            .await?;
 
-        let info = self.grpc.get_aes_key(request).await?;
         Ok(info.get_ref().info.clone())
     }
 
@@ -105,15 +97,13 @@ impl Client {
 
         let (secret, public_key) = impl_crypto::ecdh::get_public_info()?;
         let request = tonic::Request::new(SetUserFromAesKeyRequest {
-            nickname: Some(Check {
-                nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.tokens.refresh_token.clone(),
-            }),
             id: key_id,
             public_key: public_key.to_encoded_point(true).as_bytes().to_vec(),
         });
 
-        self.grpc.set_user_from_aes_key(request).await?;
+        self.grpc
+            .set_user_from_aes_key(self.add_access_token_to_metadata(request))
+            .await?;
         Ok(secret)
     }
 }

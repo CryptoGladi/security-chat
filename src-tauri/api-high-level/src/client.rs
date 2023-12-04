@@ -1,6 +1,7 @@
 //! Main module
 
 use self::notification::Notification;
+use api_lower_level::authentication::tokens::RefreshToken;
 use api_lower_level::client::{
     impl_crypto::{
         aes::Aes,
@@ -25,10 +26,10 @@ pub mod storage_crypto;
 
 #[derive(Debug)]
 pub struct Client {
-    lower_level_client: LowerLevelClient,
-    config: ClientConfig,
-    bincode_config: BincodeConfig<ClientConfig>,
-    _cache: Option<CacheSQLite>, // TODO
+    pub lower_level_client: LowerLevelClient,
+    pub config: ClientConfig,
+    pub bincode_config: BincodeConfig<ClientConfig>,
+    pub _cache: Option<CacheSQLite>, // TODO
 }
 
 impl Client {
@@ -44,6 +45,31 @@ impl Client {
             "new registration: {}",
             raw_client.data_for_autification.nickname
         );
+
+        Ok(Self {
+            config: ClientConfig {
+                data_for_autification: raw_client.data_for_autification.clone(),
+                ..Default::default()
+            },
+            _cache: cache,
+            lower_level_client: raw_client,
+            bincode_config: BincodeConfig::new(init_args.path_to_config_file),
+        })
+    }
+
+    #[deprecated(note = "it is function load without config. Please use `Client::login_by_config`")]
+    pub async fn login(
+        init_args: ClientInitArgs,
+        nickname: String,
+        refresh_token: RefreshToken,
+    ) -> Result<Self, Error> {
+        debug!("run login...");
+
+        let raw_client =
+            LowerLevelClient::login(init_args.address_to_server.clone(), nickname, refresh_token)
+                .await?;
+
+        let cache = init_args.get_cache().await?;
 
         Ok(Self {
             config: ClientConfig {
@@ -152,5 +178,18 @@ mod tests {
             client.get_nickname(),
             client.lower_level_client.data_for_autification.nickname
         );
+    }
+
+    #[test(tokio::test)]
+    #[allow(deprecated)]
+    async fn login() {
+        let (_paths, init_args, client) = get_client().await;
+
+        let nickname = client.config.data_for_autification.nickname.clone();
+        let refresh_token = client.config.data_for_autification.refresh_token.clone();
+
+        Client::login(init_args, nickname, refresh_token)
+            .await
+            .unwrap();
     }
 }

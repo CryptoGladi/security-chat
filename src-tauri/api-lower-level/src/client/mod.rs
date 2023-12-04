@@ -1,12 +1,11 @@
 //! Main module for API
 
-use crate::authentication::tokens::{AccessToken, RefreshToken, Tokens};
+use crate::authentication::tokens::{AccessToken, RefreshToken};
 use crate::authentication::AuthenticationClient;
 use crate::client::impl_crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
 use crate_proto::{
-    AesKeyInfo, Check, CheckValidRequest, DeleteAesKeyRequest, GetAesKeyRequest,
-    GetLatestMessagesReply, GetLatestMessagesRequest, Message, NicknameIsTakenRequest,
-    Notification, RegistrationRequest, SecurityChatClient, SendAesKeyRequest, SendMessageRequest,
+    AesKeyInfo, DeleteAesKeyRequest, GetLatestMessagesReply, GetLatestMessagesRequest, Message,
+    Notification, SecurityChatClient, SendAesKeyRequest, SendMessageRequest,
     SetUserFromAesKeyRequest,
 };
 use error::Error;
@@ -14,7 +13,6 @@ use http::uri::Uri;
 use log::{debug, trace};
 use max_size::{MAX_LEN_MESSAGE, MAX_LIMIT_GET_MESSAGES};
 use serde::{Deserialize, Serialize};
-use tonic::codegen::InterceptedService;
 use tonic::transport::Channel;
 use tonic::{Response, Streaming};
 
@@ -26,16 +24,25 @@ pub mod max_size;
 #[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq)]
 pub struct DataForAutification {
     pub nickname: String,
-    pub tokens: Tokens,
+    pub refresh_token: RefreshToken,
 }
 
 #[derive(Debug)]
 pub struct Client {
     pub data_for_autification: DataForAutification,
     pub grpc: SecurityChatClient<Channel>,
+    pub access_token: AccessToken,
 }
 
 impl Client {
+    fn add_access_token_to_metadata<T>(&self, mut request: tonic::Request<T>) -> tonic::Request<T> {
+        request
+            .metadata_mut()
+            .insert("access_token", self.access_token.0.parse().unwrap());
+
+        request
+    }
+
     /// Init [gRPC](https://grpc.io/) connect and enable compression
     pub async fn grpc_connect(address: Uri) -> Result<SecurityChatClient<Channel>, Error> {
         trace!("run `grpc_connect` to address: {}", address);
@@ -62,9 +69,10 @@ impl Client {
         Ok(Self {
             data_for_autification: DataForAutification {
                 nickname: nickname.to_string(),
-                tokens,
+                refresh_token: tokens.refresh_token,
             },
             grpc: api,
+            access_token: tokens.access_token,
         })
     }
 
@@ -85,12 +93,10 @@ impl Client {
         Ok(Self {
             data_for_autification: DataForAutification {
                 nickname,
-                tokens: Tokens {
-                    refresh_token,
-                    access_token,
-                },
+                refresh_token,
             },
             grpc: api,
+            access_token,
         })
     }
 
@@ -99,24 +105,16 @@ impl Client {
     ) -> Result<Response<Streaming<Notification>>, Error> {
         trace!("run `subscribe_to_notifications`");
 
-        let request = tonic::Request::new(Check {
-            nickname: self.data_for_autification.nickname.clone(),
-            authkey: self.data_for_autification.tokens.refresh_token.clone(),
-        });
-
-        Ok(self.grpc.subscribe(request).await?)
+        let request = tonic::Request::new(());
+        Ok(self
+            .grpc
+            .subscribe(self.add_access_token_to_metadata(request))
+            .await?)
     }
 
     pub async fn nickname_is_taken(nickname: &str, address: Uri) -> Result<bool, Error> {
         trace!("run `nickname_is_taken` with nickname: {}", nickname);
-
-        let mut api = Client::grpc_connect(address).await?;
-        let request = tonic::Request::new(NicknameIsTakenRequest {
-            nickname: nickname.to_string(),
-        });
-
-        let response = api.nickname_is_taken(request).await?;
-        Ok(response.get_ref().is_taken)
+        Ok(AuthenticationClient::nickname_is_taken(address, nickname.to_string()).await?)
     }
 }
 
@@ -148,18 +146,32 @@ mod tests {
             .unwrap();
 
         log::info!("client info: {client:?}");
-        assert!(!client.data_for_autification.tokens.refresh_token.is_empty());
+        assert!(!client.data_for_autification.refresh_token.is_empty());
     }
 
     #[tokio::test]
     async fn login() {
-        todo!()
+        let nickname = get_rand_string(20);
+        let client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
+            .await
+            .unwrap();
+
+        let data_for_auth = client.data_for_autification.clone();
+        drop(client);
+
+        let _client = Client::login(
+            ADDRESS_SERVER.parse().unwrap(),
+            data_for_auth.nickname.clone(),
+            data_for_auth.refresh_token,
+        )
+        .await
+        .unwrap();
     }
 
     #[tokio::test]
     async fn nickname_is_taken() {
         let nickname = get_rand_string(20);
-        let result = super::Client::nickname_is_taken(&nickname, ADDRESS_SERVER.parse().unwrap())
+        let result = Client::nickname_is_taken(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
 
@@ -168,7 +180,7 @@ mod tests {
         let _client = Client::registration(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
-        let result = super::Client::nickname_is_taken(&nickname, ADDRESS_SERVER.parse().unwrap())
+        let result = Client::nickname_is_taken(&nickname, ADDRESS_SERVER.parse().unwrap())
             .await
             .unwrap();
 

@@ -45,15 +45,17 @@ impl Client {
 
         let bincode_config = BincodeConfig::new(init_args.path_to_config_file.clone());
         let config: ClientConfig = simple_load(&bincode_config)?;
-        let api = LowerLevelClient::grpc_connect(init_args.address_to_server.clone()).await?;
+        let lower_level_client = LowerLevelClient::login(
+            init_args.address_to_server.clone(),
+            config.data_for_autification.nickname.clone(),
+            config.data_for_autification.refresh_token.clone(),
+        )
+        .await?;
 
         let cache = init_args.get_cache().await?;
 
         Ok(Self {
-            lower_level_client: LowerLevelClient {
-                grpc: api,
-                data_for_autification: config.data_for_autification.clone(),
-            },
+            lower_level_client,
             _cache: cache,
             config,
             bincode_config,
@@ -72,7 +74,6 @@ impl Client {
 mod tests {
     use super::*;
     use crate::test_utils::get_client;
-    use api_lower_level::authentication::tokens::{AccessToken, Tokens};
     use test_log::test;
 
     #[test(tokio::test)]
@@ -116,10 +117,7 @@ mod tests {
             order_adding_crypto: HashMap::default(),
             data_for_autification: DataForAutification {
                 nickname: "test_nickname".to_string(),
-                tokens: Tokens {
-                    refresh_token: "SUPER VALUE".to_string(),
-                    access_token: AccessToken("session".to_string()),
-                },
+                refresh_token: "SUPER VALUE".to_string(),
             },
             storage_crypto: Arc::new(RwLock::new(StorageCrypto::default())),
         };

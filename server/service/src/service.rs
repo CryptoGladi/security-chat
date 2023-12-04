@@ -7,21 +7,67 @@ use database::schema::order_add_keys::dsl::*;
 use database::schema::users::dsl::{nickname, users};
 use database::DbPool;
 use database::{get_user_by_id, get_user_by_nickname};
+use diesel::internal::derives::multiconnection::chrono;
+use diesel::internal::derives::multiconnection::chrono::Local;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
-use log::{error, info};
+use jsonwebtoken::{Algorithm, DecodingKey, Validation};
+use log::info;
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
+use tonic::metadata::{Ascii, MetadataValue};
 use tonic::{Request, Response, Status};
 
 type MessageProducer = tokio::sync::broadcast::Sender<Notification>;
 type MessageConsumer = tokio::sync::broadcast::Receiver<Notification>;
+
+fn get_from_metadata<'a, T>(
+    request: &'a Request<T>,
+    key: &'a str,
+) -> Result<&'a MetadataValue<Ascii>, Status> {
+    let Some(value) = request.metadata().get(key) else {
+        return Err(Status::unauthenticated(format!(
+            "not found '{key}' in metadata"
+        )));
+    };
+
+    Ok(value)
+}
+
+fn get_nickname<T>(request: &Request<T>, secret: &[u8]) -> Result<String, Status> {
+    let access_token = get_from_metadata(&request, "access_token")?
+        .to_str()
+        .unwrap();
+
+    let token_data =
+        jsonwebtoken::decode::<Claims>(access_token, &DecodingKey::from_secret(secret), &{
+            let mut validation = Validation::new(Algorithm::HS256); // TODO change algorithm
+            validation.validate_exp = false;
+            validation.required_spec_claims = HashSet::new();
+
+            validation
+        })
+        .unwrap();
+
+    Ok(token_data.claims.nickname)
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Claims {
+    pub nickname: String,
+
+    /// Expiration Time
+    pub exp: chrono::DateTime<Local>,
+}
 
 #[derive(Debug)]
 pub struct SecurityChatService {
     pub db_pool: DbPool,
     pub producer: MessageProducer,
     pub consumer: MessageConsumer,
+    pub secret: Vec<u8>,
 }
 
 #[tonic::async_trait]
@@ -32,11 +78,12 @@ impl SecurityChat for SecurityChatService {
     ) -> Result<Response<()>, Status> {
         info!("Got a request for `send_aes_key`: {:?}", request.get_ref());
         let mut db = self.db_pool.get().await.unwrap();
-        let nickname_for_check = request.get_ref().clone().nickname_to.unwrap().nickname;
-        let authkey_for_check = request.get_ref().clone().nickname_to.unwrap().authkey;
 
-        let user_to =
-            database::check_user(&mut db, &nickname_for_check, &authkey_for_check).await?;
+        let user_to = &database::get_user_by_nickname(
+            &mut db,
+            &get_nickname(&request, &self.secret).unwrap(),
+        )
+        .await[0];
 
         let user_from = users
             .filter(nickname.eq(request.get_ref().nickname_from.clone()))
@@ -78,15 +125,14 @@ impl SecurityChat for SecurityChatService {
         Ok(Response::new(()))
     }
 
-    async fn get_aes_key(
-        &self,
-        request: Request<GetAesKeyRequest>,
-    ) -> Result<Response<GetAesKeyReply>, Status> {
+    async fn get_aes_key(&self, request: Request<()>) -> Result<Response<GetAesKeyReply>, Status> {
         info!("Got a request for `get_aes_key`: {:?}", request.get_ref());
         let mut db = self.db_pool.get().await.unwrap();
-        let user_for_check = request.get_ref().clone().nickname.unwrap();
-        let user = database::check_user(&mut db, &user_for_check.nickname, &user_for_check.authkey)
-            .await?;
+        let user = &database::get_user_by_nickname(
+            &mut db,
+            &get_nickname(&request, &self.secret).unwrap(),
+        )
+        .await[0];
 
         let keys = order_add_keys
             .filter(user_to_id.eq(user.id))
@@ -122,9 +168,6 @@ impl SecurityChat for SecurityChatService {
             request.get_ref()
         );
         let mut db = self.db_pool.get().await.unwrap();
-        let user_for_check = request.get_ref().clone().nickname.unwrap();
-        let _ = database::check_user(&mut db, &user_for_check.nickname, &user_for_check.authkey)
-            .await?;
 
         let key: Key = diesel::update(order_add_keys)
             .filter(id.eq(request.get_ref().id))
@@ -162,9 +205,6 @@ impl SecurityChat for SecurityChatService {
             request.get_ref()
         );
         let mut db = self.db_pool.get().await.unwrap();
-        let user_for_check = request.get_ref().clone().nickname.unwrap();
-        let _ = database::check_user(&mut db, &user_for_check.nickname, &user_for_check.authkey)
-            .await?;
 
         diesel::delete(order_add_keys.filter(id.eq(request.get_ref().id)))
             .execute(&mut db)
@@ -174,37 +214,15 @@ impl SecurityChat for SecurityChatService {
         Ok(Response::new(()))
     }
 
-    async fn check_valid(
-        &self,
-        request: Request<CheckValidRequest>,
-    ) -> Result<Response<CheckValidReply>, Status> {
-        info!("Got a request for `check_valid`: {:?}", request.get_ref());
-        let mut db = self.db_pool.get().await.unwrap();
-
-        let user = database::check_user(
-            &mut db,
-            &request.get_ref().nickname,
-            &request.get_ref().authkey,
-        )
-        .await;
-
-        Ok(Response::new(CheckValidReply {
-            is_valid: user.is_ok(),
-        }))
-    }
-
     type SubscribeStream = ReceiverStream<Result<Notification, Status>>;
 
     async fn subscribe(
         &self,
-        request: Request<Check>,
+        request: Request<()>,
     ) -> Result<Response<Self::SubscribeStream>, Status> {
         info!("new subscribe: {:?}", request.get_ref());
-        let mut db = self.db_pool.get().await.unwrap();
-        let user_for_check = request.get_ref().clone();
-        let _ = database::check_user(&mut db, &user_for_check.nickname, &user_for_check.authkey)
-            .await?;
 
+        let nnickname = get_nickname(&request, &self.secret).unwrap();
         let (tx, rx) = mpsc::channel(4);
         let mut notification = self.producer.subscribe();
 
@@ -212,7 +230,7 @@ impl SecurityChat for SecurityChatService {
             loop {
                 let n = notification.recv().await.unwrap();
 
-                if n.nickname_from == user_for_check.nickname && tx.send(Ok(n)).await.is_err() {
+                if n.nickname_from == nnickname && tx.send(Ok(n)).await.is_err() {
                     break;
                 }
             }
@@ -227,11 +245,9 @@ impl SecurityChat for SecurityChatService {
     ) -> Result<Response<()>, Status> {
         info!("Got a request for `send_message`: {:?}", request.get_ref());
         let mut db = self.db_pool.get().await.unwrap();
-        let user_for_check = request.get_ref().clone().nickname.unwrap();
-        let _ = database::check_user(&mut db, &user_for_check.nickname, &user_for_check.authkey)
-            .await?;
+        let nnickname = get_nickname(&request, &self.secret).unwrap();
 
-        let user_sender = &get_user_by_nickname(&mut db, &user_for_check.nickname).await[0];
+        let user_sender = &get_user_by_nickname(&mut db, &nnickname).await[0];
         let user_recipient =
             &get_user_by_nickname(&mut db, &request.get_ref().nickname_from).await[0];
 
@@ -252,7 +268,7 @@ impl SecurityChat for SecurityChatService {
         self.producer
             .send(Notification {
                 nickname_from: request.get_ref().nickname_from.clone(),
-                by_nickname: user_for_check.nickname.clone(),
+                by_nickname: nnickname.clone(),
                 notice: Some(notification::Notice::NewMessage(MessageWithId {
                     message: request.get_ref().clone().message,
                     id: ids[0],
@@ -273,12 +289,9 @@ impl SecurityChat for SecurityChatService {
         );
 
         let mut db = self.db_pool.get().await.unwrap();
-        let user_for_check = request.get_ref().clone().nickname.unwrap();
-        let _ = database::check_user(&mut db, &user_for_check.nickname, &user_for_check.authkey)
-            .await?;
+        let nnickname = get_nickname(&request, &self.secret).unwrap();
 
-        let user_sender = &get_user_by_nickname(&mut db, &user_for_check.nickname).await[0];
-
+        let user_sender = &get_user_by_nickname(&mut db, &nnickname).await[0];
         let mut result = GetLatestMessagesReply::default();
 
         for nickname_for_get in request.get_ref().nickname_for_get.iter() {
@@ -314,57 +327,5 @@ impl SecurityChat for SecurityChatService {
         }
 
         Ok(Response::new(result))
-    }
-
-    async fn registration(
-        &self,
-        request: Request<RegistrationRequest>,
-    ) -> Result<Response<RegistrationReply>, Status> {
-        info!("Got a request for `registration`: {:?}", request.get_ref());
-        let mut db = self.db_pool.get().await.unwrap();
-
-        let uuid_authkey = uuid::Uuid::new_v4().to_string();
-        let new_user = NewUser {
-            nickname: request.get_ref().nickname.as_str(),
-            authkey: &uuid_authkey,
-        };
-
-        diesel::insert_into(users)
-            .values(&new_user)
-            .execute(&mut db)
-            .await
-            .unwrap();
-
-        Ok(Response::new(RegistrationReply {
-            authkey: uuid_authkey,
-        }))
-    }
-
-    async fn nickname_is_taken(
-        &self,
-        request: Request<NicknameIsTakenRequest>,
-    ) -> Result<Response<NicknameIsTakenReply>, Status> {
-        info!(
-            "Got a request for `nickname_is_taken`: {:?}",
-            request.get_ref()
-        );
-        let mut db = self.db_pool.get().await.unwrap();
-
-        return match users
-            .filter(nickname.eq(request.get_ref().nickname.clone()))
-            .limit(1)
-            .select(User::as_select())
-            .load(&mut db)
-            .await
-        {
-            Ok(e) => Ok(Response::new(NicknameIsTakenReply {
-                is_taken: !e.is_empty(),
-            })),
-            Err(e) => {
-                error!("database error in nickname_is_taken: {:?}", e);
-
-                Ok(Response::new(NicknameIsTakenReply { is_taken: false }))
-            }
-        };
     }
 }

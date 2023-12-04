@@ -44,6 +44,25 @@ fn criterion_benchmark(criterion: &mut Criterion) {
         });
     });
 
+    criterion.bench_function("login", |bencher| {
+        bencher.to_async(&runtime).iter_custom(|iters| async move {
+            let (_paths, init_args, client) = get_client().await;
+
+            let start = Instant::now();
+            for _i in 0..iters {
+                #[allow(deprecated)]
+                Client::login(
+                    init_args.clone(),
+                    client.get_nickname(),
+                    client.config.data_for_autification.refresh_token.clone(),
+                )
+                .await
+                .unwrap();
+            }
+            start.elapsed()
+        });
+    });
+
     criterion.bench_function("send_message", |bencher| {
         bencher.to_async(&runtime).iter_custom(|iters| async move {
             let mut clients = get_pair_client().await;

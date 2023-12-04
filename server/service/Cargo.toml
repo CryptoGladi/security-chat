@@ -15,3 +15,5 @@ database = { path = "../database" }
 diesel.workspace = true
 bb8.workspace = true
 diesel-async.workspace = true
+jsonwebtoken.workspace = true
+serde.workspace = true
