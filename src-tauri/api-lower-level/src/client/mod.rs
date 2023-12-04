@@ -1,6 +1,7 @@
 //! Main module for API
 
-use crate::authentication::tokens::AccessToken;
+use crate::authentication::tokens::{AccessToken, RefreshToken, Tokens};
+use crate::authentication::AuthenticationClient;
 use crate::client::impl_crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
 use crate_proto::{
     AesKeyInfo, Check, CheckValidRequest, DeleteAesKeyRequest, GetAesKeyRequest,
@@ -25,7 +26,7 @@ pub mod max_size;
 #[derive(Debug, Serialize, Deserialize, Default, Clone, PartialEq)]
 pub struct DataForAutification {
     pub nickname: String,
-    pub auth_key: String,
+    pub tokens: Tokens,
 }
 
 #[derive(Debug)]
@@ -35,40 +36,12 @@ pub struct Client {
 }
 
 impl Client {
-    fn interceptor(
-        mut request: tonic::Request<()>,
-        access_token: AccessToken,
-    ) -> Result<tonic::Request<()>, tonic::Status> {
-        request.metadata_mut().insert(
-            "access_token",
-            tonic::metadata::MetadataValue::from_str(&access_token.0).unwrap(),
-        );
-
-        Ok(request)
-    }
-
     /// Init [gRPC](https://grpc.io/) connect and enable compression
-    pub async fn grpc_connect(
-        address: Uri,
-        access_token: AccessToken,
-    ) -> Result<
-        SecurityChatClient<
-            InterceptedService<
-                Channel,
-                Box<dyn FnOnce(tonic::Request<()>) -> Result<tonic::Request<()>, tonic::Status>>,
-            >,
-        >,
-        Error,
-    > {
+    pub async fn grpc_connect(address: Uri) -> Result<SecurityChatClient<Channel>, Error> {
         trace!("run `grpc_connect` to address: {}", address);
 
         let channel = Channel::builder(address).connect().await?;
-        let api = SecurityChatClient::with_interceptor(
-            channel,
-            Box::new(move |mut request: tonic::Request<()>| {
-                Self::interceptor(request, access_token)
-            }),
-        );
+        let api = SecurityChatClient::new(channel);
 
         Ok(api)
     }
@@ -81,37 +54,44 @@ impl Client {
     pub async fn registration(nickname: &str, address: Uri) -> Result<Self, Error> {
         debug!("run `registration` with nickname: {}", nickname);
 
-        let mut api = Client::grpc_connect(address).await?;
-        let request = tonic::Request::new(RegistrationRequest {
-            nickname: nickname.to_string(),
-        });
+        let mut authentication = AuthenticationClient::connect(address.clone()).await?;
+        let tokens = authentication.registration(nickname.to_string()).await?;
 
-        let status = api.registration(request).await?;
+        let api = Self::grpc_connect(address).await?;
 
         Ok(Self {
             data_for_autification: DataForAutification {
                 nickname: nickname.to_string(),
-                auth_key: status.get_ref().authkey.clone(),
+                tokens,
             },
             grpc: api,
         })
     }
 
-    pub async fn check_account_valid(
-        nickname: &str,
-        authkey: &str,
+    pub async fn login(
         address: Uri,
-    ) -> Result<bool, Error> {
-        trace!("check account valid with nickname: {}", nickname);
+        nickname: String,
+        refresh_token: RefreshToken,
+    ) -> Result<Self, Error> {
+        debug!("run `login`");
 
-        let mut api = Client::grpc_connect(address).await?;
-        let request = tonic::Request::new(CheckValidRequest {
-            nickname: nickname.to_string(),
-            authkey: authkey.to_string(),
-        });
+        let mut authentication = AuthenticationClient::connect(address.clone()).await?;
+        let access_token = authentication
+            .login(nickname.clone(), refresh_token.clone())
+            .await?;
 
-        let response = api.check_valid(request).await?;
-        Ok(response.get_ref().is_valid)
+        let api = Self::grpc_connect(address).await?;
+
+        Ok(Self {
+            data_for_autification: DataForAutification {
+                nickname,
+                tokens: Tokens {
+                    refresh_token,
+                    access_token,
+                },
+            },
+            grpc: api,
+        })
     }
 
     pub async fn subscribe_to_notifications(
@@ -121,7 +101,7 @@ impl Client {
 
         let request = tonic::Request::new(Check {
             nickname: self.data_for_autification.nickname.clone(),
-            authkey: self.data_for_autification.auth_key.clone(),
+            authkey: self.data_for_autification.tokens.refresh_token.clone(),
         });
 
         Ok(self.grpc.subscribe(request).await?)
@@ -168,7 +148,12 @@ mod tests {
             .unwrap();
 
         log::info!("client info: {client:?}");
-        assert!(!client.data_for_autification.auth_key.is_empty());
+        assert!(!client.data_for_autification.tokens.refresh_token.is_empty());
+    }
+
+    #[tokio::test]
+    async fn login() {
+        todo!()
     }
 
     #[tokio::test]
@@ -188,27 +173,5 @@ mod tests {
             .unwrap();
 
         assert!(result);
-    }
-
-    #[tokio::test]
-    async fn check_account_valid() {
-        let client = get_client().await.unwrap();
-        let nickname = client.data_for_autification.nickname.clone();
-        let auth_key = client.data_for_autification.auth_key.clone();
-        assert!(!auth_key.is_empty());
-
-        drop(client);
-
-        let is_successful =
-            Client::check_account_valid(&nickname, &auth_key, ADDRESS_SERVER.parse().unwrap())
-                .await
-                .unwrap();
-        assert!(is_successful);
-
-        let is_successful =
-            Client::check_account_valid("dddddd", "dddd", ADDRESS_SERVER.parse().unwrap())
-                .await
-                .unwrap();
-        assert!(!is_successful);
     }
 }

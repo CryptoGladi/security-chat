@@ -24,7 +24,7 @@ impl Client {
         let request = tonic::Request::new(SendMessageRequest {
             nickname: Some(Check {
                 nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.auth_key.clone(),
+                authkey: self.data_for_autification.tokens.refresh_token.clone(),
             }),
             nickname_from,
             message: Some(message),
@@ -52,7 +52,7 @@ impl Client {
         let request = tonic::Request::new(GetLatestMessagesRequest {
             nickname: Some(Check {
                 nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.auth_key.clone(),
+                authkey: self.data_for_autification.tokens.refresh_token.clone(),
             }),
             get_limit: limit,
             nickname_for_get,

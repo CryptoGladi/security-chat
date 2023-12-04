@@ -10,7 +10,7 @@ use tauri::{Manager, Runtime, Size};
 use Event::{NewAcceptAesKey, NewMessage, NewSentAcceptAesKey};
 
 pub async fn load_client(app: tauri::AppHandle) {
-    let mut client = Client::load_config(global::CLIENT_INIT_CONFIG.clone())
+    let mut client = Client::login_by_config(global::CLIENT_INIT_CONFIG.clone())
         .await
         .unwrap();
     client.refresh_cryptos().await.unwrap();

@@ -45,7 +45,7 @@ impl Client {
         let request = tonic::Request::new(DeleteAesKeyRequest {
             nickname: Some(Check {
                 nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.auth_key.clone(),
+                authkey: self.data_for_autification.tokens.refresh_token.clone(),
             }),
             id,
         });
@@ -73,7 +73,7 @@ impl Client {
         let request = tonic::Request::new(SendAesKeyRequest {
             nickname_to: Some(Check {
                 nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.auth_key.clone(),
+                authkey: self.data_for_autification.tokens.refresh_token.clone(),
             }),
             nickname_from: nickname_form.to_string(),
             public_key: public_key.to_encoded_point(true).as_bytes().to_vec(),
@@ -91,7 +91,7 @@ impl Client {
         let request = tonic::Request::new(GetAesKeyRequest {
             nickname: Some(Check {
                 nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.auth_key.clone(),
+                authkey: self.data_for_autification.tokens.refresh_token.clone(),
             }),
         });
 
@@ -107,7 +107,7 @@ impl Client {
         let request = tonic::Request::new(SetUserFromAesKeyRequest {
             nickname: Some(Check {
                 nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.auth_key.clone(),
+                authkey: self.data_for_autification.tokens.refresh_token.clone(),
             }),
             id: key_id,
             public_key: public_key.to_encoded_point(true).as_bytes().to_vec(),

@@ -12,7 +12,7 @@ use std::fmt::{Debug, Display, Formatter};
 pub type RefreshToken = String;
 
 /// Token for login in your account
-#[derive(Derivative)]
+#[derive(Derivative, Serialize, Deserialize, Default, Clone, PartialEq)]
 #[derivative(Debug)]
 pub struct Tokens {
     #[derivative(Debug = "ignore")] // ignore because is secret value
@@ -35,7 +35,7 @@ pub struct Claims {
 /// **IT IS SECRET VALUE!**
 ///
 /// Format: [JWT](https://jwt.io/)
-#[derive(Clone, PartialEq)]
+#[derive(Derivative, Serialize, Deserialize, Default, Clone, PartialEq)]
 pub struct AccessToken(pub String);
 
 impl AccessToken {
@@ -69,13 +69,13 @@ impl Debug for AccessToken {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::AccessToken;
 
     /// Test `JWT` token
     ///
     /// Your can testing this by [website](https://jwt.io/)
-    mod test_jwt_token {
+    pub(crate) mod test_jwt_token {
         pub const RAW: &str = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuaWNrbmFtZSI6IkRCbjJLWlg5TU9Fd0JNM2RIMG9zIiwiZXhwIjoiMjAyMy0xMi0wNVQxNDozMDo0MS41OTgwMzYxODErMDM6MDAifQ.6_gC9KMQVpwG51-jkM7XNgGO3P6CAFkdgcBkFM5Br_s";
         pub const NICKNAME: &str = "DBn2KZX9MOEwBM3dH0os";
         pub const EXP: &str = "2023-12-05 14:30:41.598036181 +03:00";

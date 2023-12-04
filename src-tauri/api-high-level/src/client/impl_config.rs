@@ -40,25 +40,12 @@ impl PartialEq for ClientConfig {
 }
 
 impl Client {
-    pub async fn load_config(init_args: ClientInitArgs) -> Result<Client, Error> {
+    pub async fn login_by_config(init_args: ClientInitArgs) -> Result<Self, Error> {
         debug!("run `load_config`");
 
         let bincode_config = BincodeConfig::new(init_args.path_to_config_file.clone());
         let config: ClientConfig = simple_load(&bincode_config)?;
         let api = LowerLevelClient::grpc_connect(init_args.address_to_server.clone()).await?;
-
-        #[cfg(debug_assertions)]
-        {
-            if !LowerLevelClient::check_account_valid(
-                &config.data_for_autification.nickname,
-                &config.data_for_autification.auth_key,
-                init_args.address_to_server.clone(),
-            )
-            .await?
-            {
-                return Err(Error::AccoutIsInvalid);
-            }
-        }
 
         let cache = init_args.get_cache().await?;
 
@@ -85,6 +72,7 @@ impl Client {
 mod tests {
     use super::*;
     use crate::test_utils::get_client;
+    use api_lower_level::authentication::tokens::{AccessToken, Tokens};
     use test_log::test;
 
     #[test(tokio::test)]
@@ -95,7 +83,7 @@ mod tests {
         let client_data = client.lower_level_client.data_for_autification.clone();
         drop(client); // for cache
 
-        let loaded_client = Client::load_config(client_config).await.unwrap();
+        let loaded_client = Client::login_by_config(client_config).await.unwrap();
 
         log::info!(
             "loaded_client data: {:#?}",
@@ -119,7 +107,7 @@ mod tests {
     async fn not_found_file() {
         let (_, client_config, _) = get_client().await;
 
-        let _loaded_client = Client::load_config(client_config).await.unwrap();
+        let _loaded_client = Client::login_by_config(client_config).await.unwrap();
     }
 
     #[test]
@@ -128,7 +116,10 @@ mod tests {
             order_adding_crypto: HashMap::default(),
             data_for_autification: DataForAutification {
                 nickname: "test_nickname".to_string(),
-                auth_key: "SUPER_KEY".to_string(),
+                tokens: Tokens {
+                    refresh_token: "SUPER VALUE".to_string(),
+                    access_token: AccessToken("session".to_string()),
+                },
             },
             storage_crypto: Arc::new(RwLock::new(StorageCrypto::default())),
         };
