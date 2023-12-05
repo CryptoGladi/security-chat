@@ -21,6 +21,7 @@ pub struct AuthenticationClient {
     grpc_api: GRPCAuthenticationClient<Channel>,
 }
 
+/// Client for **ONLY** for authentication
 impl AuthenticationClient {
     /// Init [gRPC](https://grpc.io/) connect to authentication server
     pub async fn connect(address: Uri) -> Result<Self, Error> {
@@ -34,6 +35,12 @@ impl AuthenticationClient {
         Ok(Self { grpc_api })
     }
 
+    /// Registration
+    ///
+    /// Returns tokens for receiving a new token ([refresh_token](RefreshToken)) and for
+    /// interacting with your account ([access_token](AccessToken)).
+    ///
+    /// That is, the password for your account is `refresh_token`
     pub async fn registration(&mut self, nickname: String) -> Result<Tokens, Error> {
         trace!("run `registration` for nickname: {nickname}");
 
@@ -46,6 +53,9 @@ impl AuthenticationClient {
         })
     }
 
+    /// Login
+    ///
+    /// Using [refresh token](RefreshToken) returns a new [access token](AccessToken)
     pub async fn login(
         &mut self,
         nickname: String,
