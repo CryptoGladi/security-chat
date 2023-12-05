@@ -27,8 +27,12 @@ diesel::table! {
         #[max_length = 25]
         nickname -> Varchar,
         #[max_length = 40]
-        authkey -> Varchar,
+        refresh_token -> Varchar,
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(chat_messages, order_add_keys, users,);
+diesel::allow_tables_to_appear_in_same_query!(
+    chat_messages,
+    order_add_keys,
+    users,
+);

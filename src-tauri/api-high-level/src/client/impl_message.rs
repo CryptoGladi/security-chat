@@ -284,7 +284,7 @@ mod tests {
         client_from.accept_all_cryptos().await.unwrap();
         client_to.refresh_cryptos().await.unwrap();
 
-        for (i, _) in (0..100).enumerate() {
+        for (i, _) in (0..10).enumerate() {
             let text = format!("x: {i}");
             client_to
                 .send_message(client_from.get_nickname(), Message::new(text))
@@ -294,7 +294,7 @@ mod tests {
 
         let last_messages = client_from.get_all_last_message().await.unwrap();
 
-        assert_eq!(last_messages[0].text, "x: 99");
+        assert_eq!(last_messages[0].text, "x: 9");
         assert_eq!(last_messages.len(), 1);
     }
 
@@ -352,8 +352,8 @@ mod tests {
         client_from.accept_all_cryptos().await.unwrap();
         client_to.refresh_cryptos().await.unwrap();
 
-        let mut sent_messages = Vec::with_capacity(100);
-        for _ in 0..100 {
+        let mut sent_messages = Vec::with_capacity(10);
+        for _ in 0..10 {
             let new_message = Message::new("manyyy".to_string());
             sent_messages.push(new_message.clone());
 

@@ -102,7 +102,7 @@ impl Authentication for AuthenticationService {
 
         let new_user = NewUser {
             nickname: request.get_ref().nickname.as_str(),
-            authkey: &refresh_token,
+            refresh_token: &refresh_token,
         };
 
         diesel::insert_into(users)

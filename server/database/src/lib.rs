@@ -48,7 +48,7 @@ pub async fn check_user<'a>(
 ) -> Result<User, tonic::Status> {
     let user = users
         .filter(nickname.eq(user_nickname))
-        .filter(authkey.eq(user_authkey))
+        .filter(refresh_token.eq(user_authkey))
         .select(User::as_select())
         .first(db)
         .await;
@@ -56,7 +56,7 @@ pub async fn check_user<'a>(
     match user {
         Ok(user_info) => Ok(user_info),
         Err(_) => Err(tonic::Status::not_found(
-            "user not found or authkey is invalid",
+            "user not found or refresh_token is invalid",
         )),
     }
 }
