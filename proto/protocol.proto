@@ -4,33 +4,10 @@ import "google/protobuf/empty.proto";
 
 package security_chat;
 
-message Check {
-  string nickname = 1;
-  string authkey = 2;
-}
-
-message RegistrationRequest { string nickname = 1; }
-
-message RegistrationReply {
-  string authkey = 1;
-}
-
-message NicknameIsTakenRequest { string nickname = 1; }
-
-message NicknameIsTakenReply { bool is_taken = 1; }
-
-message CheckValidRequest {
-  string nickname = 1;
-  string authkey = 2;
-}
-
 message SendAESKeyRequest {
-  Check nickname_to = 1;
-  string nickname_from = 3;
-  bytes public_key = 4;
+  string nickname_from = 1;
+  bytes public_key = 2;
 }
-
-message GetAESKeyRequest { Check nickname = 1; }
 
 message AESKeyInfo {
   int64 id = 1;
@@ -45,18 +22,12 @@ message GetAESKeyReply {
 }
 
 message DeleteAESKeyRequest {
-  Check nickname = 1;
-  int64 id = 2;
+  int64 id = 1;
 }
 
 message SetUserFromAESKeyRequest {
-  Check nickname = 1;
-  int64 id = 2;
-  bytes public_key = 3;
-}
-
-message CheckValidReply {
-  bool is_valid = 1;
+  int64 id = 1;
+  bytes public_key = 2;
 }
 
 message Notification {
@@ -81,9 +52,8 @@ message Message {
 }
 
 message SendMessageRequest {
-  Check nickname = 1;
-  string nickname_from = 2;
-  Message message = 3;
+  string nickname_from = 1;
+  Message message = 2;
 }
 
 message MessageInfo {
@@ -98,28 +68,21 @@ message GetLatestMessagesReply {
 }
 
 message GetLatestMessagesRequest {
-  Check nickname = 1;
-  int64 get_limit = 2;
-  repeated string nickname_for_get = 3;
+  int64 get_limit = 1;
+  repeated string nickname_for_get = 2;
 }
 
 service SecurityChat {
-  rpc Registration(RegistrationRequest) returns (RegistrationReply);
-
-  rpc CheckValid(CheckValidRequest) returns (CheckValidReply);
-
-  rpc NicknameIsTaken(NicknameIsTakenRequest) returns (NicknameIsTakenReply);
-
   rpc SendAESKey(SendAESKeyRequest) returns (google.protobuf.Empty);
 
-  rpc GetAESKey(GetAESKeyRequest) returns (GetAESKeyReply);
+  rpc GetAESKey(google.protobuf.Empty) returns (GetAESKeyReply);
 
   rpc SetUserFromAESKey(SetUserFromAESKeyRequest)
       returns (google.protobuf.Empty);
 
   rpc DeleteAESKey(DeleteAESKeyRequest) returns (google.protobuf.Empty);
 
-  rpc Subscribe(Check) returns (stream Notification);
+  rpc Subscribe(google.protobuf.Empty) returns (stream Notification);
 
   rpc SendMessage(SendMessageRequest) returns (google.protobuf.Empty);
 

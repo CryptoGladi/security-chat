@@ -1,7 +1,7 @@
 CREATE TABLE users (
   id BIGSERIAL PRIMARY KEY,
   nickname VARCHAR(25) UNIQUE NOT NULL,
-  authkey VARCHAR(40) NOT NULL
+  refresh_token VARCHAR(40) NOT NULL
 );
 
 CREATE TABLE chat_messages (

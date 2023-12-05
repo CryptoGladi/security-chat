@@ -1,7 +1,7 @@
 //! Module for messages;
 
 use super::{
-    trace, Check, Client, Error, GetLatestMessagesReply, GetLatestMessagesRequest, Message,
+    trace, Client, Error, GetLatestMessagesReply, GetLatestMessagesRequest, Message,
     SendMessageRequest, MAX_LEN_MESSAGE, MAX_LIMIT_GET_MESSAGES,
 };
 
@@ -22,15 +22,13 @@ impl Client {
         }
 
         let request = tonic::Request::new(SendMessageRequest {
-            nickname: Some(Check {
-                nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.auth_key.clone(),
-            }),
             nickname_from,
             message: Some(message),
         });
 
-        self.grpc.send_message(request).await?;
+        self.grpc
+            .send_message(self.add_access_token_to_metadata(request))
+            .await?;
         Ok(())
     }
 
@@ -50,15 +48,14 @@ impl Client {
         }
 
         let request = tonic::Request::new(GetLatestMessagesRequest {
-            nickname: Some(Check {
-                nickname: self.data_for_autification.nickname.clone(),
-                authkey: self.data_for_autification.auth_key.clone(),
-            }),
             get_limit: limit,
             nickname_for_get,
         });
 
-        let result = self.grpc.get_latest_messages(request).await?;
+        let result = self
+            .grpc
+            .get_latest_messages(self.add_access_token_to_metadata(request))
+            .await?;
         Ok(result.into_inner())
     }
 }

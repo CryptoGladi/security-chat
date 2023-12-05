@@ -10,7 +10,7 @@
 - :white_check_mark: SvelteKit to SolidJS
 - :white_check_mark: Logging
 - :white_large_square: Server optimization
-- :white_large_square: Add authentication by JWT
+- :white_check_mark: Add authentication by JWT
 - :white_large_square: Add encryption of data between client and server
 
 # 0.1.0-alpha.2

@@ -13,6 +13,11 @@ p384.workspace = true
 http.workspace = true
 crate-proto = { path = "../crate-proto"}
 fcore = { path = "../fcore" }
+ignore = "0.4.21"
+derivative.workspace = true
+tokio = "1.32.0"
+jwt = "0.16.0"
+chrono.workspace = true
 
 [dev-dependencies]
 tokio = { version = "1.29.1", features = ["full"] }

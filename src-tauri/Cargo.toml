@@ -61,6 +61,8 @@ async-trait = "0.1.73"
 const_format = "0.2.31"
 criterion = { version = "0.5.1", features = ["async_tokio"] }
 p384 = { version = "0.13.0", default-features = false, features = ["ecdh", "serde"] }
+derivative = "2.2.0"
+chrono = { version = "0.4.31", features = ["serde"] }
 
 [workspace.lints.clippy]
 all = "warn"
@@ -131,8 +133,8 @@ random_name_generator = "0.3.6"
 rand = "0.8.5"
 hashbrown.workspace = true
 fern = { version = "0.6.2", features = ["colored"] }
-chrono = "0.4.31"
 thiserror.workspace = true
+chrono.workspace = true
 
 [dev-dependencies]
 test-log = "0.2.12"

@@ -7,14 +7,14 @@ use diesel::prelude::*;
 pub struct User {
     pub id: i64,
     pub nickname: String,
-    pub authkey: String,
+    pub refresh_token: String,
 }
 
 #[derive(Insertable)]
 #[diesel(table_name = crate::schema::users)]
 pub struct NewUser<'a> {
     pub nickname: &'a str,
-    pub authkey: &'a str,
+    pub refresh_token: &'a str,
 }
 
 #[derive(Queryable, Selectable, Clone)]

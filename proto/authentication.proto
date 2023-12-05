@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package authentication;
+
+service Authentication {
+  rpc Registration(RegistrationRequest) returns (RegistrationResponse);
+
+  rpc Login(LoginRequest) returns (LoginResponse);
+
+  rpc CheckToken(CheckTokenRequest) returns (CheckTokenResponse);
+
+  rpc NicknameIsTaken(NicknameIsTakenRequest) returns (NicknameIsTakenResponse);
+}
+
+message NicknameIsTakenRequest {
+  string nickname = 1;
+}
+
+message NicknameIsTakenResponse {
+  bool is_taken = 1;
+}
+
+message CheckTokenRequest {
+  string access_token = 1;
+}
+
+message CheckTokenResponse {
+  bool is_valid = 1;
+}
+
+message RegistrationRequest {
+  string nickname = 1;
+}
+
+message RegistrationResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message LoginRequest {
+  string nickname = 1;
+  string refresh_token = 2;
+};
+
+message LoginResponse {
+  string access_token = 1;
+}

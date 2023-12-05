@@ -14,9 +14,10 @@ use fcore::prelude::BincodeConfig;
 use impl_config::client_init_config::ClientInitArgs;
 use impl_config::ClientConfig;
 use kanal::AsyncReceiver;
-use log::{debug, error, info, trace};
+use log::{debug, error, trace};
 
 pub mod error;
+pub mod impl_authentication;
 pub mod impl_config;
 pub mod impl_crypto;
 pub mod impl_message;
@@ -25,37 +26,13 @@ pub mod storage_crypto;
 
 #[derive(Debug)]
 pub struct Client {
-    lower_level_client: LowerLevelClient,
-    config: ClientConfig,
-    bincode_config: BincodeConfig<ClientConfig>,
-    _cache: Option<CacheSQLite>, // TODO
+    pub lower_level_client: LowerLevelClient,
+    pub config: ClientConfig,
+    pub bincode_config: BincodeConfig<ClientConfig>,
+    pub _cache: Option<CacheSQLite>, // TODO
 }
 
 impl Client {
-    pub async fn registration(nickname: &str, init_args: ClientInitArgs) -> Result<Client, Error> {
-        debug!("run registration...");
-
-        let raw_client =
-            LowerLevelClient::registration(nickname, init_args.address_to_server.clone()).await?;
-
-        let cache = init_args.get_cache().await?;
-
-        info!(
-            "new registration: {}",
-            raw_client.data_for_autification.nickname
-        );
-
-        Ok(Self {
-            config: ClientConfig {
-                data_for_autification: raw_client.data_for_autification.clone(),
-                ..Default::default()
-            },
-            _cache: cache,
-            lower_level_client: raw_client,
-            bincode_config: BincodeConfig::new(init_args.path_to_config_file),
-        })
-    }
-
     /// Get all users
     ///
     /// # Panics
@@ -98,43 +75,13 @@ impl Client {
 
         Ok(recv)
     }
-
-    pub async fn nickname_is_taken(
-        init_config: &ClientInitArgs,
-        nickname: &str,
-    ) -> Result<bool, Error> {
-        debug!("run nickname_is_taken");
-
-        Ok(api_lower_level::client::Client::nickname_is_taken(
-            nickname,
-            init_config.address_to_server.clone(),
-        )
-        .await?)
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::test_utils::get_client;
-    use fcore::test_utils::get_rand_string;
     use test_log::test;
-
-    #[test(tokio::test)]
-    async fn nickname_is_taken() {
-        let (_paths, client_config, client) = get_client().await;
-
-        assert!(
-            Client::nickname_is_taken(&client_config, client.get_nickname().as_str())
-                .await
-                .unwrap()
-        );
-        assert!(
-            !Client::nickname_is_taken(&client_config, &get_rand_string(20))
-                .await
-                .unwrap()
-        );
-    }
 
     #[test(tokio::test)]
     async fn have_account() {
