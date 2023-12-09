@@ -37,8 +37,8 @@ impl AuthenticationClient {
 
     /// Registration
     ///
-    /// Returns tokens for receiving a new token ([refresh_token](RefreshToken)) and for
-    /// interacting with your account ([access_token](AccessToken)).
+    /// Returns tokens for receiving a new token ([`refresh_token`](RefreshToken)) and for
+    /// interacting with your account ([`access_token`](AccessToken)).
     ///
     /// That is, the password for your account is `refresh_token`
     pub async fn registration(&mut self, nickname: String) -> Result<Tokens, Error> {

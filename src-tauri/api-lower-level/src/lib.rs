@@ -7,6 +7,7 @@
 #![forbid(unsafe_code)]
 
 pub mod authentication;
+pub mod certificate;
 pub mod client;
 
 #[cfg(test)]

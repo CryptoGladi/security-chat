@@ -63,6 +63,7 @@ criterion = { version = "0.5.1", features = ["async_tokio"] }
 p384 = { version = "0.13.0", default-features = false, features = ["ecdh", "serde"] }
 derivative = "2.2.0"
 chrono = { version = "0.4.31", features = ["serde"] }
+reqwest = { version = "0.11.20", default-features = false, features = ["rustls-tls"] }
 
 [workspace.lints.clippy]
 all = "warn"
@@ -127,7 +128,7 @@ fcore = { path = "fcore", default-features = false }
 color-backtrace = "0.6.0"
 version-compare = "0.1.1"
 tl = "0.7.7"
-reqwest = { version = "0.11.20", default-features = false, features = ["rustls-tls"] }
+reqwest.workspace = true
 const_format.workspace = true
 random_name_generator = "0.3.6"
 rand = "0.8.5"
