@@ -5,9 +5,8 @@ use downloader::{Download, Downloader, Verification};
 use error::Error;
 use log::trace;
 use sha2::Sha512;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use temp_dir::TempDir;
 
 pub mod connection_parameters;
 pub mod error;
@@ -19,15 +18,22 @@ pub struct Certificate {
 
     /// [SHA-512](https://emn178.github.io/online-tools/sha512.html) hash
     pub hash: String,
+    pub path: PathBuf,
     pub connection_parameters: ConnectionParameters,
 }
 
 impl Certificate {
     #[must_use]
-    pub fn new(link: String, hash: String, connection_parameters: ConnectionParameters) -> Self {
+    pub fn new(
+        link: String,
+        hash: String,
+        path: impl AsRef<Path>,
+        connection_parameters: ConnectionParameters,
+    ) -> Self {
         Self {
             link,
             hash,
+            path: path.as_ref().to_path_buf(),
             connection_parameters,
         }
     }
@@ -42,7 +48,6 @@ impl Certificate {
     #[allow(clippy::unreachable)]
     pub fn download(&self) -> Result<PathBuf, Error> {
         trace!("run `download` certificate");
-        let temp = TempDir::new().map_err(Error::TempDir)?;
 
         let valid_hash = self.hash.clone();
         let download = Download::new(&self.link).verify(Arc::new(move |path, _simple_progress| {
@@ -59,17 +64,16 @@ impl Certificate {
         let mut downloader = Downloader::builder()
             .connect_timeout(self.connection_parameters.timeout)
             .timeout(self.connection_parameters.timeout)
-            .download_folder(temp.path())
+            .download_folder(&self.path)
             .build()?;
 
-        let result = downloader.download(&[download])?;
-        debug_assert_eq!(result.len(), 1, "we only need to download ONE file");
+        // TODO https://stackoverflow.com/questions/27904864/what-does-cannot-move-out-of-index-of-mean
+        let result = downloader.download(&[download])?[0]?.file_name;
+        //debug_assert_eq!(result.len(), 1, "we only need to download ONE file");
+        //let f = result[0]?.file_name;
 
-        if let Some(for_check_error) = result.into_iter().next() {
-            return Ok(for_check_error?.file_name);
-        }
-
-        unreachable!();
+        //Ok(result[0]?.file_name.clone())
+        todo!()
     }
 }
 
@@ -82,6 +86,7 @@ mod tests {
         let certificate = Certificate::new(
             "e".to_string(),
             "g".to_string(),
+            "x",
             ConnectionParameters::default(),
         );
 

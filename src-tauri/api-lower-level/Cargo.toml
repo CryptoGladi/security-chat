@@ -19,11 +19,11 @@ tokio = "1.32.0"
 jwt = "0.16.0"
 chrono.workspace = true
 downloader = { version = "0.2.7", features = ["rustls-tls", "verify"] }
-temp-dir = "0.1.11"
 file-hashing = { version = "0.1.2", default-features = false }
 sha2 = "0.10.8"
 
 [dev-dependencies]
+temp-dir = "0.1.11"
 tokio = { version = "1.29.1", features = ["full"] }
 rand = "0.8.5"
 fcore = { path = "../fcore" }
