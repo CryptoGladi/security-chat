@@ -7,4 +7,7 @@ pub enum Error {
 
     #[error("downloader: {0}")]
     Downloader(#[from] downloader::Error),
+
+    #[error("io problem: {0}")]
+    IO(#[from] std::io::Error),
 }
