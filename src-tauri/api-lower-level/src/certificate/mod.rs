@@ -12,7 +12,7 @@ pub mod connection_parameters;
 pub mod error;
 pub mod getter;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Default)]
 pub struct Certificate {
     /// URL link to file
     pub link: String,

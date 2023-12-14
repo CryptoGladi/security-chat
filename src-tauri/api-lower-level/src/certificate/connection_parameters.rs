@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ConnectionParameters {
     pub timeout: Duration,
 }

@@ -1,5 +1,8 @@
 //! Module that is responsible **ONLY** for authentication
 
+use crate::certificate::connection_parameters::ConnectionParameters;
+use crate::certificate::getter::impl_json::GetterByJson;
+use crate::certificate::getter::simple_get as certificate_get;
 use crate_proto::authentication::{
     CheckTokenRequest, LoginRequest, NicknameIsTakenRequest, RegistrationRequest,
 };
@@ -7,9 +10,10 @@ use crate_proto::AuthenticationClient as GRPCAuthenticationClient;
 use error::Error;
 use http::Uri;
 use log::trace;
+use temp_dir::TempDir;
 use tokens::{AccessToken, RefreshToken, Tokens};
 use tonic::codec::CompressionEncoding;
-use tonic::transport::Channel;
+use tonic::transport::{Certificate, Channel, ClientTlsConfig};
 
 pub mod error;
 pub mod tokens;
@@ -24,10 +28,35 @@ pub struct AuthenticationClient {
 /// Client for **ONLY** for authentication
 impl AuthenticationClient {
     /// Init [gRPC](https://grpc.io/) connect to authentication server
+    #[allow(clippy::missing_panics_doc)]
     pub async fn connect(address: Uri) -> Result<Self, Error> {
         trace!("run `grpc_connect` to address: {address}");
+        let temp = TempDir::new().unwrap();
+        std::fs::create_dir_all(temp.child("cer")).unwrap();
 
-        let channel = Channel::builder(address).connect().await?;
+        println!("1");
+        let certificate = certificate_get(&GetterByJson::new(
+            "https://raw.githubusercontent.com/CryptoGladi/certificates/master/information.json"
+                .to_string(),
+        ),
+                        temp.child("cer"),
+            ConnectionParameters::default()
+        )
+        .await.download().unwrap();
+        println!("1.2");
+        let pem = std::fs::read_to_string(certificate).unwrap();
+        let ca = Certificate::from_pem(pem);
+
+        println!("2");
+        let tls = ClientTlsConfig::new().ca_certificate(ca);
+
+        let channel = Channel::builder(address)
+            .tls_config(tls)
+            .unwrap()
+            .connect()
+            .await?;
+        println!("3");
+
         let grpc_api = GRPCAuthenticationClient::new(channel)
             .send_compressed(COMPRESSION_ENCODING)
             .accept_compressed(COMPRESSION_ENCODING);
@@ -99,8 +128,9 @@ impl AuthenticationClient {
 mod tests {
     use super::*;
     use fcore::test_utils::*;
+    use test_log::test;
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn connect() {
         AuthenticationClient::connect(ADDRESS_SERVER.parse().unwrap())
             .await
