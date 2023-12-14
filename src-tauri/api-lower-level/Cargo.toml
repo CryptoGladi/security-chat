@@ -21,6 +21,9 @@ chrono.workspace = true
 downloader = { version = "0.2.7", features = ["rustls-tls", "verify"] }
 file-hashing = { version = "0.1.2", default-features = false }
 sha2 = "0.10.8"
+serde_json.workspace = true
+reqwest.workspace = true
+async-trait.workspace = true
 
 [dev-dependencies]
 temp-dir = "0.1.11"

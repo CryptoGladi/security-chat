@@ -198,6 +198,7 @@ name = "api-lower-level"
 version = "0.0.0"
 dependencies = [
  "aes-gcm",
+ "async-trait",
  "chrono",
  "crate-proto",
  "derivative",
@@ -211,7 +212,9 @@ dependencies = [
  "p384",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
+ "reqwest",
  "serde",
+ "serde_json",
  "sha2",
  "temp-dir",
  "thiserror",
