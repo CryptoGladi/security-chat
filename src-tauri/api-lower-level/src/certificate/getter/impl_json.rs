@@ -4,7 +4,6 @@ use crate::certificate::Certificate;
 use async_trait::async_trait;
 use log::trace;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Data {
@@ -29,10 +28,9 @@ impl GetterByJson {
 
 #[async_trait]
 impl Getter for GetterByJson {
-    async fn get(&self, path: PathBuf, connection_parameters: ConnectionParameters) -> Certificate {
+    async fn get(&self, connection_parameters: ConnectionParameters) -> Certificate {
         trace!(
-            "run `get` with path: `{:?}`; connection_parameters: `{:?}`",
-            path,
+            "run `get` with connection_parameters: `{:?}`",
             connection_parameters
         );
 
@@ -47,8 +45,7 @@ impl Getter for GetterByJson {
 
         Certificate {
             link: json.link,
-            hash: json.hash,
-            path,
+            valid_hash: json.hash,
             connection_parameters,
         }
     }
@@ -69,7 +66,7 @@ mod tests {
         let folder = temp_dir.child("temp");
         std::fs::create_dir_all(&folder).unwrap();
 
-        let certificate = getter.get(folder, ConnectionParameters::default()).await;
-        certificate.download().unwrap();
+        let certificate = getter.get(ConnectionParameters::default()).await;
+        certificate.download().await.unwrap();
     }
 }

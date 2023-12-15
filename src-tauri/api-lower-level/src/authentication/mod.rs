@@ -10,7 +10,6 @@ use crate_proto::AuthenticationClient as GRPCAuthenticationClient;
 use error::Error;
 use http::Uri;
 use log::trace;
-use temp_dir::TempDir;
 use tokens::{AccessToken, RefreshToken, Tokens};
 use tonic::codec::CompressionEncoding;
 use tonic::transport::{Certificate, Channel, ClientTlsConfig};
@@ -31,24 +30,22 @@ impl AuthenticationClient {
     #[allow(clippy::missing_panics_doc)]
     pub async fn connect(address: Uri) -> Result<Self, Error> {
         trace!("run `grpc_connect` to address: {address}");
-        let temp = TempDir::new().unwrap();
-        std::fs::create_dir_all(temp.child("cer")).unwrap();
 
         println!("1");
         let certificate = certificate_get(&GetterByJson::new(
             "https://raw.githubusercontent.com/CryptoGladi/certificates/master/information.json"
                 .to_string(),
         ),
-                        temp.child("cer"),
             ConnectionParameters::default()
         )
-        .await.download().unwrap();
+        .await.download().await.unwrap();
         println!("1.2");
-        let pem = std::fs::read_to_string(certificate).unwrap();
-        let ca = Certificate::from_pem(pem);
+        let ca = Certificate::from_pem(certificate);
 
         println!("2");
-        let tls = ClientTlsConfig::new().ca_certificate(ca);
+        let tls = ClientTlsConfig::new()
+            .ca_certificate(ca)
+            .domain_name(address.to_string());
 
         let channel = Channel::builder(address)
             .tls_config(tls)
