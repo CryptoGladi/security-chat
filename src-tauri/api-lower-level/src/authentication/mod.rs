@@ -45,7 +45,7 @@ impl AuthenticationClient {
         println!("2");
         let tls = ClientTlsConfig::new()
             .ca_certificate(ca)
-            .domain_name(address.to_string());
+            .domain_name("localhost");
 
         let channel = Channel::builder(address)
             .tls_config(tls)
