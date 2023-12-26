@@ -18,14 +18,20 @@ derivative.workspace = true
 tokio = "1.32.0"
 jwt = "0.16.0"
 chrono.workspace = true
+sha2 = "0.10.8"
+serde_json.workspace = true
+reqwest.workspace = true
+async-trait.workspace = true
 
 [dev-dependencies]
+temp-dir = "0.1.11"
 tokio = { version = "1.29.1", features = ["full"] }
 rand = "0.8.5"
-temp-dir = "0.1.11"
 fcore = { path = "../fcore" }
 totally-safe-transmute = "0.0.4"
 rand_chacha = "0.3.1"
+test-log = "0.2.12"
+env_logger = "0.10"
 
 [lints]
 workspace = true

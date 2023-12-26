@@ -1,5 +1,8 @@
 //! Module that is responsible **ONLY** for authentication
 
+use crate::certificate::connection_parameters::ConnectionParameters;
+use crate::certificate::getter::impl_json::GetterByJson;
+use crate::certificate::getter::simple_get as certificate_get;
 use crate_proto::authentication::{
     CheckTokenRequest, LoginRequest, NicknameIsTakenRequest, RegistrationRequest,
 };
@@ -9,7 +12,7 @@ use http::Uri;
 use log::trace;
 use tokens::{AccessToken, RefreshToken, Tokens};
 use tonic::codec::CompressionEncoding;
-use tonic::transport::Channel;
+use tonic::transport::{Certificate, Channel, ClientTlsConfig};
 
 pub mod error;
 pub mod tokens;
@@ -24,10 +27,29 @@ pub struct AuthenticationClient {
 /// Client for **ONLY** for authentication
 impl AuthenticationClient {
     /// Init [gRPC](https://grpc.io/) connect to authentication server
+    #[allow(clippy::missing_panics_doc)]
     pub async fn connect(address: Uri) -> Result<Self, Error> {
         trace!("run `grpc_connect` to address: {address}");
 
-        let channel = Channel::builder(address).connect().await?;
+        let certificate = certificate_get(&GetterByJson::new(
+            "https://raw.githubusercontent.com/CryptoGladi/certificates/master/information.json"
+                .to_string(),
+        ),
+            ConnectionParameters::default()
+        )
+        .await.download().await.unwrap();
+        let ca = Certificate::from_pem(certificate);
+
+        let tls = ClientTlsConfig::new()
+            .ca_certificate(ca)
+            .domain_name("localhost");
+
+        let channel = Channel::builder(address)
+            .tls_config(tls)
+            .unwrap()
+            .connect()
+            .await?;
+
         let grpc_api = GRPCAuthenticationClient::new(channel)
             .send_compressed(COMPRESSION_ENCODING)
             .accept_compressed(COMPRESSION_ENCODING);
@@ -37,8 +59,8 @@ impl AuthenticationClient {
 
     /// Registration
     ///
-    /// Returns tokens for receiving a new token ([refresh_token](RefreshToken)) and for
-    /// interacting with your account ([access_token](AccessToken)).
+    /// Returns tokens for receiving a new token ([`refresh_token`](RefreshToken)) and for
+    /// interacting with your account ([`access_token`](AccessToken)).
     ///
     /// That is, the password for your account is `refresh_token`
     pub async fn registration(&mut self, nickname: String) -> Result<Tokens, Error> {
@@ -99,8 +121,9 @@ impl AuthenticationClient {
 mod tests {
     use super::*;
     use fcore::test_utils::*;
+    use test_log::test;
 
-    #[tokio::test]
+    #[test(tokio::test)]
     async fn connect() {
         AuthenticationClient::connect(ADDRESS_SERVER.parse().unwrap())
             .await

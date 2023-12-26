@@ -6,7 +6,7 @@ use service::prelude::{get_service as get_main_service, SecurityChatServer};
 use std::env;
 use std::path::PathBuf;
 use tonic::codec::CompressionEncoding;
-use tonic::transport::Server;
+use tonic::transport::{Certificate, Identity, Server, ServerTlsConfig};
 
 #[cfg(not(debug_assertions))]
 use mimalloc::MiMalloc;
@@ -23,6 +23,19 @@ async fn main() -> color_eyre::eyre::Result<()> {
     color_eyre::install()?;
     dotenv().ok();
     logger::init_logger().unwrap();
+
+    let data_dir = PathBuf::from_iter([
+        std::env!("CARGO_MANIFEST_DIR"),
+        "tonic",
+        "examples",
+        "data",
+        "tls",
+    ]);
+    println!("data:dir; {}", data_dir.display());
+
+    let cert = std::fs::read_to_string(data_dir.join("server.pem"))?;
+    let key = std::fs::read_to_string(data_dir.join("server.key"))?;
+    let server_identity = Identity::from_pem(cert, key);
 
     let addr = env::var("ADDRESS_BIND")
         .expect("ADDRESS_BIND must be set")
@@ -42,6 +55,8 @@ async fn main() -> color_eyre::eyre::Result<()> {
     warn!("running server by addr: {}", addr);
 
     Server::builder()
+        .tls_config(ServerTlsConfig::new().identity(server_identity))
+        .unwrap()
         .add_service(authentication_server)
         .add_service(app_server)
         .serve(addr)

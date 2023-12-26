@@ -1,0 +1,6 @@
+[submodule "server/tonic"]
+	path = server/tonic
+	url = https://github.com/hyperium/tonic
+[submodule "server/certificates"]
+	path = server/certificates
+	url = https://github.com/CryptoGladi/certificates
