@@ -11,7 +11,7 @@
 - :white_check_mark: Logging
 - :white_large_square: Server optimization
 - :white_check_mark: Add authentication by JWT
-- :white_large_square: Add encryption of data between client and server
+- :white_check_mark: Add encryption of data between client and server
 - :white_large_square: Add support Windows build
 
 # 0.1.0-alpha.2
