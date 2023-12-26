@@ -22,10 +22,14 @@ pub struct Certificate {
 
 impl Certificate {
     #[must_use]
-    pub fn new(link: String, hash: String, connection_parameters: ConnectionParameters) -> Self {
+    pub fn new(
+        link: String,
+        valid_hash: String,
+        connection_parameters: ConnectionParameters,
+    ) -> Self {
         Self {
             link,
-            valid_hash: hash,
+            valid_hash,
             connection_parameters,
         }
     }

@@ -2,6 +2,8 @@
 
 use crate::authentication::tokens::{AccessToken, RefreshToken};
 use crate::authentication::AuthenticationClient;
+use crate::certificate::connection_parameters::ConnectionParameters;
+use crate::certificate::getter::impl_json::GetterByJson;
 use crate::client::impl_crypto::ecdh::{EphemeralSecret, ToEncodedPoint};
 use crate_proto::{
     AesKeyInfo, DeleteAesKeyRequest, GetLatestMessagesReply, GetLatestMessagesRequest, Message,
@@ -13,7 +15,7 @@ use http::uri::Uri;
 use log::{debug, trace};
 use max_size::{MAX_LEN_MESSAGE, MAX_LIMIT_GET_MESSAGES};
 use serde::{Deserialize, Serialize};
-use tonic::transport::Channel;
+use tonic::transport::{Certificate, Channel, ClientTlsConfig};
 use tonic::{Response, Streaming};
 
 pub mod error;
@@ -44,12 +46,34 @@ impl Client {
     }
 
     /// Init [gRPC](https://grpc.io/) connect and enable compression
+    ///
+    /// # Panics
+    ///
+    /// Certificate error
     pub async fn grpc_connect(address: Uri) -> Result<SecurityChatClient<Channel>, Error> {
         trace!("run `grpc_connect` to address: {}", address);
 
-        let channel = Channel::builder(address).connect().await?;
-        let api = SecurityChatClient::new(channel);
+        let certificate = crate::certificate::getter::simple_get(&GetterByJson::new(
+            "https://raw.githubusercontent.com/CryptoGladi/certificates/master/information.json"
+                .to_string(),
+        ),
+                                                                 ConnectionParameters::default()
+        )
+            .await.download().await.unwrap();
 
+        let ca = Certificate::from_pem(certificate);
+
+        let tls = ClientTlsConfig::new()
+            .ca_certificate(ca)
+            .domain_name("localhost");
+
+        let channel = Channel::builder(address)
+            .tls_config(tls)
+            .unwrap()
+            .connect()
+            .await?;
+
+        let api = SecurityChatClient::new(channel);
         Ok(api)
     }
 

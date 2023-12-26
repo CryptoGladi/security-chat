@@ -31,7 +31,6 @@ impl AuthenticationClient {
     pub async fn connect(address: Uri) -> Result<Self, Error> {
         trace!("run `grpc_connect` to address: {address}");
 
-        println!("1");
         let certificate = certificate_get(&GetterByJson::new(
             "https://raw.githubusercontent.com/CryptoGladi/certificates/master/information.json"
                 .to_string(),
@@ -39,10 +38,8 @@ impl AuthenticationClient {
             ConnectionParameters::default()
         )
         .await.download().await.unwrap();
-        println!("1.2");
         let ca = Certificate::from_pem(certificate);
 
-        println!("2");
         let tls = ClientTlsConfig::new()
             .ca_certificate(ca)
             .domain_name("localhost");
@@ -52,7 +49,6 @@ impl AuthenticationClient {
             .unwrap()
             .connect()
             .await?;
-        println!("3");
 
         let grpc_api = GRPCAuthenticationClient::new(channel)
             .send_compressed(COMPRESSION_ENCODING)
